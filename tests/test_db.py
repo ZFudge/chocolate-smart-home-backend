@@ -3,10 +3,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from chocolate_smart_home import crud, schemas
 from chocolate_smart_home.database import Base
 from chocolate_smart_home.dependencies import get_db
 from chocolate_smart_home.main import app
-from chocolate_smart_home import crud
 
 
 DB_URL = "postgresql://"
@@ -20,14 +20,11 @@ SQLALCHEMY_DATABASE_URL = f"{DB_URL}{PG_USER}:{PG_PW}@{PG_HOST}:{PG_PORT}/{PG_DA
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
-TestingSessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine
-)
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 Base.metadata.create_all(bind=engine)
+
 
 def override_get_db():
     try:
@@ -41,36 +38,21 @@ app.dependency_overrides[get_db] = override_get_db
 
 client = TestClient(app)
 
-# def test_create_device():
-#     print('test_create_device')
-#     db = get_db()
-#     device_data = dict(mqtt_id=7, remote_name="test remote name",
-#                        name="test name", online=False)
-#     device = crud.create_device(db, device_data)
-#     print(device)
+def test_create_device():
+    db = next(override_get_db())
+    device_data = dict(mqtt_id=123, remote_name="example_test_name",
+                       name="test_name")
+    device_data = schemas.DeviceCreate(**device_data)
+    device = crud.create_device(db, device_data)
+
+    assert device.mqtt_id == 123
+    assert device.remote_name == "example_test_name"
+    assert device.name == "test_name"
+    assert device.online == False
+
 
 def test_get_devices():
-    print('test_get_devices')
     response = client.get("/get_devices_data/")
     assert response.status_code == 200, response.text
     data = response.json()
-    print(data)
-
-
-# def test_create_user():
-#     response = client.post(
-#         "/users/",
-#         json={"email": "deadpool@example.com", "password": "chimichangas4life"},
-#     )
-#     assert response.status_code == 200, response.text
-#     data = response.json()
-#     assert data["email"] == "deadpool@example.com"
-#     assert "id" in data
-#     user_id = data["id"]
-
-#     response = client.get(f"/users/{user_id}")
-#     assert response.status_code == 200, response.text
-#     data = response.json()
-#     assert data["email"] == "deadpool@example.com"
-#     assert data["id"] == user_id
 

@@ -1,4 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+
+# from chocolate_smart_home.dependencies import dependencies.get_db
+from chocolate_smart_home import crud, dependencies, schemas
+
 
 router = APIRouter()
 
@@ -8,21 +13,18 @@ async def root():
     return {}
 
 
-@router.get("/get_controllers_data/")
-async def get_controllers_data():
-    return {}
+@router.get("/get_devices_data/", response_model=list[schemas.Device])
+async def get_devices_data(db: Session = Depends(dependencies.get_db)):
+    return crud.get_devices_data(db=db)
 
 
-@router.post("/update_controller_data/")
-async def update_controller_data():
-    return {}
+@router.patch("/update_devices_data/", response_model=list[schemas.Device])
+async def update_devices_data(
+    devices_data: list[schemas.DeviceUpdate], db: Session = Depends(dependencies.get_db)
+) -> list[schemas.Device]:
+    return crud.update_devices_data(db=db, devices_data=devices_data)
 
 
-@router.get("/get_aggregate_controllers/")
-async def get_aggregate_controllers():
-    return {}
-
-
-@router.get("/get_spaces/")
-async def get_rooms():
-    return {}
+@router.get("/get_spaces_data/", response_model=list[schemas.Space])
+async def get_spaces_data(db: Session = Depends(dependencies.get_db)):
+    return crud.get_spaces_data(db=db)

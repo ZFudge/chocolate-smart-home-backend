@@ -32,4 +32,4 @@ testteardowndb:
 testrun:
 	@pytest
 
-test: shell testdbsetup testrun testteardowndb
+test: shell testteardowndb testdbsetup testrun testteardowndb
