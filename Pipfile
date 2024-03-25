@@ -6,6 +6,8 @@ name = "pypi"
 [packages]
 fastapi = {extras = ["all"], version = "*"}
 sqlalchemy = "*"
+paho-mqtt = "*"
+ruff = "*"
 
 [dev-packages]
 

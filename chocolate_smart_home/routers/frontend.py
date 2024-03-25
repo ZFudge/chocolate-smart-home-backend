@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-# from chocolate_smart_home.dependencies import dependencies.get_db
 from chocolate_smart_home import crud, dependencies, schemas
 
 

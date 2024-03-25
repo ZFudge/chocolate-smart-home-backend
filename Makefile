@@ -16,13 +16,27 @@ shell:
 run: shell
 	@pipenv run uvicorn chocolate_smart_home.main:app --reload
 
+cleanmqtt:
+	@echo "Removing any existing mqtt container..."
+	@docker stop mqtt || true
+	@docker rm   mqtt || true
+
+runmqtt: cleanmqtt
+	@echo "Starting new mqtt container..."
+	@docker run -it -d \
+		--name=mqtt \
+		-v $(PWD)/mosquitto.conf:/mosquitto/config/mosquitto.conf \
+		-p 1883:1883 \
+		-p 9001:9001 \
+		eclipse-mosquitto:2.0.18
+
 testdbsetup:
 	@docker run --name ${TEST_DB_NAME} -d \
 		-p 15432:5432 \
 		-e POSTGRES_PASSWORD=testpassword \
 		-e POSTGRES_USER=testuser \
 		-e POSTGRES_DB=testdb \
-		postgres \
+		postgres:12.18-bullseye \
 		|| true
 
 testteardowndb:
