@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from chocolate_smart_home import crud, dependencies, schemas
+from chocolate_smart_home import crud, dependencies
+import chocolate_smart_home.schemas as schemas
 
 
 router = APIRouter()
