@@ -1,9 +1,19 @@
 from sqlalchemy.orm import Session
 
-from chocolate_smart_home import models, schemas
+from chocolate_smart_home import models
+import chocolate_smart_home.schemas as schemas
 
 
-def create_device(db: Session, device: schemas.DeviceCreate) -> schemas.Device:
+def create_device_type(db: Session,
+                       device_type: schemas.DeviceType) -> schemas.DeviceType:
+    db_device_type = models.DeviceType(name=device_type.name)
+    db.add(db_device_type)
+    db.commit()
+    db.refresh(db_device_type)
+    return db_device_type
+
+
+def create_device(db: Session, device: schemas.Device) -> schemas.Device:
     db_device = models.Device(
         mqtt_id=device.mqtt_id,
         remote_name=device.remote_name,
@@ -25,7 +35,9 @@ def update_devices_data(
 ) -> list[schemas.Device]:
     devices_data_by_id = dict([(x.id, x) for x in devices_data])
     device_ids = devices_data_by_id.keys()
-    devices = db.query(models.Device).filter(models.Device.id.in_(device_ids)).all()
+    devices = db.query(models.Device).filter(
+        models.Device.id.in_(device_ids)
+    ).all()
     for device in devices:
         for attr_name, value in devices_data_by_id.get(device.id):
             if value is None:

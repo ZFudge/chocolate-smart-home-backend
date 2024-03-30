@@ -21,6 +21,10 @@ class Device(DeviceId, DeviceBase):
     pass
 
 
+class DeviceUpdate(DeviceId):
+    data: dict
+
+
 class DeviceReceived(BaseModel):
     mqtt_id: int
     device_type_name: DeviceTypeBase
@@ -46,4 +50,11 @@ class DeviceCreate(DeviceReceived):
     space: Space | None = None
     online: bool | None = False
 
-__all__ = ["DeviceBase", "Device", "DeviceReceived", "DeviceCreate"]
+
+__all__ = [
+    "DeviceBase",
+    "Device",
+    "DeviceReceived",
+    "DeviceCreate",
+    "DeviceUpdate",
+]

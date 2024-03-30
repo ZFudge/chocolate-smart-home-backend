@@ -7,5 +7,5 @@ app = FastAPI()
 
 app.include_router(frontend.router)
 
-mqtt_client = MQTTClient("127.0.0.1")
+mqtt_client = MQTTClient(host="127.0.0.1")
 mqtt_client.connect()
