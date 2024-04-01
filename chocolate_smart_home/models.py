@@ -20,7 +20,7 @@ class DeviceType(Base):
     devices = relationship("Device", back_populates="device_type")
 
     def __str__(self):
-        return f'DeviceType(name="{self.name}")'
+        return f'DeviceType(id="{self.id}, name="{self.name}")'
 
     def __repr__(self):
         return str(self)
@@ -39,7 +39,8 @@ class Device(Base):
     device_type = relationship("DeviceType", back_populates="devices")
 
     def __str__(self):
-        return (f"Device(mqtt_id={self.mqtt_id}, "
+        return (f"Device(id={self.id}, "
+                       f'mqtt_id="{self.mqtt_id}", '
                        f'name="{self.name}", '
                        f'remote_name="{self.remote_name}", '
                        f"device_type={self.device_type})")

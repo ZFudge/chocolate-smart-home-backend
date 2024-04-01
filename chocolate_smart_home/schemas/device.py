@@ -14,7 +14,6 @@ class DeviceBase(BaseModel):
     remote_name: str
     name: str
     online: bool | None = False
-    space: Space | None = None
 
 
 class Device(DeviceId, DeviceBase):
@@ -27,22 +26,9 @@ class DeviceUpdate(DeviceId):
 
 class DeviceReceived(BaseModel):
     mqtt_id: int
-    device_type_name: DeviceTypeBase
+    device_type_name: str
     remote_name: str
-    
-    def __init__(
-        self,
-        mqtt_id: int,
-        device_type_name: str,
-        remote_name: str,
-        **kwargs
-    ) -> None:
-        super(DeviceReceived, self).__init__(
-            mqtt_id=mqtt_id,
-            device_type_name=DeviceTypeBase(name=device_type_name),
-            remote_name=remote_name,
-            **kwargs
-        )
+    name: str | None = ""
 
 
 class DeviceCreate(DeviceReceived):
