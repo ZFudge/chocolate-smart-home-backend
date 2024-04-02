@@ -21,10 +21,8 @@ async def get_devices_data(db: Session = Depends(dependencies.get_db)):
 
 @router.patch("/update_devices_data/",
               response_model=list[schemas.DeviceUpdate])
-async def update_devices_data(
-    devices_data: list[schemas.DeviceUpdate],
-    db: Session = Depends(dependencies.get_db)
-) -> list[schemas.Device]:
+async def update_devices_data(devices_data: list[schemas.DeviceUpdate],
+                              db: Session = Depends(dependencies.get_db)):
     return crud.update_devices_data(devices_data=devices_data, db=db)
 
 

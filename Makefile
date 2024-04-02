@@ -14,7 +14,7 @@ shell:
 	@pipenv shell || true
 
 run: shell
-	@pipenv run uvicorn chocolate_smart_home.main:app --reload
+	@pipenv run uvicorn chocolate_smart_home.main:app --reload --env-file .env
 
 cleanmqtt:
 	@echo "Removing any existing mqtt container..."

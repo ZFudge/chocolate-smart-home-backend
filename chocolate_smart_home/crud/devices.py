@@ -64,8 +64,8 @@ def _(
     )
     return update_device(db_session.get(), device_data)
 
+
 def get_device_by_mqtt_id(mqtt_id: int):
     return db_session.get().query(models.Device).filter(
         models.Device.mqtt_id == mqtt_id
     ).first()
-

@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI
 
 from chocolate_smart_home.mqtt.client import MQTTClient
@@ -7,5 +9,5 @@ app = FastAPI()
 
 app.include_router(frontend.router)
 
-mqtt_client = MQTTClient(host="127.0.0.1")
+mqtt_client = MQTTClient(host=os.environ.get("MQTT_HOST", "127.0.0.1"))
 mqtt_client.connect()
