@@ -1,58 +1,54 @@
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
+import pytest
+from sqlalchemy.exc import IntegrityError
+from psycopg2.errors import UniqueViolation
 
-from chocolate_smart_home import crud, schemas
-from chocolate_smart_home.database import Base
-from chocolate_smart_home.dependencies import get_db
-from chocolate_smart_home.main import app
+from chocolate_smart_home import crud, models
 
 
-DB_URL = "postgresql://"
-PG_USER = "testuser"
-PG_PW = "testpassword"
-PG_HOST = "127.0.0.1"
-PG_PORT = 15432
-PG_DATABASE = "testdb"
+def test_create_device_type(test_database):
+    device_type = crud.create_device_type("Device Type Name")
 
-SQLALCHEMY_DATABASE_URL = f"{DB_URL}{PG_USER}:{PG_PW}@{PG_HOST}:{PG_PORT}/{PG_DATABASE}"
-
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
-
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    assert isinstance(device_type, models.DeviceType)
+    assert device_type.name == "Device Type Name"
 
 
-Base.metadata.create_all(bind=engine)
+def test_create_device_type_fail_on_duplicate(test_database):
+    crud.create_device_type("Device Type Name")
+    with pytest.raises(IntegrityError) as e:
+        crud.create_device_type("Device Type Name")
+
+    assert isinstance(e.value.orig, UniqueViolation)
 
 
-def override_get_db():
-    try:
-        db = TestingSessionLocal()
-        yield db
-    finally:
-        db.close()
+def test_create_device(test_database):
+    device = crud.create_device(
+        "123",
+        "Device Type Name",
+        "Device Name",
+        ""
+    )
 
-
-app.dependency_overrides[get_db] = override_get_db
-
-client = TestClient(app)
-
-def test_create_device():
-    db = next(override_get_db())
-    device_data = dict(mqtt_id=123, remote_name="example_test_name",
-                       name="test_name")
-    device_data = schemas.DeviceCreate(**device_data)
-    device = crud.create_device(db, device_data)
-
+    assert isinstance(device, models.Device)
     assert device.mqtt_id == 123
-    assert device.remote_name == "example_test_name"
-    assert device.name == "test_name"
-    assert device.online == False
+    assert device.remote_name == "Device Name"
+    assert device.device_type.name == "Device Type Name"
+    assert device.name == ""
+    assert device.online is True
 
 
-def test_get_devices():
-    response = client.get("/get_devices_data/")
-    assert response.status_code == 200, response.text
-    data = response.json()
+def test_create_device_fail_on_duplicate_mqtt_id(test_database):
+    crud.create_device(
+        "123",
+        "Device Type Name 1",
+        "Device Name 1",
+        ""
+    )
+    with pytest.raises(IntegrityError) as e:
+        crud.create_device(
+            "123",
+            "Device Type Name 2",
+            "Device Name 2",
+            ""
+        )
 
+    assert isinstance(e.value.orig, UniqueViolation)

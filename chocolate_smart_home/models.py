@@ -4,13 +4,6 @@ from sqlalchemy.orm import relationship
 from chocolate_smart_home.database import Base
 
 
-class Space(Base):
-    __tablename__ = "spaces"
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String, unique=True, index=True)
-
-
 class DeviceType(Base):
     __tablename__ = "device_types"
 
