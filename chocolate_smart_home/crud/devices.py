@@ -18,7 +18,13 @@ def create_device(db: Session, device_data: schemas.DeviceReceived) -> schemas.D
         online=True,
     )
     db.add(db_device)
-    db.commit()
+
+    try:
+        db.commit()
+    except:
+        db.rollback()
+        raise
+
     db.refresh(db_device)
     return db_device
 
@@ -37,7 +43,7 @@ def _(mqtt_id: str, device_type_name: str, remote_name: str, name: str) -> schem
 @singledispatch
 def update_device(db: Session, device_data: schemas.DeviceBase):
     db_device = get_device_by_mqtt_id(device_data.mqtt_id)
-    db_device.device_type = device_types.get_device_type_by_name(device_data.device_type_name)
+    db_device.device_type = device_types.get_device_type_by_name(device_data.name)
     db_device.remote_name = device_data.remote_name
     db_device.name = device_data.name
     db_device.online = True
@@ -55,9 +61,11 @@ def _(
     name: str,
     online: bool,
 ):
+    device_type = device_types.get_device_type_by_name(device_type_name)
+    device_type_schema = schemas.DeviceType(name=device_type_name, id=device_type.id)
     device_data = schemas.DeviceBase(
         mqtt_id=mqtt_id,
-        device_type_name=device_type_name,
+        device_type=device_type_schema,
         remote_name=remote_name,
         name=name,
         online=online

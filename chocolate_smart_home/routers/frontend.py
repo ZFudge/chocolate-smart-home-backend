@@ -9,28 +9,6 @@ import chocolate_smart_home.schemas as schemas
 router = APIRouter()
 
 
-@router.get("/")
-async def root():
-    return {}
-
-
-@router.get("/get_devices_data/", response_model=list[schemas.Device])
-async def get_devices_data(db: Session = Depends(dependencies.get_db)):
-    return crud.get_devices_data(db=db)
-
-
-@router.patch("/update_devices_data/",
-              response_model=list[schemas.DeviceUpdate])
-async def update_devices_data(devices_data: list[schemas.DeviceUpdate],
-                              db: Session = Depends(dependencies.get_db)):
-    return crud.update_devices_data(devices_data=devices_data, db=db)
-
-
-@router.get("/get_spaces_data/", response_model=list[schemas.Space])
-async def get_spaces_data(db: Session = Depends(dependencies.get_db)):
-    return crud.get_spaces_data(db=db)
-
-
 @router.post("/create_device_type/", response_model=schemas.DeviceType)
 def create_device_type(device_type: schemas.DeviceTypeBase,
                        db: Session = Depends(dependencies.get_db)):
@@ -41,6 +19,7 @@ def create_device_type(device_type: schemas.DeviceTypeBase,
 def create_device(device: schemas.DeviceReceived,
                   db: Session = Depends(dependencies.get_db)):
     new_device = crud.create_device(db, device)
+
     return schemas.Device(
         id=new_device.id,
         mqtt_id=new_device.mqtt_id,
