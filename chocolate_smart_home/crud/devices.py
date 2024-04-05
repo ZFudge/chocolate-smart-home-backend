@@ -1,5 +1,6 @@
 from functools import singledispatch
 
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
 from chocolate_smart_home import models
@@ -9,10 +10,12 @@ import chocolate_smart_home.schemas as schemas
 
 
 @singledispatch
-def create_device(db: Session, device_data: schemas.DeviceReceived) -> schemas.Device:
+def create_device(db: Session, device_data: schemas.DeviceReceived) -> models.Device:
     db_device = models.Device(
         mqtt_id=device_data.mqtt_id,
-        device_type=device_types.get_device_type_by_name(device_data.device_type_name),
+        device_type=device_types.get_new_or_existing_device_type_by_name(
+            device_data.device_type_name
+        ),
         remote_name=device_data.remote_name,
         name=device_data.name,
         online=True,
@@ -30,7 +33,7 @@ def create_device(db: Session, device_data: schemas.DeviceReceived) -> schemas.D
 
 
 @create_device.register
-def _(mqtt_id: str, device_type_name: str, remote_name: str, name: str) -> schemas.Device:
+def _(mqtt_id: str, device_type_name: str, remote_name: str, name: str) -> models.Device:
     device_data = schemas.DeviceReceived(
         mqtt_id=mqtt_id,
         device_type_name=device_type_name,
@@ -41,9 +44,11 @@ def _(mqtt_id: str, device_type_name: str, remote_name: str, name: str) -> schem
 
 
 @singledispatch
-def update_device(db: Session, device_data: schemas.DeviceBase):
+def update_device(db: Session, device_data: schemas.DeviceBase) -> models.Device:
     db_device = get_device_by_mqtt_id(device_data.mqtt_id)
-    db_device.device_type = device_types.get_device_type_by_name(device_data.name)
+    db_device.device_type = (
+        device_types.get_new_or_existing_device_type_by_name(device_data.device_type.name)
+    )
     db_device.remote_name = device_data.remote_name
     db_device.name = device_data.name
     db_device.online = True
@@ -60,8 +65,10 @@ def _(
     remote_name: str,
     name: str,
     online: bool,
-):
-    device_type = device_types.get_device_type_by_name(device_type_name)
+) -> models.Device:
+    device_type = (
+        device_types.get_new_or_existing_device_type_by_name(device_type_name)
+    )
     device_type_schema = schemas.DeviceType(name=device_type_name, id=device_type.id)
     device_data = schemas.DeviceBase(
         mqtt_id=mqtt_id,
@@ -73,7 +80,27 @@ def _(
     return update_device(db_session.get(), device_data)
 
 
-def get_device_by_mqtt_id(mqtt_id: int):
+def get_device_by_device_id(device_id: int) -> models.Device:
+    return db_session.get().query(models.Device).filter(
+        models.Device.id == device_id
+    ).one()
+
+
+def get_device_by_mqtt_id(mqtt_id: int) -> models.Device:
     return db_session.get().query(models.Device).filter(
         models.Device.mqtt_id == mqtt_id
-    ).first()
+    ).one()
+
+
+def get_all_devices_data(db: Session) -> list[models.Device]:
+    return db.query(models.Device).all()
+
+
+def delete_device(db: Session, device_id: int) -> None:
+    device = db.query(models.Device).filter(
+        models.Device.id == device_id
+    ).one()
+
+    db.delete(device)
+    db.flush()
+    db.commit()

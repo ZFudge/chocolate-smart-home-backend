@@ -28,7 +28,7 @@ def _(device_type_name: str) -> models.DeviceType:
     return create_device_type(db_session.get(), device_type_name)
 
 
-def get_device_type_by_name(device_type_name: schemas.DeviceTypeBase) -> models.DeviceType:
+def get_new_or_existing_device_type_by_name(device_type_name: schemas.DeviceTypeBase) -> models.DeviceType:
     db = db_session.get()
     device_type = db.query(models.DeviceType).filter(
         models.DeviceType.name == device_type_name

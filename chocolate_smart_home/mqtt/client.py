@@ -25,12 +25,11 @@ class MQTTClient:
         self._client.connect(self._host, self._port, 60)
         self._client.loop_start()
 
-
-        device_data_received = handlers.get_device_data_received_handler(
+        device_data_received_handler = handlers.get_device_data_received_handler(
             **dict([(k, getattr(crud, k)) for k in dir(crud)])
         )
         self._client.message_callback_add(topics.RECEIVE_DEVICE_DATA,
-                                          device_data_received)
+                                          device_data_received_handler)
         self._client.subscribe(topics.RECEIVE_DEVICE_DATA)
 
     def disconnect(self):
