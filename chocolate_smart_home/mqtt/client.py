@@ -1,7 +1,8 @@
 import paho.mqtt.client as mqtt
 
-from chocolate_smart_home.mqtt import handlers, topics
+from chocolate_smart_home.mqtt.handler import MQTTMessageHandler
 import chocolate_smart_home.crud as crud
+import chocolate_smart_home.mqtt.topics as topics
 
 
 DEFAULT_MQTT_PORT = 1883
@@ -23,11 +24,11 @@ class MQTTClient:
         self._client.connect(self._host, self._port, 60)
         self._client.loop_start()
 
-        device_data_received_handler = handlers.get_device_data_received_handler(
+        handler = MQTTMessageHandler(
             **dict([(k, getattr(crud, k)) for k in dir(crud)])
         )
         self._client.message_callback_add(topics.RECEIVE_DEVICE_DATA,
-                                          device_data_received_handler)
+                                          handler.device_data_received)
         self._client.subscribe(topics.RECEIVE_DEVICE_DATA)
 
     def disconnect(self):

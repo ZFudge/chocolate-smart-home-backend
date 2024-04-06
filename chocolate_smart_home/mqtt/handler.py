@@ -6,16 +6,26 @@ from sqlalchemy.exc import NoResultFound
 from chocolate_smart_home.models import Device, DeviceType
 
 
-def get_device_data_received_handler(
-    get_new_or_existing_device_type_by_name: Callable,
-    get_device_by_mqtt_id: Callable,
-    create_device: Callable,
-    update_device: Callable,
-    **kwargs
-) -> Callable:
-    def device_data_received(client: Client,
-                             userdata: None,
-                             message: MQTTMessage) -> Device:
+class MQTTMessageHandler:
+    def __init__(
+        self,
+        get_new_or_existing_device_type_by_name: Callable,
+        get_device_by_mqtt_id: Callable,
+        create_device: Callable,
+        update_device: Callable,
+        **kwargs
+    ):
+        self.get_new_or_existing_device_type_by_name = get_new_or_existing_device_type_by_name
+        self.get_device_by_mqtt_id = get_device_by_mqtt_id
+        self.create_device = create_device
+        self.update_device = update_device
+
+    def device_data_received(
+        self,
+        client: Client,
+        userdata: None,
+        message: MQTTMessage,
+    ) -> Device:
         payload: str = message.payload.decode()
         print(payload)
         if payload is None:
@@ -24,12 +34,12 @@ def get_device_data_received_handler(
         (mqtt_id, device_type_name, remote_name) = payload_seq[:3]
         name: str = remote_name.split(" - ")[0]
 
-        device_type: DeviceType = get_new_or_existing_device_type_by_name(device_type_name)
+        device_type: DeviceType = self.get_new_or_existing_device_type_by_name(device_type_name)
 
         try:
-            _: Device = get_device_by_mqtt_id(mqtt_id)
+            _: Device = self.get_device_by_mqtt_id(mqtt_id)
         except NoResultFound:
-            new_device: Device = create_device(
+            new_device: Device = self.create_device(
                 mqtt_id,
                 device_type_name=device_type.name,
                 remote_name=remote_name,
@@ -37,7 +47,7 @@ def get_device_data_received_handler(
             )
             return new_device
 
-        updated_device: Device = update_device(
+        updated_device: Device = self.update_device(
             mqtt_id,
             device_type_name=device_type.name,
             remote_name=remote_name,
@@ -45,5 +55,3 @@ def get_device_data_received_handler(
             online=True,
         )
         return updated_device
-
-    return device_data_received

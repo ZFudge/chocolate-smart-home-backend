@@ -3,8 +3,8 @@ from unittest.mock import Mock
 from paho.mqtt.client import MQTTMessage
 import pytest
 
+from chocolate_smart_home.mqtt.handler import MQTTMessageHandler
 import chocolate_smart_home.crud as crud
-import chocolate_smart_home.mqtt.handlers as handlers
 
 
 @pytest.fixture
@@ -12,10 +12,15 @@ def crud_kwargs():
     yield dict([(k, getattr(crud, k)) for k in dir(crud)])
 
 
-def test_device_data_received_results(test_database, crud_kwargs):
+@pytest.fixture
+def handler(crud_kwargs):
+    yield MQTTMessageHandler(**crud_kwargs)
+
+
+def test_device_data_received_results(test_database, handler):
     message = MQTTMessage(b'test_topic')
     message.payload = b"1,DEVICE_TYPE,Remote Name - unique identifier"
-    device = handlers.get_device_data_received_handler(**crud_kwargs)(0, None, message)
+    device = handler.device_data_received(0, None, message)
 
     assert device.mqtt_id == 1
     assert device.device_type.name == "DEVICE_TYPE"
@@ -34,15 +39,13 @@ def test_method_calls(test_database, crud_kwargs):
     crud_kwargs['create_device'] = create_device
     crud_kwargs['update_device'] = update_device
 
-    device_data_received = handlers.get_device_data_received_handler(
-        **crud_kwargs
-    )
+    handler = MQTTMessageHandler(**crud_kwargs)
 
     message = MQTTMessage(b'test_topic')
     message.payload = b"1,DEVICE_TYPE,Remote Name - unique identifier"
 
     # First handle
-    device_data_received(0, None, message)
+    handler.device_data_received(0, None, message)
 
     get_new_or_existing_device_type_by_name.assert_called_once_with("DEVICE_TYPE")
     get_device_by_mqtt_id.assert_called_once_with("1")
@@ -55,7 +58,7 @@ def test_method_calls(test_database, crud_kwargs):
     update_device.assert_not_called()
 
     # Second handle
-    device_data_received(0, None, message)
+    handler.device_data_received(0, None, message)
 
     assert get_new_or_existing_device_type_by_name.call_count == 2
     assert get_device_by_mqtt_id.call_count == 2
@@ -69,7 +72,7 @@ def test_method_calls(test_database, crud_kwargs):
     )
 
     # Third handle
-    device_data_received(0, None, message)
+    handler.device_data_received(0, None, message)
 
     assert get_new_or_existing_device_type_by_name.call_count == 3
     assert get_device_by_mqtt_id.call_count == 3
