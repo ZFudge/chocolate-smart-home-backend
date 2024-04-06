@@ -1,6 +1,7 @@
 from typing import Tuple
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
@@ -16,15 +17,21 @@ router = APIRouter()
 @router.post("/create_device_type/", response_model=schemas.DeviceType)
 def create_device_type(device_type: schemas.DeviceTypeBase,
                        db: Session = Depends(dependencies.get_db)):
-    return crud.create_device_type(db, device_type.name)
+    try:
+        return crud.create_device_type(db, device_type.name)
+    except IntegrityError as e:
+        raise HTTPException(status_code=500, detail=e.orig.diag.message_detail)
 
 
 @router.post("/create_device/", response_model=schemas.Device)
 def create_device(device: schemas.DeviceReceived,
                   db: Session = Depends(dependencies.get_db)):
-    new_device = crud.create_device(db, device)
+    try:
+        new_device = crud.create_device(db, device)
 
-    return schema_utils.device_to_schema(new_device)
+        return schema_utils.device_to_schema(new_device)
+    except IntegrityError as e:
+        raise HTTPException(status_code=500, detail=e.orig.diag.message_detail)
 
 
 @router.get("/get_device_data/{device_id}", response_model=schemas.Device)
@@ -34,7 +41,8 @@ def get_device_data(device_id: int, db: Session = Depends(dependencies.get_db)):
 
         return schema_utils.device_to_schema(device)
     except NoResultFound as e:
-        raise HTTPException(status_code=404, detail=f"No device found with an id of {device_id}")
+        detail = f"No device with an id of {device_id} found."
+        raise HTTPException(status_code=404, detail=detail)
 
 
 @router.get("/get_devices_data/", response_model=Tuple[schemas.Device, ...])
@@ -47,4 +55,6 @@ def delete_device(device_id: int, db: Session = Depends(dependencies.get_db)):
     try:
         crud.delete_device(db, device_id)
     except NoResultFound as e:
-        raise HTTPException(status_code=500, detail=f"No device found with an id of {device_id}")
+        detail = ("Device deletion failed. No device "
+                 f"with an id of {device_id} found.")
+        raise HTTPException(status_code=500, detail=detail)

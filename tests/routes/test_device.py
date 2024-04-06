@@ -10,7 +10,7 @@ client = TestClient(app)
 
 
 def test_create_device(test_database):
-    response = client.post(
+    resp = client.post(
         "/create_device/",
         json={
             "mqtt_id": 0,
@@ -20,13 +20,37 @@ def test_create_device(test_database):
         },
     )
 
-    assert response.status_code == 200
+    assert resp.status_code == 200
 
-    data = response.json()
+    data = resp.json()
     assert data["mqtt_id"] == 0
     assert data["device_type"]["name"] == "test_device_type_name"
     assert data["remote_name"] == "Test Device - 123"
     assert data["name"] == ""
+
+
+def test_create_device_used_mqtt_id_fails(test_database):
+    resp = client.post(
+        "/create_device/",
+        json={
+            "mqtt_id": 0,
+            "device_type_name": "test_device_type_name_1",
+            "remote_name": "Test Device - 1",
+            "name": "This Name",
+        }
+    )
+    resp = client.post(
+        "/create_device/",
+        json={
+            "mqtt_id": 0,
+            "device_type_name": "test_device_type_name_2",
+            "remote_name": "Test Device - 2",
+            "name": "Other Name",
+        }
+    )
+
+    assert resp.status_code == 500
+    assert resp.json() == { "detail": "Key (mqtt_id)=(0) already exists." }
 
 
 def test_create_device_methods_not_allowed(test_database):
@@ -38,18 +62,18 @@ def test_create_device_methods_not_allowed(test_database):
 
 
 def test_get_devices_data_empty(test_database):
-    response = client.get("/get_devices_data/")
+    resp = client.get("/get_devices_data/")
 
-    data = response.json()
+    data = resp.json()
     assert data == []
 
 
 def test_get_devices_data(test_data):
-    response = client.get("/get_devices_data/")
+    resp = client.get("/get_devices_data/")
 
-    assert response.status_code == 200
+    assert resp.status_code == 200
 
-    expected_response_json = [
+    expected_resp_json = [
         {
             'mqtt_id': 111,
             'device_type': {
@@ -73,15 +97,15 @@ def test_get_devices_data(test_data):
         }
     ]
 
-    assert response.json() == expected_response_json
+    assert resp.json() == expected_resp_json
 
 
 def test_get_device_data(test_data):
-    response = client.get("/get_device_data/{device_id}".format(device_id=1))
+    resp = client.get("/get_device_data/{device_id}".format(device_id=1))
 
-    assert response.status_code == 200
+    assert resp.status_code == 200
 
-    expected_response_json = {
+    expected_resp_json = {
         'mqtt_id': 111,
         'device_type': {
             'name': 'TEST_DEVICE_TYPE_NAME_1',
@@ -93,24 +117,34 @@ def test_get_device_data(test_data):
         'id': 1
     }
 
-    assert response.json() == expected_response_json
+    assert resp.json() == expected_resp_json
 
 
 def test_delete_device_request(test_data):
     device_id = 1
-    response = client.delete(f"/delete_device/{device_id}")
 
-    assert response.status_code == 204
+    resp = client.delete(f"/delete_device/{device_id}")
+    assert resp.status_code == 204
 
-    response = client.get(f"/get_device_data/{device_id}")
+    resp = client.get(f"/get_device_data/{device_id}")
+    assert resp.status_code == 404
+    assert resp.json() == {"detail": f"No device with an id of {device_id} found."}
 
-    assert response.status_code == 404
-    assert response.json() == {"detail": f"No device found with an id of {device_id}"}
+
+def test_delete_device_duplicate_deletion_fails(test_data):
+    device_id = 1
+
+    resp = client.delete(f"/delete_device/{device_id}")
+    resp = client.delete(f"/delete_device/{device_id}")
+
+    assert resp.status_code == 500
+    assert resp.json() == {"detail": f"Device deletion failed. No device with an id of {device_id} found."}
 
 
 def test_delete_device_fails_on_invalid_device_id(test_data):
     device_id = 777
-    response = client.delete(f"/delete_device/{device_id}")
 
-    assert response.status_code == 500
-    assert response.json() == {"detail": f"No device found with an id of {device_id}"}
+    resp = client.delete(f"/delete_device/{device_id}")
+
+    assert resp.status_code == 500
+    assert resp.json() == {"detail": f"Device deletion failed. No device with an id of {device_id} found."}

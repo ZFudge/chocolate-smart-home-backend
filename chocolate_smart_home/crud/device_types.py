@@ -15,7 +15,7 @@ def create_device_type(db: Session,
 
     try:
         db.commit()
-    except:
+    except Exception:
         db.rollback()
         raise
 

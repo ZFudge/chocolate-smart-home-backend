@@ -1,6 +1,5 @@
 from functools import singledispatch
 
-from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
 from chocolate_smart_home import models
