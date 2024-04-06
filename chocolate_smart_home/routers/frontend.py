@@ -40,7 +40,7 @@ def get_device_data(device_id: int, db: Session = Depends(dependencies.get_db)):
         device = crud.get_device_by_device_id(device_id)
 
         return schema_utils.device_to_schema(device)
-    except NoResultFound as e:
+    except NoResultFound:
         detail = f"No device with an id of {device_id} found."
         raise HTTPException(status_code=404, detail=detail)
 
@@ -54,7 +54,7 @@ def get_devices_data(db: Session = Depends(dependencies.get_db)):
 def delete_device(device_id: int, db: Session = Depends(dependencies.get_db)):
     try:
         crud.delete_device(db, device_id)
-    except NoResultFound as e:
+    except NoResultFound:
         detail = ("Device deletion failed. No device "
                  f"with an id of {device_id} found.")
         raise HTTPException(status_code=500, detail=detail)

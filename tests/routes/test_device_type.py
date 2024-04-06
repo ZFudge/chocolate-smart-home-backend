@@ -1,9 +1,6 @@
-from fastapi import FastAPI
 from fastapi.testclient import TestClient
-import pytest
 
 from chocolate_smart_home.main import app
-import chocolate_smart_home.schemas as schemas
 
 
 client = TestClient(app)
@@ -18,7 +15,6 @@ def test_create_device_type(test_database):
     assert resp.status_code == 200
 
     data = resp.json()
-    device_type = schemas.DeviceType(**data)
     assert data["name"] == "test_device_type_name"
 
 

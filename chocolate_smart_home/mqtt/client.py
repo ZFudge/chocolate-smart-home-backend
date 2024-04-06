@@ -1,7 +1,5 @@
-from sqlalchemy.orm import Session
 import paho.mqtt.client as mqtt
 
-from chocolate_smart_home import schemas
 from chocolate_smart_home.mqtt import handlers, topics
 import chocolate_smart_home.crud as crud
 

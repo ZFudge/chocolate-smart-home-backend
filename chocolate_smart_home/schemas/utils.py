@@ -1,6 +1,6 @@
 from chocolate_smart_home import models
-from chocolate_smart_home.schemas.device import *
-from chocolate_smart_home.schemas.device_type import *
+from chocolate_smart_home.schemas.device import Device
+from chocolate_smart_home.schemas.device_type import DeviceType
 
 
 def device_type_to_schema(device_type_data: models.Device) -> DeviceType:

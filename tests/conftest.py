@@ -1,5 +1,4 @@
 from contextvars import ContextVar
-import os
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker

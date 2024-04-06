@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 
-from chocolate_smart_home.schemas.device_type import *
-from chocolate_smart_home.schemas.space import *
+from chocolate_smart_home.schemas.device_type import DeviceType
 
 
 class DeviceId(BaseModel):
@@ -31,16 +30,9 @@ class DeviceReceived(BaseModel):
     name: str | None = ""
 
 
-class DeviceCreate(DeviceReceived):
-    device_type: DeviceType
-    space: Space | None = None
-    online: bool | None = False
-
-
 __all__ = [
     "DeviceBase",
     "Device",
     "DeviceReceived",
-    "DeviceCreate",
     "DeviceUpdate",
 ]

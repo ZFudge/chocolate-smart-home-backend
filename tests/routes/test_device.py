@@ -1,9 +1,6 @@
-from fastapi import FastAPI
 from fastapi.testclient import TestClient
-import pytest
 
 from chocolate_smart_home.main import app
-import chocolate_smart_home.schemas as schemas
 
 
 client = TestClient(app)
