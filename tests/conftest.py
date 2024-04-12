@@ -72,4 +72,3 @@ def test_data(test_database):
     test_database.add(device_2)
 
     test_database.commit()
-

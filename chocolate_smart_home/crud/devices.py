@@ -62,8 +62,7 @@ def _(
     mqtt_id: str,
     device_type_name: str,
     remote_name: str,
-    name: str,
-    online: bool,
+    name: str
 ) -> models.Device:
     device_type = (
         device_types.get_new_or_existing_device_type_by_name(device_type_name)
@@ -73,8 +72,7 @@ def _(
         mqtt_id=mqtt_id,
         device_type=device_type_schema,
         remote_name=remote_name,
-        name=name,
-        online=online
+        name=name
     )
     return update_device(db_session.get(), device_data)
 

@@ -51,7 +51,6 @@ class MQTTMessageHandler:
             mqtt_id,
             device_type_name=device_type.name,
             remote_name=remote_name,
-            name=name,
-            online=True,
+            name=name
         )
         return updated_device

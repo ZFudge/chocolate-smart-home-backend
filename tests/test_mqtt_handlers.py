@@ -67,8 +67,7 @@ def test_method_calls(test_database, crud_kwargs):
         "1",
         device_type_name="DEVICE_TYPE",
         remote_name="Remote Name - unique identifier",
-        name="Remote Name",
-        online=True,
+        name="Remote Name"
     )
 
     # Third handle
@@ -78,4 +77,3 @@ def test_method_calls(test_database, crud_kwargs):
     assert get_device_by_mqtt_id.call_count == 3
     create_device.assert_called_once()
     assert update_device.call_count == 2
-1
