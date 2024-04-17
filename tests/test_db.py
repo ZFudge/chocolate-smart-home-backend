@@ -57,6 +57,7 @@ def test_create_device_fail_on_duplicate_mqtt_id(test_database):
 def test_get_device_by_device_id(test_data):
     device = crud.get_device_by_device_id(2)
 
+    assert isinstance(device, models.Device)
     assert device.id == 2
     assert device.mqtt_id == 222
     assert device.device_type.name == "TEST_DEVICE_TYPE_NAME_2"
@@ -73,6 +74,7 @@ def test_get_device_by_device_id_fails_on_device_id_does_not_exist(test_database
 def test_get_device_by_mqtt_id(test_data):
     device = crud.get_device_by_mqtt_id(222)
 
+    assert isinstance(device, models.Device)
     assert device.id == 2
     assert device.mqtt_id == 222
     assert device.device_type.name == "TEST_DEVICE_TYPE_NAME_2"
@@ -89,12 +91,13 @@ def test_get_device_by_mqtt_id_fails_on_mqtt_id_does_not_exist(test_database):
 def test_update_device(test_data):
     device = crud.get_device_by_device_id(2)
 
+    assert isinstance(device, models.Device)
     assert device.id == 2
     assert device.mqtt_id == 222
     assert device.device_type.name == "TEST_DEVICE_TYPE_NAME_2"
     assert device.remote_name == "Remote Name 2"
     assert device.name == "Name 2"
-    assert device.online == False
+    assert device.online is False
 
     device_updated = crud.update_device(
         "222",
@@ -103,6 +106,7 @@ def test_update_device(test_data):
         "New Name"
     )
 
+    assert isinstance(device_updated, models.Device)
     assert device_updated.id == 2
     assert device_updated.mqtt_id == 222
     assert device_updated.device_type.name == "TEST_DEVICE_TYPE_NAME_NEW"
