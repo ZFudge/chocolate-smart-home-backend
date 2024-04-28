@@ -19,8 +19,9 @@ class Device(DeviceId, DeviceBase):
     pass
 
 
-class DeviceUpdate(DeviceId):
-    data: dict
+class DeviceUpdate(BaseModel):
+    mqtt_id: int
+    device_type_name: str
 
 
 class DeviceReceived(BaseModel):
