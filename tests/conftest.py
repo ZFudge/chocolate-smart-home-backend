@@ -6,17 +6,9 @@ import pytest
 
 from chocolate_smart_home import models
 from chocolate_smart_home.database import Base, get_sqlalchemy_database_url
-from chocolate_smart_home.dependencies import db_session, get_db
+from chocolate_smart_home.dependencies import db_session, get_db, engine
 from chocolate_smart_home.main import app
 
-
-SQLALCHEMY_DATABASE_URL = get_sqlalchemy_database_url(
-    pg_user="testuser",
-    pg_pw="testpw",
-    pg_port=15432,
-    pg_database="testdb",
-)
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
 def db_closure():
 

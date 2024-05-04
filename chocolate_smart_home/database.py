@@ -4,28 +4,15 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 
-def get_sqlalchemy_database_url(
-	db_url=None,
-	pg_user=None,
-	pg_pw=None,
-	pg_host=None,
-	pg_port=None,
-	pg_database=None,
-):
-	if db_url is None:
-		db_url = os.environ.get("DB_URL")
-	if pg_user is None:
-		pg_user = os.environ.get("PG_USER")
-	if pg_pw is None:
-		pg_pw = os.environ.get("PG_PW")
-	if pg_host is None:
-		pg_host = os.environ.get("DB_HOST", "127.0.0.1")
-	if pg_port is None:
-		pg_port = os.environ.get("DB_PORT", 5432)
-	if pg_database is None:
-		pg_database = "CHOCOLATE_SMART_HOME"
+def get_sqlalchemy_database_url():
+	db_url = os.environ.get("DB_URL")
+	user = os.environ.get("DB_USER")
+	pw = os.environ.get("DB_PW")
+	host = os.environ.get("DB_HOST", "127.0.0.1")
+	port = os.environ.get("DB_PORT", 5432)
+	db_name = os.environ.get("DB_NAME", "CHOCOLATE_SMART_HOME")
 
-	return f"{db_url}{pg_user}:{pg_pw}@{pg_host}:{pg_port}/{pg_database}"
+	return f"{db_url}{user}:{pw}@{host}:{port}/{db_name}"
 
 
 SQLALCHEMY_DATABASE_URL = get_sqlalchemy_database_url()
