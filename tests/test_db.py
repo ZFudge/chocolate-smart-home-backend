@@ -67,7 +67,7 @@ def test_get_device_by_device_id(test_data):
 
 
 def test_get_device_by_device_id_fails_on_device_id_does_not_exist(test_database):
-    with pytest.raises(NoResultFound) as e:
+    with pytest.raises(NoResultFound):
         crud.get_device_by_device_id(1)
 
 
@@ -84,7 +84,7 @@ def test_get_device_by_mqtt_id(test_data):
 
 
 def test_get_device_by_mqtt_id_fails_on_mqtt_id_does_not_exist(test_database):
-    with pytest.raises(NoResultFound) as e:
+    with pytest.raises(NoResultFound):
         crud.get_device_by_mqtt_id(111)
 
 
@@ -116,7 +116,7 @@ def test_update_device(test_data):
 
 
 def test_update_device_fails_on_device_id_does_not_exist(test_database):
-    with pytest.raises(NoResultFound) as e:
+    with pytest.raises(NoResultFound):
         crud.get_device_by_device_id(1)
 
 
@@ -157,5 +157,5 @@ def test_delete_device(test_database, test_data):
 
 
 def test_delete_device_fails_on_device_does_not_exists(test_database):
-    with pytest.raises(NoResultFound) as e:
+    with pytest.raises(NoResultFound):
         crud.delete_device(test_database, 1)
