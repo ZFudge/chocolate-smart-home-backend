@@ -1,5 +1,3 @@
-import os
-
 from fastapi import FastAPI
 
 from chocolate_smart_home.mqtt import mqtt_client_ctx

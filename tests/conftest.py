@@ -1,11 +1,10 @@
 from contextvars import ContextVar
 
-from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 import pytest
 
 from chocolate_smart_home import models
-from chocolate_smart_home.database import Base, get_sqlalchemy_database_url
+from chocolate_smart_home.database import Base
 from chocolate_smart_home.dependencies import db_session, get_db, engine
 from chocolate_smart_home.main import app
 

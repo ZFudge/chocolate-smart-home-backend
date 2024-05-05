@@ -1,15 +1,19 @@
+import logging
+
 from functools import singledispatch
 
 from sqlalchemy.orm import Session
 
 from chocolate_smart_home import models
 from chocolate_smart_home.dependencies import db_session
+from chocolate_smart_home.loggers import root_logger as logger
 import chocolate_smart_home.schemas as schemas
 
 
 @singledispatch
 def create_device_type(db: Session,
                        device_type_name: str) -> models.DeviceType:
+    logger.log(msg="Creating device_type %s." % device_type_name, level=logging.INFO)
     db_device_type = models.DeviceType(name=device_type_name)
     db.add(db_device_type)
 
