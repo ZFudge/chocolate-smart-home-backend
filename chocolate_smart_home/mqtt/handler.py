@@ -1,8 +1,11 @@
+import logging
+
 from typing import Callable
 
 from paho.mqtt.client import Client, MQTTMessage
 from sqlalchemy.exc import NoResultFound
 
+from chocolate_smart_home.loggers import mqtt_logger as logger
 from chocolate_smart_home.models import Device, DeviceType
 
 
@@ -27,7 +30,7 @@ class MQTTMessageHandler:
         message: MQTTMessage,
     ) -> Device:
         payload: str = message.payload.decode()
-        print(payload)
+        logger.log(msg='Message received: "%s"' % payload, level=logging.INFO)
         if payload is None:
             return
         payload_seq: list[str] = payload.split(",")

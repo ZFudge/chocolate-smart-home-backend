@@ -1,5 +1,8 @@
+import logging
+
 import paho.mqtt.client as mqtt
 
+from chocolate_smart_home.loggers import mqtt_logger as logger
 from chocolate_smart_home.mqtt.handler import MQTTMessageHandler
 import chocolate_smart_home.crud as crud
 import chocolate_smart_home.mqtt.topics as topics
@@ -43,9 +46,9 @@ class MQTTClient:
         self._client.disconnect()
 
     def publish(self, topic, message="0", callback=lambda x: None):
-        print(
-            'Publishing message: "%s" through topic: "%s"...' % (message, topic)
-        )
+        msg = 'Publishing message: "%s" through topic: "%s"...' % (message, topic),
+        logger.log(msg=msg, level=logging.INFO)
+
         (rc_update, message_id_update) = self._client.publish(
             topic,
             message
@@ -56,8 +59,8 @@ class MQTTClient:
                 rc_update,
                 message_id_update,
             )
-            print(err)
+            logger.log(msg=err, level=logging.WARNING)
             callback(err)
             return False
-        print("Success")
+        logger.log(msg="Success", level=logging.INFO)
         return True
