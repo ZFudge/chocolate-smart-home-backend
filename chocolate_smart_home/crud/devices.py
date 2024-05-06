@@ -6,14 +6,15 @@ from sqlalchemy.orm import Session
 
 from chocolate_smart_home import models
 from chocolate_smart_home.dependencies import db_session
-from chocolate_smart_home.loggers import root_logger as logger
 import chocolate_smart_home.crud.device_types as device_types
 import chocolate_smart_home.schemas as schemas
 
 
+logger = logging.getLogger()
+
 @singledispatch
 def create_device(db: Session, device_data: schemas.DeviceReceived) -> models.Device:
-    logger.log(msg="Creating device %s." % device_data, level=logging.INFO)
+    logger.info('Creating device "%s"' % device_data)
     db_device = models.Device(
         mqtt_id=device_data.mqtt_id,
         device_type=device_types.get_new_or_existing_device_type_by_name(
@@ -48,7 +49,7 @@ def _(mqtt_id: str, device_type_name: str, remote_name: str, name: str) -> model
 
 @singledispatch
 def update_device(db: Session, device_data: schemas.DeviceBase) -> models.Device:
-    logger.log(msg="Updating device %s." % device_data, level=logging.INFO)
+    logger.info('Updating device "%s"' % device_data)
     db_device = get_device_by_mqtt_id(device_data.mqtt_id)
     db_device.device_type = (
         device_types.get_new_or_existing_device_type_by_name(device_data.device_type.name)
@@ -99,7 +100,7 @@ def get_all_devices_data(db: Session) -> list[models.Device]:
 
 
 def delete_device(db: Session, device_id: int) -> None:
-    logger.log(msg="Deleting device %s." % device_id, level=logging.INFO)
+    logger.info('Deleting device "%s"' % device_id)
     device = db.query(models.Device).filter(
         models.Device.id == device_id
     ).one()

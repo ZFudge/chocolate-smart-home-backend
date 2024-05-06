@@ -1,11 +1,19 @@
+import logging
 from contextvars import ContextVar
 
+import sqlalchemy.exc as exc
 from sqlalchemy.orm import Session
 
 from chocolate_smart_home import models
 from chocolate_smart_home.database import SessionLocal, engine
 
-models.Base.metadata.create_all(bind=engine)
+
+logger = logging.getLogger()
+
+try:
+    models.Base.metadata.create_all(bind=engine)
+except exc.SQLAlchemyError as e:
+    logger.error(e)
 
 
 def db_closure():
