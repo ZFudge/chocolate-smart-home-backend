@@ -13,10 +13,15 @@ help:
 shell:
 	@pipenv shell || true
 
-run: shell
+logs:
+	@python chocolate_smart_home/prep_logs.py
+
+run: shell logs
 	@pipenv run uvicorn \
 		chocolate_smart_home.main:app --reload \
-		--env-file .env
+		--env-file .env \
+		--log-level debug \
+		--log-config logs.ini
 
 cleanmqtt:
 	@echo "Removing any existing mqtt container..."
