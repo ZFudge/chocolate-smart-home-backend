@@ -1,0 +1,2 @@
+import chocolate_smart_home.plugins.device_plugins.on_off.device_manager
+import chocolate_smart_home.plugins.device_plugins.on_off.duplex_messenger
