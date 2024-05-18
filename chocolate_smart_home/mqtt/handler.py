@@ -4,7 +4,7 @@ from typing import Callable, Dict
 from paho.mqtt.client import Client, MQTTMessage
 from sqlalchemy.exc import NoResultFound
 
-import chocolate_smart_home.crud as crud
+from chocolate_smart_home.crud import get_device_by_mqtt_id
 from chocolate_smart_home.models import Device
 from chocolate_smart_home.plugins.discovered_plugins import get_device_plugin_by_device_type
 
@@ -26,17 +26,18 @@ class MQTTMessageHandler:
         mqtt_id, device_type_name = payload.split(",")[:2]
 
         plugin: Dict = get_device_plugin_by_device_type(device_type_name)
-        DuplexMessenger: Callable = plugin["DuplexMessenger"]
+
+        MessageHandler: Callable = plugin["DuplexMessenger"]
         DeviceManager: Callable = plugin["DeviceManager"]
 
         try:
-            new_device_data: Dict = DuplexMessenger().parse_msg(payload)
+            msg_data: Dict = MessageHandler().parse_msg(payload)
         except StopIteration:
             raise StopIteration(f"Not enough comma-separated values in message.payload. {payload=}.") from None
 
         try:
-            _: Device = crud.get_device_by_mqtt_id(mqtt_id)
+            _: Device = get_device_by_mqtt_id(mqtt_id)
         except NoResultFound:
-            return DeviceManager().create_device(new_device_data)
+            return DeviceManager().create_device(msg_data)
 
-        return DeviceManager().update_device(new_device_data)
+        return DeviceManager().update_device(msg_data)

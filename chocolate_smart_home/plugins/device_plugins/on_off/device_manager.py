@@ -2,7 +2,6 @@ import logging
 from typing import Dict
 
 import chocolate_smart_home.models as models
-# from chocolate_smart_home.crud.devices import get_device_by_mqtt_id
 from chocolate_smart_home.dependencies import db_session
 from chocolate_smart_home.plugins.base_device_manager import BaseDeviceManager
 from .model import OnOffDevice

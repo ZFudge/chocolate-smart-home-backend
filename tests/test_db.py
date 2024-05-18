@@ -129,7 +129,7 @@ def test_get_all_devices_data(test_database, test_data):
 
     assert len(devices) == 2
 
-    [device_1, device_2] = devices
+    device_1, device_2 = devices
 
     assert device_1.id == 1
     assert device_1.mqtt_id == 111

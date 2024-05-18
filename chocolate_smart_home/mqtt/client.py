@@ -3,7 +3,6 @@ from typing import Callable
 
 import paho.mqtt.client as mqtt
 
-# import chocolate_smart_home.crud as crud
 import chocolate_smart_home.mqtt.topics as topics
 from chocolate_smart_home.mqtt.handler import MQTTMessageHandler
 
