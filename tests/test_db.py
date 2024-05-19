@@ -147,15 +147,15 @@ def test_get_all_devices_data(test_database, test_data):
 
 
 def test_delete_device(test_database, test_data):
-    crud.delete_device(test_database, 1)
+    crud.delete_device(Model=models.Device, device_id=1)
 
     assert len(crud.get_all_devices_data(test_database)) == 1
 
-    crud.delete_device(test_database, 2)
+    crud.delete_device(Model=models.Device, device_id=2)
 
     assert len(crud.get_all_devices_data(test_database)) == 0
 
 
 def test_delete_device_fails_on_device_does_not_exists(test_database):
     with pytest.raises(NoResultFound):
-        crud.delete_device(test_database, 1)
+        crud.delete_device(Model=models.Device, device_id=1)

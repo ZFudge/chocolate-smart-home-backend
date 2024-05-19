@@ -7,7 +7,7 @@ client = TestClient(app)
 
 
 def test_update_device(test_database):
-    resp = client.patch(
+    resp = client.post(
         "/update_device/1",
         json={
             "mqtt_id": 1,

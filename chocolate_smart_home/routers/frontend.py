@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.orm import Session
 
-from chocolate_smart_home import dependencies
+from chocolate_smart_home import dependencies, models
 from chocolate_smart_home.mqtt import topics, mqtt_client_ctx
 import chocolate_smart_home.crud as crud
 import chocolate_smart_home.schemas as schemas
@@ -51,19 +51,18 @@ def get_devices_data(db: Session = Depends(dependencies.get_db)):
 
 
 @router.delete("/delete_device/{device_id}", response_model=None, status_code=204)
-def delete_device(device_id: int, db: Session = Depends(dependencies.get_db)):
+def delete_device(device_id: int):
     try:
-        crud.delete_device(db, device_id)
-    except NoResultFound:
-        detail = ("Device deletion failed. No device "
-                 f"with an id of {device_id} found.")
+        crud.delete_device(Model=models.Device, device_id=device_id)
+    except NoResultFound as e:
+        (detail,) = e.args
         raise HTTPException(status_code=500, detail=detail)
 
 
-@router.patch("/update_device/{device_id}", response_model=None, status_code=204)
+@router.post("/update_device/{device_id}", response_model=None, status_code=204)
 def update_device(device_id: int, device: schemas.DeviceUpdate):
     topic = topics.SEND_DEVICE_DATA_TEMPLATE.format(
         device_type=device.device_type_name,
         device_id=device_id
     )
-    mqtt_client_ctx.get().publish(topic, "1test")
+    mqtt_client_ctx.get().publish(topic=topic, message="1test")
