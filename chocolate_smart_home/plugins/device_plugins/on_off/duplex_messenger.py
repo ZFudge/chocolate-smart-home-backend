@@ -17,9 +17,9 @@ class OnOffDuplexMessenger(BaseDuplexMessenger):
 
         return device_data
 
-    def compose_msg(self, device) -> str:
+    def compose_msg(self, on: bool) -> str:
         """Compose message for publish."""
-        return "1" if device.on else "0"
+        return "1" if on else "0"
 
 
 # Alias OnOffDuplexMessenger for use in ..discovered_plugins.DISCOVERED_PLUGINS["on_off"] dict
