@@ -1,10 +1,10 @@
 import logging
+from typing import Callable
 
 import paho.mqtt.client as mqtt
 
-from chocolate_smart_home.mqtt.handler import MQTTMessageHandler
-import chocolate_smart_home.crud as crud
 import chocolate_smart_home.mqtt.topics as topics
+from chocolate_smart_home.mqtt.handler import MQTTMessageHandler
 
 
 logger = logging.getLogger("mqtt")
@@ -33,20 +33,16 @@ class MQTTClient:
             60
         )
         self._client.loop_start()
-
-        handler = MQTTMessageHandler(
-            **dict([(k, getattr(crud, k)) for k in dir(crud)])
-        )
         self._client.message_callback_add(
             topics.RECEIVE_DEVICE_DATA,
-            handler.device_data_received
+            MQTTMessageHandler().device_data_received
         )
         self._client.subscribe(topics.RECEIVE_DEVICE_DATA)
 
     def disconnect(self):
         self._client.disconnect()
 
-    def publish(self, topic, message="0", callback=lambda x: None):
+    def publish(self, topic: str, message: str="0", callback: Callable = lambda x: None) -> bool:
         logger.info('Publishing message: "%s" through topic: "%s"...' % (message, topic))
 
         (rc_update, message_id_update) = self._client.publish(

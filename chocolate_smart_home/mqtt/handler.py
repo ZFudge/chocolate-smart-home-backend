@@ -1,60 +1,43 @@
 import logging
-
-from typing import Callable
+from typing import Callable, Dict
 
 from paho.mqtt.client import Client, MQTTMessage
 from sqlalchemy.exc import NoResultFound
 
-from chocolate_smart_home.models import Device, DeviceType
+from chocolate_smart_home.crud import get_device_by_mqtt_id
+from chocolate_smart_home.models import Device
+from chocolate_smart_home.plugins.discovered_plugins import get_device_plugin_by_device_type
 
 
 logger = logging.getLogger("mqtt")
 
 class MQTTMessageHandler:
-    def __init__(
-        self,
-        get_new_or_existing_device_type_by_name: Callable,
-        get_device_by_mqtt_id: Callable,
-        create_device: Callable,
-        update_device: Callable,
-        **kwargs
-    ):
-        self.get_new_or_existing_device_type_by_name = get_new_or_existing_device_type_by_name
-        self.get_device_by_mqtt_id = get_device_by_mqtt_id
-        self.create_device = create_device
-        self.update_device = update_device
-
     def device_data_received(
         self,
-        client: Client,
-        userdata: None,
+        _client: Client,
+        _userdata: None,
         message: MQTTMessage,
-    ) -> Device:
+    ) -> Device | None:
         payload: str = message.payload.decode()
         logger.info('Message received: "%s"' % payload)
         if payload is None:
             return
-        payload_seq: list[str] = payload.split(",")
-        (mqtt_id, device_type_name, remote_name) = payload_seq[:3]
-        name: str = remote_name.split(" - ")[0]
 
-        device_type: DeviceType = self.get_new_or_existing_device_type_by_name(device_type_name)
+        mqtt_id, device_type_name = payload.split(",")[:2]
+
+        plugin: Dict = get_device_plugin_by_device_type(device_type_name)
+
+        MessageHandler: Callable = plugin["DuplexMessenger"]
+        DeviceManager: Callable = plugin["DeviceManager"]
 
         try:
-            _: Device = self.get_device_by_mqtt_id(mqtt_id)
-        except NoResultFound:
-            new_device: Device = self.create_device(
-                mqtt_id,
-                device_type_name=device_type.name,
-                remote_name=remote_name,
-                name=name
-            )
-            return new_device
+            msg_data: Dict = MessageHandler().parse_msg(payload)
+        except StopIteration:
+            raise StopIteration(f"Not enough comma-separated values in message.payload. {payload=}.") from None
 
-        updated_device: Device = self.update_device(
-            mqtt_id,
-            device_type_name=device_type.name,
-            remote_name=remote_name,
-            name=name
-        )
-        return updated_device
+        try:
+            _: Device = get_device_by_mqtt_id(mqtt_id)
+        except NoResultFound:
+            return DeviceManager().create_device(msg_data)
+
+        return DeviceManager().update_device(msg_data)
