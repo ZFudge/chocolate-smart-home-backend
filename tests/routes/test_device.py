@@ -71,26 +71,26 @@ def test_get_devices_data(test_data):
 
     expected_resp_json = [
         {
-            'mqtt_id': 111,
-            'device_type': {
-                'name': 'TEST_DEVICE_TYPE_NAME_1',
-                'id': 1
+            "mqtt_id": 111,
+            "device_type": {
+                "name": "TEST_DEVICE_TYPE_NAME_1",
+                "id": 1,
             },
-            'remote_name': 'Remote Name 1',
-            'name': 'Name 1',
-            'online': True,
-            'id': 1
+            "remote_name": "Remote Name 1",
+            "name": "Name 1",
+            "online": True,
+            "id": 1,
         }, {
-            'mqtt_id': 222,
-            'device_type': {
-                'name': 'TEST_DEVICE_TYPE_NAME_2',
-                'id': 2
+            "mqtt_id": 222,
+            "device_type": {
+                "name": "TEST_DEVICE_TYPE_NAME_2",
+                "id": 2,
             },
-            'remote_name': 'Remote Name 2',
-            'name': 'Name 2',
-            'online': False,
-            'id': 2
-        }
+            "remote_name": "Remote Name 2",
+            "name": "Name 2",
+            "online": False,
+            "id": 2,
+        },
     ]
 
     assert resp.json() == expected_resp_json
@@ -102,15 +102,15 @@ def test_get_device_data(test_data):
     assert resp.status_code == 200
 
     expected_resp_json = {
-        'mqtt_id': 111,
-        'device_type': {
-            'name': 'TEST_DEVICE_TYPE_NAME_1',
-            'id': 1
+        "mqtt_id": 111,
+        "device_type": {
+            "name": "TEST_DEVICE_TYPE_NAME_1",
+            "id": 1
         },
-        'remote_name': 'Remote Name 1',
-        'name': 'Name 1',
-        'online': True,
-        'id': 1
+        "remote_name": "Remote Name 1",
+        "name": "Name 1",
+        "online": True,
+        "id": 1,
     }
 
     assert resp.json() == expected_resp_json
