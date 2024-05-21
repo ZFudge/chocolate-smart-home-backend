@@ -23,8 +23,8 @@ def test_get_on_off_device(test_data):
             "name": "on_off",
             "id": 1,
         },
-        "remote_name": "Remote Name 1",
-        "name": "Name 1",
+        "remote_name": "Test On Device - 1",
+        "name": "Test On Device",
         "online": True,
     }
 
@@ -41,6 +41,24 @@ def test_delete_on_off_device(test_data):
     assert resp.status_code == 404
     assert resp.json() == {"detail": f"No OnOffDevice with an id of {device_id} found."}
 
+def test_delete_device_duplicate_deletion_fails(test_data):
+    device_id = 1
+
+    resp = client.delete(f"/on_off/{device_id}")
+    resp = client.delete(f"/on_off/{device_id}")
+
+    assert resp.status_code == 404
+    assert resp.json() == {"detail": f"No OnOffDevice with an id of {device_id} found."}
+
+
+def test_delete_device_fails_on_invalid_device_id(test_data):
+    device_id = 777
+
+    resp = client.delete(f"/on_off/{device_id}")
+
+    assert resp.status_code == 404
+    assert resp.json() == {"detail": f"No OnOffDevice with an id of {device_id} found."}
+
 
 def test_update_single_on_off_device(test_data):
     with patch("chocolate_smart_home.mqtt.client.MQTTClient.publish") as publish:
@@ -51,10 +69,8 @@ def test_update_single_on_off_device(test_data):
 
 
 def test_update_multiple_devices(test_data):
-    post_data = {
-        "ids": [1, 2],
-        "on": False,
-    }
+    post_data = dict(ids=[1, 2], on=False)
+
     with patch("chocolate_smart_home.mqtt.client.MQTTClient.publish") as publish:
         resp = client.post("/on_off", json=post_data)
         assert publish.call_args_list == [
