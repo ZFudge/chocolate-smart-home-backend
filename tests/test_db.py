@@ -1,6 +1,6 @@
+import pytest
 from psycopg2.errors import UniqueViolation
 from sqlalchemy.exc import IntegrityError, NoResultFound
-import pytest
 
 from chocolate_smart_home import crud, models
 
