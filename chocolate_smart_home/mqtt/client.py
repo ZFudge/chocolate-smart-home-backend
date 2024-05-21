@@ -42,7 +42,7 @@ class MQTTClient:
     def disconnect(self):
         self._client.disconnect()
 
-    def publish(self, topic: str, message: str="0", callback: Callable = lambda x: None) -> bool:
+    def publish(self, *, topic: str, message: str="0", callback: Callable = lambda x: None) -> bool:
         logger.info('Publishing message: "%s" through topic: "%s"...' % (message, topic))
 
         (rc_update, message_id_update) = self._client.publish(

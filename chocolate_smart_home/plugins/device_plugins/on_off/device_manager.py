@@ -39,6 +39,8 @@ class OnOffDeviceManager(BaseDeviceManager):
             OnOffDevice
         ).filter(OnOffDevice.device == base_device).one()
 
+        on_off_device.on = device_data["on"]
+
         db.add(base_device)
         db.add(on_off_device)
 

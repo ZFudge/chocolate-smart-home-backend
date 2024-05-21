@@ -57,7 +57,6 @@ def test_create_device_methods_not_allowed(test_database):
     assert 405 == client.patch(url, json={}).status_code
 
 
-
 def test_get_devices_data_empty(test_database):
     resp = client.get("/get_devices_data/")
 
@@ -72,26 +71,26 @@ def test_get_devices_data(test_data):
 
     expected_resp_json = [
         {
-            'mqtt_id': 111,
-            'device_type': {
-                'name': 'TEST_DEVICE_TYPE_NAME_1',
-                'id': 1
+            "mqtt_id": 111,
+            "device_type": {
+                "name": "TEST_DEVICE_TYPE_NAME_1",
+                "id": 1,
             },
-            'remote_name': 'Remote Name 1',
-            'name': 'Name 1',
-            'online': True,
-            'id': 1
+            "remote_name": "Remote Name 1",
+            "name": "Name 1",
+            "online": True,
+            "id": 1,
         }, {
-            'mqtt_id': 222,
-            'device_type': {
-                'name': 'TEST_DEVICE_TYPE_NAME_2',
-                'id': 2
+            "mqtt_id": 222,
+            "device_type": {
+                "name": "TEST_DEVICE_TYPE_NAME_2",
+                "id": 2,
             },
-            'remote_name': 'Remote Name 2',
-            'name': 'Name 2',
-            'online': False,
-            'id': 2
-        }
+            "remote_name": "Remote Name 2",
+            "name": "Name 2",
+            "online": False,
+            "id": 2,
+        },
     ]
 
     assert resp.json() == expected_resp_json
@@ -103,15 +102,15 @@ def test_get_device_data(test_data):
     assert resp.status_code == 200
 
     expected_resp_json = {
-        'mqtt_id': 111,
-        'device_type': {
-            'name': 'TEST_DEVICE_TYPE_NAME_1',
-            'id': 1
+        "mqtt_id": 111,
+        "device_type": {
+            "name": "TEST_DEVICE_TYPE_NAME_1",
+            "id": 1
         },
-        'remote_name': 'Remote Name 1',
-        'name': 'Name 1',
-        'online': True,
-        'id': 1
+        "remote_name": "Remote Name 1",
+        "name": "Name 1",
+        "online": True,
+        "id": 1,
     }
 
     assert resp.json() == expected_resp_json
@@ -135,7 +134,7 @@ def test_delete_device_duplicate_deletion_fails(test_data):
     resp = client.delete(f"/delete_device/{device_id}")
 
     assert resp.status_code == 500
-    assert resp.json() == {"detail": f"Device deletion failed. No device with an id of {device_id} found."}
+    assert resp.json() == {"detail": f"Device deletion failed. No Device with an id of {device_id} found."}
 
 
 def test_delete_device_fails_on_invalid_device_id(test_data):
@@ -144,4 +143,4 @@ def test_delete_device_fails_on_invalid_device_id(test_data):
     resp = client.delete(f"/delete_device/{device_id}")
 
     assert resp.status_code == 500
-    assert resp.json() == {"detail": f"Device deletion failed. No device with an id of {device_id} found."}
+    assert resp.json() == {"detail": f"Device deletion failed. No Device with an id of {device_id} found."}

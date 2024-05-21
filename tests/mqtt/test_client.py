@@ -33,7 +33,7 @@ def test_client_publish(mqtt_client):
 
     TEST_TOPIC = "TEST_TOPIC"
     TEST_MESSAGE = ""
-    mqtt_client.publish(TEST_TOPIC, TEST_MESSAGE)
+    mqtt_client.publish(topic=TEST_TOPIC, message=TEST_MESSAGE)
 
     mqtt_client._client.publish.assert_called_once_with(TEST_TOPIC, TEST_MESSAGE)
 
@@ -53,6 +53,6 @@ def test_client_publish_fail():
 
     mqtt_client.connect()
     callback = Mock()
-    mqtt_client.publish("TEST_TOPIC", "TEST_MESSAGE", callback=callback)
+    mqtt_client.publish(topic="TEST_TOPIC", message="TEST_MESSAGE", callback=callback)
 
     callback.assert_called_once()
