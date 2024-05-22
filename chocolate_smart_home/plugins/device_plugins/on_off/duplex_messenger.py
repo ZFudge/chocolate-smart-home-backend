@@ -1,26 +1,35 @@
+from types import MappingProxyType
 from typing import Dict
 
 from chocolate_smart_home.plugins.base_duplex_messenger import BaseDuplexMessenger
 
-ON_OFF_VALUE_LOOKUP = {
-    "0": False,
-    "1": True,
-}
 
 class OnOffDuplexMessenger(BaseDuplexMessenger):
-    def parse_msg(self, raw_msg: str) -> Dict:
-        """Parse message received from remote controller."""
-        device_data, msg_seq = super().parse_msg(raw_msg)
+    """Adapts data between app and MQTT."""
 
-        on_off_value: bool = next(msg_seq)
-        device_data['on'] = ON_OFF_VALUE_LOOKUP[on_off_value]
+    INCOMING_LOOKUP = MappingProxyType({
+        "0": False,
+        "1": True,
+    })
+
+    OUTGOING_LOOKUP = MappingProxyType({
+        False: "0",
+        True: "1",
+    })
+
+    def parse_msg(self, incoming_msg: str) -> Dict:
+        """Parse incoming message from controller."""
+        device_data, msg_seq = super().parse_msg(incoming_msg)
+
+        on_off_value: str = next(msg_seq)
+        device_data['on'] = OnOffDuplexMessenger.INCOMING_LOOKUP[on_off_value]
 
         return device_data
 
     def compose_msg(self, on: bool) -> str:
-        """Compose message for publish."""
-        return "1" if on else "0"
+        """Compose outgoing message to be published to controller."""
+        return OnOffDuplexMessenger.OUTGOING_LOOKUP[on]
 
 
-# Alias OnOffDuplexMessenger for use in ..discovered_plugins.DISCOVERED_PLUGINS["on_off"] dict
+# Alias messenger for use in ..discovered_plugins.DISCOVERED_PLUGINS["on_off"] dict.
 DuplexMessenger = OnOffDuplexMessenger
