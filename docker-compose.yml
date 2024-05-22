@@ -1,0 +1,34 @@
+version: '3'
+
+networks:
+  csm-network:
+    name: csm-network
+    driver: bridge
+
+volumes:
+  csm-postgres-vol:
+    name: csm-postgres-vol
+
+x-common-attrs: &common-attrs
+    env_file: .env
+    networks:
+      - csm-network
+
+services:
+  fastapi-server:
+    << : *common-attrs
+    build: .
+    image: chocolate-smart-home-backend
+    container_name: csm-fastapi-server
+    ports: 
+      - 8000:8000
+    volumes: 
+      - .:/chocolate-smart-home-backend
+  postgres-db:
+    << : *common-attrs
+    image: postgres:12.18-bullseye
+    container_name: csm-postgres-db
+    volumes:
+      - csm-postgres-vol:/var/lib/postgresql
+    ports:
+      - 5432:5432
