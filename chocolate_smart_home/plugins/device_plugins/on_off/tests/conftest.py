@@ -1,16 +1,16 @@
 import pytest
 
 from chocolate_smart_home import models
-from chocolate_smart_home.plugins.device_plugins.on_off.model import OnOffDevice
+from chocolate_smart_home.plugins.device_plugins.on_off.model import OnOff
 
 
 @pytest.fixture
 def test_database(test_database):
-    """Modifies test_database fixture from ../conftest to drop OnOffDevice
+    """Modifies test_database fixture from ../conftest to drop OnOff
        rows before dropping foreign Device/DeviceType rows."""
     yield test_database
 
-    test_database.query(OnOffDevice).delete()
+    test_database.query(OnOff).delete()
     test_database.commit()
 
 
@@ -33,8 +33,8 @@ def test_data(test_database):
         online=True,
     )
 
-    on_device__id_1 = OnOffDevice(on=True, device=device__id_1)
-    off_device__id_2 = OnOffDevice(on=False, device=device__id_2)
+    on_device__id_1 = OnOff(on=True, device=device__id_1)
+    off_device__id_2 = OnOff(on=False, device=device__id_2)
 
     test_database.add(on_off_device_type)
 

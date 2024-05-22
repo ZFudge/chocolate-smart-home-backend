@@ -6,20 +6,20 @@ from sqlalchemy.orm import Session
 from chocolate_smart_home import dependencies
 from chocolate_smart_home.mqtt import mqtt_client_ctx, topics
 from .duplex_messenger import OnOffDuplexMessenger
-from .model import OnOffDevice
+from .model import OnOff
 
 
 logger = logging.getLogger()
 ON_OFF_SEND_TOPIC_TEMPLATE = topics.SEND_DEVICE_DATA_TEMPLATE.format(device_type="on_off")
 
-def get_on_off_device_by_device_id(on_off_device_id: int) -> OnOffDevice:
-    logger.info("Retrieving OnOffDevice with id of \"%s\"" % on_off_device_id)
+def get_on_off_device_by_device_id(on_off_device_id: int) -> OnOff:
+    logger.info("Retrieving OnOff with id of \"%s\"" % on_off_device_id)
     db: Session = dependencies.db_session.get()
 
     try:
-        on_off_device = db.query(OnOffDevice).filter(OnOffDevice.id == on_off_device_id).one()
+        on_off_device = db.query(OnOff).filter(OnOff.id == on_off_device_id).one()
     except NoResultFound:
-        raise NoResultFound(f"No OnOffDevice with an id of {on_off_device_id} found.")
+        raise NoResultFound(f"No OnOff with an id of {on_off_device_id} found.")
 
     return on_off_device
 
@@ -32,13 +32,13 @@ def publish_update(*, on_off_device_id: int, on: bool):
 
 def delete_on_off_device(on_off_device_id: int):
     """Delete row from on_off_devices table, then delete its corresponding row from devices table."""
-    logger.info("Deleting OnOffDevice with id of \"%s\"" % on_off_device_id)
+    logger.info("Deleting OnOff with id of \"%s\"" % on_off_device_id)
     db: Session = dependencies.db_session.get()
 
     try:
-        on_off_device = db.query(OnOffDevice).filter(OnOffDevice.id == on_off_device_id).one()
+        on_off_device = db.query(OnOff).filter(OnOff.id == on_off_device_id).one()
     except NoResultFound:
-        raise NoResultFound(f"No OnOffDevice with an id of {on_off_device_id} found.")
+        raise NoResultFound(f"No OnOff with an id of {on_off_device_id} found.")
 
     device = on_off_device.device
 
