@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 
 from .crud import delete_on_off_device, get_on_off_device_by_device_id, publish_update
-from .model import OnOffDevice
+from .model import OnOff
 from .schemas import OnOffDeviceData, OnOffDevices
 from .utils import on_off_device_to_full_device_data_schema
 
@@ -15,7 +15,7 @@ plugin_router = APIRouter(prefix="/on_off")
 @plugin_router.get("/{on_off_device_id}")
 def get_device(on_off_device_id: int) -> OnOffDeviceData:
     try:
-        on_off_device: OnOffDevice = get_on_off_device_by_device_id(on_off_device_id)
+        on_off_device: OnOff = get_on_off_device_by_device_id(on_off_device_id)
     except SQLAlchemyError as e:
         (detail,) = e.args
         logger.error(detail)

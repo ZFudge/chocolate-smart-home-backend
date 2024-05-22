@@ -4,14 +4,13 @@ from contextvars import ContextVar
 import sqlalchemy.exc as exc
 from sqlalchemy.orm import Session
 
-from chocolate_smart_home import models
-from chocolate_smart_home.database import SessionLocal, engine
+from chocolate_smart_home.database import Base, SessionLocal, engine
 
 
 logger = logging.getLogger()
 
 try:
-    models.Base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
 except exc.SQLAlchemyError as e:
     logger.error(e)
 
