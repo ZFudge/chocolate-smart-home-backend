@@ -7,7 +7,7 @@ from chocolate_smart_home.plugins.device_plugins.on_off.model import OnOff
 @pytest.fixture
 def test_database(test_database):
     """Modifies test_database fixture from ../conftest to drop OnOff
-       rows before dropping foreign Device/DeviceType rows."""
+    rows before dropping foreign Device/DeviceType rows."""
     yield test_database
 
     test_database.query(OnOff).delete()

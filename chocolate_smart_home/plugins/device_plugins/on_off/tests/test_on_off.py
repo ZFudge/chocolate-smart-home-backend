@@ -6,8 +6,8 @@ from chocolate_smart_home.mqtt.handler import MQTTMessageHandler
 
 def test_turn_off_message(test_data):
     """Turn off, on, and off again, validating the returned device's .on
-       attribute value each time."""
-    message = MQTTMessage(b'test_topic')
+    attribute value each time."""
+    message = MQTTMessage(b"test_topic")
     message.payload = b"111,on_off,Remote Name - uid,0"
 
     on_off_device = MQTTMessageHandler().device_data_received(0, None, message)
@@ -31,8 +31,8 @@ def test_turn_off_message(test_data):
 
 def test_turn_on_message(test_data):
     """Turn on, off, and on again, validating the returned device's .on
-       attribute value each time."""
-    message = MQTTMessage(b'test_topic')
+    attribute value each time."""
+    message = MQTTMessage(b"test_topic")
     message.payload = b"222,on_off,Remote Name - uid,1"
 
     on_off_device = MQTTMessageHandler().device_data_received(0, None, message)
@@ -54,8 +54,8 @@ def test_turn_on_message(test_data):
 
 def test_message_handler_fails_on_missing_values(test_data):
     """Assert failure when message payload has too few comma-separated values
-       for the plugin message handler's .parse_msg method."""
-    message = MQTTMessage(b'test_topic')
+    for the plugin message handler's .parse_msg method."""
+    message = MQTTMessage(b"test_topic")
     message.payload = b"111,on_off,Remote Name40 - uid"
 
     with pytest.raises(StopIteration) as e:

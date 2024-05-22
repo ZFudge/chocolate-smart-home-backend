@@ -41,6 +41,7 @@ def test_delete_on_off_device(test_data):
     assert resp.status_code == 404
     assert resp.json() == {"detail": f"No OnOff with an id of {device_id} found."}
 
+
 def test_delete_device_duplicate_deletion_fails(test_data):
     device_id = 1
 

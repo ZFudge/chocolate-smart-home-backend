@@ -12,6 +12,7 @@ from .utils import on_off_device_to_full_device_data_schema
 logger = logging.getLogger()
 plugin_router = APIRouter(prefix="/on_off")
 
+
 @plugin_router.get("/{on_off_device_id}")
 def get_device(on_off_device_id: int) -> OnOffDeviceData:
     try:

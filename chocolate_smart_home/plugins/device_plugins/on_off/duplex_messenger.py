@@ -22,7 +22,7 @@ class OnOffDuplexMessenger(BaseDuplexMessenger):
         device_data, msg_seq = super().parse_msg(incoming_msg)
 
         on_off_value: str = next(msg_seq)
-        device_data['on'] = OnOffDuplexMessenger.INCOMING_LOOKUP[on_off_value]
+        device_data["on"] = OnOffDuplexMessenger.INCOMING_LOOKUP[on_off_value]
 
         return device_data
 
