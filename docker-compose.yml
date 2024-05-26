@@ -1,21 +1,21 @@
 version: '3'
 
 networks:
-  csm-network:
-    name: csm-network
-    driver: bridge
+  chocolate-smart-home-network:
+    name: chocolate-smart-home-network
+    external: true
 
 volumes:
-  csm-postgres-vol:
-    name: csm-postgres-vol
+  chocolate-smart-home-postgres-vol:
+    name: chocolate-smart-home-postgres-vol
 
 x-common-attrs: &common-attrs
     env_file: .env
     networks:
-      - csm-network
+      - chocolate-smart-home-network
 
 services:
-  fastapi-server:
+  csm-fastapi-server:
     << : *common-attrs
     build: .
     image: chocolate-smart-home-backend
@@ -25,16 +25,16 @@ services:
     volumes:
       - .:/chocolate-smart-home-backend
     depends_on:
-      postgres-db:
+      csm-postgres-db:
         condition: service_healthy
-  postgres-db:
+  csm-postgres-db:
     << : *common-attrs
     image: postgres:12.18-bullseye
     container_name: csm-postgres-db
-    volumes:
-      - csm-postgres-vol:/var/lib/postgresql
     ports:
       - 5432:5432
+    volumes:
+      - chocolate-smart-home-postgres-vol:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
