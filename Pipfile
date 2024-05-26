@@ -9,6 +9,8 @@ sqlalchemy = "*"
 paho-mqtt = "*"
 ruff = "*"
 pytest-env = "*"
+black = "*"
+psycopg2-binary = "*"
 
 [dev-packages]
 
