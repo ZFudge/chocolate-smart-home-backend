@@ -10,9 +10,9 @@ volumes:
     name: chocolate-smart-home-postgres-vol
 
 x-common-attrs: &common-attrs
-    env_file: .env
-    networks:
-      - chocolate-smart-home-network
+  env_file: .env
+  networks:
+    - chocolate-smart-home-network
 
 services:
   csm-fastapi-server:
@@ -20,6 +20,11 @@ services:
     build: .
     image: chocolate-smart-home-backend
     container_name: csm-fastapi-server
+    develop:
+      watch:
+        - action: sync
+          path: ./
+          target: /chocolate-smart-home-backend
     ports:
       - 8000:8000
     volumes:
@@ -32,7 +37,7 @@ services:
     image: postgres:12.18-bullseye
     container_name: csm-postgres-db
     ports:
-      - 5432:5432
+      - 15432:5432
     volumes:
       - chocolate-smart-home-postgres-vol:/var/lib/postgresql
     healthcheck:
