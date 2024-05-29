@@ -1,5 +1,3 @@
-version: '3'
-
 networks:
   chocolate-smart-home-network:
     name: chocolate-smart-home-network

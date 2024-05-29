@@ -44,6 +44,10 @@ class BaseDeviceManager:
         device_type: models.DeviceType = device_types.get_new_or_existing_device_type_by_name(device_type_name)
 
         device: models.Device = get_device_by_mqtt_id(device_data["mqtt_id"])
+
+        if device.remote_name != device_data["remote_name"]:
+            device.reboots += 1
+
         device.device_type = device_type
         device.remote_name = device_data["remote_name"]
         device.name = device_data.get("name", "")
