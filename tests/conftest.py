@@ -30,7 +30,7 @@ def db_closure():
 
 
 @pytest.fixture
-def test_database():
+def empty_test_db():
     override_get_db = db_closure()
     app.dependency_overrides[get_db] = override_get_db
 
@@ -51,15 +51,17 @@ def test_database():
 
 
 @pytest.fixture
-def test_data(test_database):
+def populated_test_db(empty_test_db):
     device_type_1 = models.DeviceType(name="TEST_DEVICE_TYPE_NAME_1")
     device_type_2 = models.DeviceType(name="TEST_DEVICE_TYPE_NAME_2")
-    test_database.add(device_type_1)
-    test_database.add(device_type_2)
+    empty_test_db.add(device_type_1)
+    empty_test_db.add(device_type_2)
 
     device_1 = models.Device(mqtt_id=111, device_type=device_type_1, remote_name="Remote Name 1", name="Name 1", online=True)
     device_2 = models.Device(mqtt_id=222, device_type=device_type_2, remote_name="Remote Name 2", name="Name 2", online=False)
-    test_database.add(device_1)
-    test_database.add(device_2)
+    empty_test_db.add(device_1)
+    empty_test_db.add(device_2)
 
-    test_database.commit()
+    empty_test_db.commit()
+
+    yield empty_test_db

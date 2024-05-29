@@ -5,14 +5,14 @@ from sqlalchemy.exc import IntegrityError, NoResultFound
 from chocolate_smart_home import crud, models
 
 
-def test_create_device_type(test_database):
+def test_create_device_type(empty_test_db):
     device_type = crud.create_device_type("Device Type Name")
 
     assert isinstance(device_type, models.DeviceType)
     assert device_type.name == "Device Type Name"
 
 
-def test_create_device_type_fail_on_duplicate(test_database):
+def test_create_device_type_fail_on_duplicate(empty_test_db):
     crud.create_device_type("Device Type Name")
     with pytest.raises(IntegrityError) as e:
         crud.create_device_type("Device Type Name")
@@ -20,7 +20,7 @@ def test_create_device_type_fail_on_duplicate(test_database):
     assert isinstance(e.value.orig, UniqueViolation)
 
 
-def test_create_device(test_database):
+def test_create_device(empty_test_db):
     device = crud.create_device(
         "123",
         "Device Type Name",
@@ -36,7 +36,7 @@ def test_create_device(test_database):
     assert device.online is True
 
 
-def test_create_device_fail_on_duplicate_mqtt_id(test_database):
+def test_create_device_fail_on_duplicate_mqtt_id(empty_test_db):
     crud.create_device(
         "123",
         "Device Type Name 1",
@@ -54,7 +54,7 @@ def test_create_device_fail_on_duplicate_mqtt_id(test_database):
     assert isinstance(e.value.orig, UniqueViolation)
 
 
-def test_get_device_by_device_id(test_data):
+def test_get_device_by_device_id(populated_test_db):
     device = crud.get_device_by_device_id(2)
 
     assert isinstance(device, models.Device)
@@ -66,12 +66,12 @@ def test_get_device_by_device_id(test_data):
     assert device.online is False
 
 
-def test_get_device_by_device_id_fails_on_device_id_does_not_exist(test_database):
+def test_get_device_by_device_id_fails_on_device_id_does_not_exist(empty_test_db):
     with pytest.raises(NoResultFound):
         crud.get_device_by_device_id(1)
 
 
-def test_get_device_by_mqtt_id(test_data):
+def test_get_device_by_mqtt_id(populated_test_db):
     device = crud.get_device_by_mqtt_id(222)
 
     assert isinstance(device, models.Device)
@@ -83,12 +83,12 @@ def test_get_device_by_mqtt_id(test_data):
     assert device.online is False
 
 
-def test_get_device_by_mqtt_id_fails_on_mqtt_id_does_not_exist(test_database):
+def test_get_device_by_mqtt_id_fails_on_mqtt_id_does_not_exist(empty_test_db):
     with pytest.raises(NoResultFound):
         crud.get_device_by_mqtt_id(111)
 
 
-def test_update_device(test_data):
+def test_update_device(populated_test_db):
     device = crud.get_device_by_device_id(2)
 
     assert isinstance(device, models.Device)
@@ -115,17 +115,17 @@ def test_update_device(test_data):
     assert device_updated.online is True
 
 
-def test_update_device_fails_on_device_id_does_not_exist(test_database):
+def test_update_device_fails_on_device_id_does_not_exist(empty_test_db):
     with pytest.raises(NoResultFound):
         crud.get_device_by_device_id(1)
 
 
-def test_get_all_devices_data_empty(test_database):
-    assert crud.get_all_devices_data(test_database) == []
+def test_get_all_devices_data_empty(empty_test_db):
+    assert crud.get_all_devices_data(empty_test_db) == []
 
 
-def test_get_all_devices_data(test_database, test_data):
-    devices = crud.get_all_devices_data(test_database)
+def test_get_all_devices_data(populated_test_db):
+    devices = crud.get_all_devices_data(populated_test_db)
 
     assert len(devices) == 2
 
@@ -146,16 +146,16 @@ def test_get_all_devices_data(test_database, test_data):
     assert device_2.online is False
 
 
-def test_delete_device(test_database, test_data):
+def test_delete_device(populated_test_db):
     crud.delete_device(Model=models.Device, device_id=1)
 
-    assert len(crud.get_all_devices_data(test_database)) == 1
+    assert len(crud.get_all_devices_data(populated_test_db)) == 1
 
     crud.delete_device(Model=models.Device, device_id=2)
 
-    assert len(crud.get_all_devices_data(test_database)) == 0
+    assert len(crud.get_all_devices_data(populated_test_db)) == 0
 
 
-def test_delete_device_fails_on_device_does_not_exists(test_database):
+def test_delete_device_fails_on_device_does_not_exists(empty_test_db):
     with pytest.raises(NoResultFound):
         crud.delete_device(Model=models.Device, device_id=1)

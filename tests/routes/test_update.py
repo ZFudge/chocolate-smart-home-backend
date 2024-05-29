@@ -6,7 +6,7 @@ from chocolate_smart_home.main import app
 client = TestClient(app)
 
 
-def test_update_device(test_database):
+def test_update_device(empty_test_db):
     resp = client.post(
         "/update_device/1",
         json={

@@ -6,7 +6,7 @@ from paho.mqtt.client import MQTTMessage
 import chocolate_smart_home.mqtt.handler as mqtt_handler
 
 
-def test_device_data_received_results(test_database):
+def test_device_data_received_results(empty_test_db):
     handler = mqtt_handler.MQTTMessageHandler()
     msg = MQTTMessage(b"test_topic")
     msg.payload = b"1,DEVICE_TYPE,Remote Name - unique identifier"
@@ -18,7 +18,7 @@ def test_device_data_received_results(test_database):
     assert device.name == "Remote Name"
 
 
-def test_plugin_method_calls(test_database):
+def test_plugin_method_calls(empty_test_db):
     msg = MQTTMessage(b"test_topic")
     msg.payload = b"1,UNKNOWN_DEVICE_TYPE,Remote Name - uid"
 
