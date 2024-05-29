@@ -13,6 +13,7 @@ class Device(Base, ModelStrFormatter):
     name = Column(String, unique=True)
     remote_name = Column(String)
     online = Column(Boolean, default=False)
+    reboots = Column(Integer, default=0)
 
     device_type_id = Column(Integer, ForeignKey("device_types.id"))
     device_type = relationship("DeviceType", back_populates="devices")
