@@ -8,7 +8,7 @@ from chocolate_smart_home.main import app
 client = TestClient(app)
 
 
-def test_get_on_off_device(test_data):
+def test_get_on_off_device(populated_test_db):
     device_id = 1
 
     resp = client.get("/on_off/{device_id}".format(device_id=device_id))
@@ -31,7 +31,7 @@ def test_get_on_off_device(test_data):
     assert resp.json() == expected_resp_json
 
 
-def test_delete_on_off_device(test_data):
+def test_delete_on_off_device(populated_test_db):
     device_id = 1
 
     resp = client.delete(f"/on_off/{device_id}")
@@ -42,7 +42,7 @@ def test_delete_on_off_device(test_data):
     assert resp.json() == {"detail": f"No OnOff with an id of {device_id} found."}
 
 
-def test_delete_device_duplicate_deletion_fails(test_data):
+def test_delete_device_duplicate_deletion_fails(populated_test_db):
     device_id = 1
 
     resp = client.delete(f"/on_off/{device_id}")
@@ -52,7 +52,7 @@ def test_delete_device_duplicate_deletion_fails(test_data):
     assert resp.json() == {"detail": f"No OnOff with an id of {device_id} found."}
 
 
-def test_delete_device_fails_on_invalid_device_id(test_data):
+def test_delete_device_fails_on_invalid_device_id(populated_test_db):
     device_id = 777
 
     resp = client.delete(f"/on_off/{device_id}")
@@ -61,7 +61,7 @@ def test_delete_device_fails_on_invalid_device_id(test_data):
     assert resp.json() == {"detail": f"No OnOff with an id of {device_id} found."}
 
 
-def test_update_single_on_off_device(test_data):
+def test_update_single_on_off_device(populated_test_db):
     with patch("chocolate_smart_home.mqtt.client.MQTTClient.publish") as publish:
         resp = client.post("/on_off/1/false")
         publish.assert_called_once_with(topic="/on_off/1/", message="0")
@@ -69,7 +69,7 @@ def test_update_single_on_off_device(test_data):
     assert resp.status_code == 204
 
 
-def test_update_multiple_devices(test_data):
+def test_update_multiple_devices(populated_test_db):
     post_data = dict(ids=[1, 2], on=False)
 
     with patch("chocolate_smart_home.mqtt.client.MQTTClient.publish") as publish:

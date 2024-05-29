@@ -30,7 +30,7 @@ def db_closure():
 
 
 @pytest.fixture
-def test_database():
+def empty_test_db():
     override_get_db = db_closure()
     app.dependency_overrides[get_db] = override_get_db
 

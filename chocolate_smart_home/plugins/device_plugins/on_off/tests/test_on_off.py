@@ -4,7 +4,7 @@ from paho.mqtt.client import MQTTMessage
 from chocolate_smart_home.mqtt.handler import MQTTMessageHandler
 
 
-def test_turn_off_message(test_data):
+def test_turn_off_message(populated_test_db):
     """Turn off, on, and off again, validating the returned device's .on
     attribute value each time."""
     message = MQTTMessage(b"test_topic")
@@ -29,7 +29,7 @@ def test_turn_off_message(test_data):
     assert on_off_device.device is device
 
 
-def test_turn_on_message(test_data):
+def test_turn_on_message(populated_test_db):
     """Turn on, off, and on again, validating the returned device's .on
     attribute value each time."""
     message = MQTTMessage(b"test_topic")
@@ -52,7 +52,7 @@ def test_turn_on_message(test_data):
     assert on_off_device.on is True
 
 
-def test_message_handler_fails_on_missing_values(test_data):
+def test_message_handler_fails_on_missing_values(populated_test_db):
     """Assert failure when message payload has too few comma-separated values
     for the plugin message handler's .parse_msg method."""
     message = MQTTMessage(b"test_topic")

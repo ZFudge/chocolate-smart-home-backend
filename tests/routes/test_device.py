@@ -6,7 +6,7 @@ from chocolate_smart_home.main import app
 client = TestClient(app)
 
 
-def test_create_device(test_database):
+def test_create_device(empty_test_db):
     resp = client.post(
         "/create_device/",
         json={
@@ -26,7 +26,7 @@ def test_create_device(test_database):
     assert data["name"] == ""
 
 
-def test_create_device_used_mqtt_id_fails(test_database):
+def test_create_device_used_mqtt_id_fails(empty_test_db):
     resp = client.post(
         "/create_device/",
         json={
@@ -50,21 +50,21 @@ def test_create_device_used_mqtt_id_fails(test_database):
     assert resp.json() == { "detail": "Key (mqtt_id)=(0) already exists." }
 
 
-def test_create_device_methods_not_allowed(test_database):
+def test_create_device_methods_not_allowed(empty_test_db):
     url = "/create_device/"
     assert 405 == client.get(url).status_code
     assert 405 == client.delete(url).status_code
     assert 405 == client.patch(url, json={}).status_code
 
 
-def test_get_devices_data_empty(test_database):
+def test_get_devices_data_empty(empty_test_db):
     resp = client.get("/get_devices_data/")
 
     data = resp.json()
     assert data == []
 
 
-def test_get_devices_data(test_data):
+def test_get_devices_data(populated_test_db):
     resp = client.get("/get_devices_data/")
 
     assert resp.status_code == 200
@@ -96,7 +96,7 @@ def test_get_devices_data(test_data):
     assert resp.json() == expected_resp_json
 
 
-def test_get_device_data(test_data):
+def test_get_device_data(populated_test_db):
     resp = client.get("/get_device_data/{device_id}".format(device_id=1))
 
     assert resp.status_code == 200
@@ -116,7 +116,7 @@ def test_get_device_data(test_data):
     assert resp.json() == expected_resp_json
 
 
-def test_delete_device_request(test_data):
+def test_delete_device_request(populated_test_db):
     device_id = 1
 
     resp = client.delete(f"/delete_device/{device_id}")
@@ -127,7 +127,7 @@ def test_delete_device_request(test_data):
     assert resp.json() == {"detail": f"No device with an id of {device_id} found."}
 
 
-def test_delete_device_duplicate_deletion_fails(test_data):
+def test_delete_device_duplicate_deletion_fails(populated_test_db):
     device_id = 1
 
     resp = client.delete(f"/delete_device/{device_id}")
@@ -137,7 +137,7 @@ def test_delete_device_duplicate_deletion_fails(test_data):
     assert resp.json() == {"detail": f"Device deletion failed. No Device with an id of {device_id} found."}
 
 
-def test_delete_device_fails_on_invalid_device_id(test_data):
+def test_delete_device_fails_on_invalid_device_id(populated_test_db):
     device_id = 777
 
     resp = client.delete(f"/delete_device/{device_id}")

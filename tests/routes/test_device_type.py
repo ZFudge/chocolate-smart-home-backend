@@ -6,7 +6,7 @@ from chocolate_smart_home.main import app
 client = TestClient(app)
 
 
-def test_create_device_type(test_database):
+def test_create_device_type(empty_test_db):
     resp = client.post(
         "/create_device_type/",
         json={"name": "test_device_type_name"},
@@ -18,7 +18,7 @@ def test_create_device_type(test_database):
     assert data["name"] == "test_device_type_name"
 
 
-def test_create_duplicate_device_type_fails(test_database):
+def test_create_duplicate_device_type_fails(empty_test_db):
     device_type_name = "test_device_type_name"
     resp = client.post("/create_device_type/", json={"name": device_type_name})
     resp = client.post("/create_device_type/", json={"name": device_type_name})
@@ -28,7 +28,7 @@ def test_create_duplicate_device_type_fails(test_database):
     assert resp.json() == { "detail": "Key (name)=(test_device_type_name) already exists." }
 
 
-def test_create_device_type_methods_not_allowed(test_database):
+def test_create_device_type_methods_not_allowed(empty_test_db):
     url = "/create_device_type/"
     assert 405 == client.get(url).status_code
     assert 405 == client.delete(url).status_code
