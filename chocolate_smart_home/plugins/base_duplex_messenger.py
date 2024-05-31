@@ -27,7 +27,7 @@ class BaseDuplexMessenger:
 
 class DefaultDuplexMessenger(BaseDuplexMessenger):
     def parse_msg(self, raw_msg: str) -> Dict:
-        """Parse message from remote controller."""
+        """Parse message from remote controller, omitting empty list iterator."""
         device_data, _ = super().parse_msg(raw_msg)
 
         return device_data
