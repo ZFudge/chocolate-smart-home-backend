@@ -1,15 +1,19 @@
 include $(PWD)/.env
 
 TRASH_PATH := /tmp/null
+NETWORK_NAME := chocolate-smart-home-network
+
 APP_IMAGE := chocolate-smart-home-backend
 APP_CONTAINER_NAME := csm-fastapi-server
 CSM_IMAGE_NAME := chocolate-smart-home-backend
+
 MQTT_IMAGE := eclipse-mosquitto:2.0.15
 MQTT_VOLUME_PATH := $(PWD)/mosquitto.conf:/mosquitto/config/mosquitto.conf
-NETWORK_NAME := chocolate-smart-home-network
+
 POSTGRES_IMAGE := postgres:12.18-bullseye
 POSTGRES_VOLUME_NAME := chocolate-smart-home-postgres-vol
 POSTGRES_CONTAINER_NAME := csm-postgres-db
+
 TEST_DB_NAME := testdb
 TEST_DB_USER := testuser
 TEST_DB_PW := testpw
@@ -69,6 +73,9 @@ run: up createtestuser createtestdb
 
 clean:
 	@docker-compose down
+
+removevolume:
+	@docker volume rm $(POSTGRES_VOLUME_NAME)
 
 attach:
 	@docker-compose logs --follow $(APP_CONTAINER_NAME)
