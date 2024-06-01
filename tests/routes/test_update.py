@@ -18,4 +18,3 @@ def test_update_device(empty_test_db):
     )
 
     assert resp.status_code == 204
-

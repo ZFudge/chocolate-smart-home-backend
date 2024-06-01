@@ -21,12 +21,7 @@ def test_create_device_type_fail_on_duplicate(empty_test_db):
 
 
 def test_create_device(empty_test_db):
-    device = crud.create_device(
-        "123",
-        "Device Type Name",
-        "Device Name",
-        ""
-    )
+    device = crud.create_device("123", "Device Type Name", "Device Name", "")
 
     assert isinstance(device, models.Device)
     assert device.mqtt_id == 123
@@ -37,19 +32,9 @@ def test_create_device(empty_test_db):
 
 
 def test_create_device_fail_on_duplicate_mqtt_id(empty_test_db):
-    crud.create_device(
-        "123",
-        "Device Type Name 1",
-        "Device Name 1",
-        ""
-    )
+    crud.create_device("123", "Device Type Name 1", "Device Name 1", "")
     with pytest.raises(IntegrityError) as e:
-        crud.create_device(
-            "123",
-            "Device Type Name 2",
-            "Device Name 2",
-            ""
-        )
+        crud.create_device("123", "Device Type Name 2", "Device Name 2", "")
 
     assert isinstance(e.value.orig, UniqueViolation)
 
@@ -100,10 +85,7 @@ def test_update_device(populated_test_db):
     assert device.online is False
 
     device_updated = crud.update_device(
-        "222",
-        "TEST_DEVICE_TYPE_NAME_NEW",
-        "New Remote Name",
-        "New Name"
+        "222", "TEST_DEVICE_TYPE_NAME_NEW", "New Remote Name", "New Name"
     )
 
     assert isinstance(device_updated, models.Device)

@@ -4,10 +4,7 @@ from chocolate_smart_home.schemas.device_type import DeviceType
 
 
 def device_type_to_schema(device_type_data: models.Device) -> DeviceType:
-    return DeviceType(
-        id=device_type_data.id,
-        name=device_type_data.name
-    )
+    return DeviceType(id=device_type_data.id, name=device_type_data.name)
 
 
 def device_to_schema(device_data: models.Device) -> Device:
@@ -17,5 +14,5 @@ def device_to_schema(device_data: models.Device) -> Device:
         device_type=device_type_to_schema(device_data.device_type),
         name=device_data.name,
         remote_name=device_data.remote_name,
-        online=device_data.online
+        online=device_data.online,
     )

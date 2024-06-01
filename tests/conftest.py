@@ -35,8 +35,7 @@ def empty_test_db():
     app.dependency_overrides[get_db] = override_get_db
 
     override_db_session: ContextVar[Session] = ContextVar(
-        'db_session',
-        default=next(override_get_db())
+        "db_session", default=next(override_get_db())
     )
     db_session.set(next(override_get_db()))
     app.dependency_overrides[db_session] = override_db_session
@@ -57,8 +56,20 @@ def populated_test_db(empty_test_db):
     empty_test_db.add(device_type_1)
     empty_test_db.add(device_type_2)
 
-    device_1 = models.Device(mqtt_id=111, device_type=device_type_1, remote_name="Remote Name 1", name="Name 1", online=True)
-    device_2 = models.Device(mqtt_id=222, device_type=device_type_2, remote_name="Remote Name 2", name="Name 2", online=False)
+    device_1 = models.Device(
+        mqtt_id=111,
+        device_type=device_type_1,
+        remote_name="Remote Name 1",
+        name="Name 1",
+        online=True,
+    )
+    device_2 = models.Device(
+        mqtt_id=222,
+        device_type=device_type_2,
+        remote_name="Remote Name 2",
+        name="Name 2",
+        online=False,
+    )
     empty_test_db.add(device_1)
     empty_test_db.add(device_2)
 
