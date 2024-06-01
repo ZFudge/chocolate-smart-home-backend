@@ -35,8 +35,7 @@ def empty_test_db():
     app.dependency_overrides[get_db] = override_get_db
 
     override_db_session: ContextVar[Session] = ContextVar(
-        'db_session',
-        default=next(override_get_db())
+        "db_session", default=next(override_get_db())
     )
     db_session.set(next(override_get_db()))
     app.dependency_overrides[db_session] = override_db_session

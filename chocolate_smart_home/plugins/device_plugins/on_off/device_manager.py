@@ -9,11 +9,12 @@ from .model import OnOff
 
 logger = logging.getLogger()
 
+
 class OnOffDeviceManager(BaseDeviceManager):
     """Manage "on_offs" and "devices" table rows using incoming device data."""
 
     def create_device(self, device_data: Dict) -> OnOff:
-        logger.info("Creating device \"%s\"" % device_data)
+        logger.info('Creating device "%s"' % device_data)
         db = db_session.get()
 
         device: models.Device = super().create_device(device_data)
@@ -32,7 +33,7 @@ class OnOffDeviceManager(BaseDeviceManager):
         return new_on_off
 
     def update_device(self, device_data: Dict) -> OnOff:
-        logger.info("Updating device \"%s\"" % device_data)
+        logger.info('Updating device "%s"' % device_data)
         db = db_session.get()
 
         device: models.Device = super().update_device(device_data)

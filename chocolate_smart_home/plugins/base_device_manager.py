@@ -10,12 +10,15 @@ from chocolate_smart_home.dependencies import db_session
 
 logger = logging.getLogger()
 
+
 class BaseDeviceManager:
     def create_device(self, device_data: Dict) -> models.Device:
         logger.info('Creating device "%s"' % device_data)
 
         device_type_name: str = device_data["device_type_name"]
-        device_type: models.DeviceType = device_types.get_new_or_existing_device_type_by_name(device_type_name)
+        device_type: models.DeviceType = (
+            device_types.get_new_or_existing_device_type_by_name(device_type_name)
+        )
 
         db_device = models.Device(
             mqtt_id=device_data["mqtt_id"],
@@ -41,7 +44,9 @@ class BaseDeviceManager:
         logger.info('Updating device "%s"' % device_data)
 
         device_type_name: str = device_data["device_type_name"]
-        device_type: models.DeviceType = device_types.get_new_or_existing_device_type_by_name(device_type_name)
+        device_type: models.DeviceType = (
+            device_types.get_new_or_existing_device_type_by_name(device_type_name)
+        )
 
         device: models.Device = get_device_by_mqtt_id(device_data["mqtt_id"])
 

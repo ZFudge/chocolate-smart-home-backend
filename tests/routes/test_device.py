@@ -34,7 +34,7 @@ def test_create_device_used_mqtt_id_fails(empty_test_db):
             "device_type_name": "test_device_type_name_1",
             "remote_name": "Test Device - 1",
             "name": "This Name",
-        }
+        },
     )
     resp = client.post(
         "/create_device/",
@@ -43,11 +43,11 @@ def test_create_device_used_mqtt_id_fails(empty_test_db):
             "device_type_name": "test_device_type_name_2",
             "remote_name": "Test Device - 2",
             "name": "Other Name",
-        }
+        },
     )
 
     assert resp.status_code == 500
-    assert resp.json() == { "detail": "Key (mqtt_id)=(0) already exists." }
+    assert resp.json() == {"detail": "Key (mqtt_id)=(0) already exists."}
 
 
 def test_create_device_methods_not_allowed(empty_test_db):
@@ -80,7 +80,8 @@ def test_get_devices_data(populated_test_db):
             "name": "Name 1",
             "online": True,
             "id": 1,
-        }, {
+        },
+        {
             "mqtt_id": 222,
             "device_type": {
                 "name": "TEST_DEVICE_TYPE_NAME_2",
@@ -103,10 +104,7 @@ def test_get_device_data(populated_test_db):
 
     expected_resp_json = {
         "mqtt_id": 111,
-        "device_type": {
-            "name": "TEST_DEVICE_TYPE_NAME_1",
-            "id": 1
-        },
+        "device_type": {"name": "TEST_DEVICE_TYPE_NAME_1", "id": 1},
         "remote_name": "Remote Name 1",
         "name": "Name 1",
         "online": True,
@@ -134,7 +132,9 @@ def test_delete_device_duplicate_deletion_fails(populated_test_db):
     resp = client.delete(f"/delete_device/{device_id}")
 
     assert resp.status_code == 500
-    assert resp.json() == {"detail": f"Device deletion failed. No Device with an id of {device_id} found."}
+    assert resp.json() == {
+        "detail": f"Device deletion failed. No Device with an id of {device_id} found."
+    }
 
 
 def test_delete_device_fails_on_invalid_device_id(populated_test_db):
@@ -143,4 +143,6 @@ def test_delete_device_fails_on_invalid_device_id(populated_test_db):
     resp = client.delete(f"/delete_device/{device_id}")
 
     assert resp.status_code == 500
-    assert resp.json() == {"detail": f"Device deletion failed. No Device with an id of {device_id} found."}
+    assert resp.json() == {
+        "detail": f"Device deletion failed. No Device with an id of {device_id} found."
+    }

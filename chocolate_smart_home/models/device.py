@@ -20,7 +20,7 @@ class Device(Base, ModelStrFormatter):
 
     def __str__(self):
         """Return ModelStrFormatter.__str__ result of both the Device object and
-           its corresponding DeviceType object."""
+        its corresponding DeviceType object."""
         return "\n".join([super().__str__(), str(self.device_type)])
 
     class Config:

@@ -6,10 +6,13 @@ from sqlalchemy.exc import NoResultFound
 
 from chocolate_smart_home.crud import get_device_by_mqtt_id
 from chocolate_smart_home.models import Device
-from chocolate_smart_home.plugins.discovered_plugins import get_device_plugin_by_device_type
+from chocolate_smart_home.plugins.discovered_plugins import (
+    get_device_plugin_by_device_type,
+)
 
 
 logger = logging.getLogger("mqtt")
+
 
 class MQTTMessageHandler:
     def device_data_received(
@@ -33,7 +36,9 @@ class MQTTMessageHandler:
         try:
             msg_data: Dict = MessageHandler().parse_msg(payload)
         except StopIteration:
-            raise StopIteration(f"Not enough comma-separated values in message.payload. {payload=}.") from None
+            raise StopIteration(
+                f"Not enough comma-separated values in message.payload. {payload=}."
+            ) from None
 
         try:
             _: Device = get_device_by_mqtt_id(mqtt_id)

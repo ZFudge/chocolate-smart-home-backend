@@ -29,6 +29,7 @@ def db_closure():
 
     return db_func
 
+
 get_db = db_closure()
 
-db_session: ContextVar[Session] = ContextVar('db_session', default=next(get_db()))
+db_session: ContextVar[Session] = ContextVar("db_session", default=next(get_db()))

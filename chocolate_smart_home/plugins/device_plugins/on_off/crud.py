@@ -10,10 +10,13 @@ from .model import OnOff
 
 
 logger = logging.getLogger()
-ON_OFF_SEND_TOPIC_TEMPLATE = topics.SEND_DEVICE_DATA_TEMPLATE.format(device_type="on_off")
+ON_OFF_SEND_TOPIC_TEMPLATE = topics.SEND_DEVICE_DATA_TEMPLATE.format(
+    device_type="on_off"
+)
+
 
 def get_on_off_device_by_device_id(on_off_device_id: int) -> OnOff:
-    logger.info("Retrieving OnOff with id of \"%s\"" % on_off_device_id)
+    logger.info('Retrieving OnOff with id of "%s"' % on_off_device_id)
     db: Session = dependencies.db_session.get()
 
     try:
@@ -32,7 +35,7 @@ def publish_update(*, on_off_device_id: int, on: bool):
 
 def delete_on_off_device(on_off_device_id: int):
     """Delete row from on_off_devices table, then delete its corresponding row from devices table."""
-    logger.info("Deleting OnOff with id of \"%s\"" % on_off_device_id)
+    logger.info('Deleting OnOff with id of "%s"' % on_off_device_id)
     db: Session = dependencies.db_session.get()
 
     try:
@@ -50,7 +53,7 @@ def delete_on_off_device(on_off_device_id: int):
         db.rollback()
         raise
 
-    logger.info("Deleting Device with id of \"%s\"" % device.id)
+    logger.info('Deleting Device with id of "%s"' % device.id)
 
     db.delete(device)
     db.flush()

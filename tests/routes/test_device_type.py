@@ -25,7 +25,9 @@ def test_create_duplicate_device_type_fails(empty_test_db):
 
     assert resp.status_code == 500
 
-    assert resp.json() == { "detail": "Key (name)=(test_device_type_name) already exists." }
+    assert resp.json() == {
+        "detail": "Key (name)=(test_device_type_name) already exists."
+    }
 
 
 def test_create_device_type_methods_not_allowed(empty_test_db):

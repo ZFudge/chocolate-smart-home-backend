@@ -1,7 +1,10 @@
 from fastapi import FastAPI
 
 from chocolate_smart_home.mqtt import mqtt_client_ctx
-from chocolate_smart_home.plugins.discovered_plugins import PLUGIN_ROUTERS, discover_and_import_device_plugin_modules
+from chocolate_smart_home.plugins.discovered_plugins import (
+    PLUGIN_ROUTERS,
+    discover_and_import_device_plugin_modules,
+)
 from chocolate_smart_home.routers import APP_ROUTERS
 
 
