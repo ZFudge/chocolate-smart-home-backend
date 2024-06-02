@@ -8,10 +8,10 @@ from chocolate_smart_home.mqtt.client import MQTTClient
 
 @pytest.fixture
 def mqtt_client():
-    client = MQTTClient(host="127.0.0.1")
-    client._client = Mock()
-    client._client.publish.return_value = (MQTT_ERR_SUCCESS, None)
-    yield client
+    mqtt_client = MQTTClient(host="127.0.0.1")
+    mqtt_client._client = Mock()
+    mqtt_client._client.publish.return_value = (MQTT_ERR_SUCCESS, None)
+    yield mqtt_client
 
 
 def test_client_connect(mqtt_client):

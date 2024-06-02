@@ -12,10 +12,10 @@ def test_device_data_received_results(empty_test_db):
     msg.payload = b"1,DEVICE_TYPE,Remote Name - unique identifier"
     device = handler.device_data_received(0, None, msg)
 
-    assert device.mqtt_id == 1
+    assert device.client.mqtt_id == 1
     assert device.device_type.name == "DEVICE_TYPE"
     assert device.remote_name == "Remote Name - unique identifier"
-    assert device.name == "Remote Name"
+    assert device.device_name.name == "Remote Name"
 
 
 def test_plugin_method_calls(empty_test_db):
@@ -23,7 +23,7 @@ def test_plugin_method_calls(empty_test_db):
     msg.payload = b"1,UNKNOWN_DEVICE_TYPE,Remote Name - uid"
 
     with (patch("chocolate_smart_home.mqtt.handler.get_device_plugin_by_device_type") as get_plugin,
-          patch("chocolate_smart_home.mqtt.handler.get_device_by_mqtt_id", side_effect=NoResultFound) as get_device):
+          patch("chocolate_smart_home.mqtt.handler.get_device_by_mqtt_client_id", side_effect=NoResultFound) as get_device):
         mqtt_handler.MQTTMessageHandler().device_data_received(0, None, msg)
 
         get_plugin.assert_called_once_with("UNKNOWN_DEVICE_TYPE")

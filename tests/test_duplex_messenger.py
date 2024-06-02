@@ -13,7 +13,6 @@ def test_parse_msg():
         "mqtt_id": "1",
         "device_type_name": "device_type_name",
         "remote_name": "remote_name - 1",
-        "name": "remote_name",
     }
 
     assert device_data == expected_device_data

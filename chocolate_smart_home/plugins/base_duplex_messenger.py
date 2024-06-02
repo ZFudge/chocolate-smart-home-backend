@@ -14,8 +14,6 @@ class BaseDuplexMessenger:
         device_data["mqtt_id"] = next(msg_seq)
         device_data["device_type_name"] = next(msg_seq)
         device_data["remote_name"] = next(msg_seq)
-        name: str = device_data["remote_name"].split(" - ")[0]
-        device_data["name"] = name
 
         return device_data, msg_seq
 

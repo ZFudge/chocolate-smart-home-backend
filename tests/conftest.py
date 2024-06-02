@@ -43,6 +43,8 @@ def empty_test_db():
     yield db_session.get()
 
     db_session.get().query(models.Device).delete()
+    db_session.get().query(models.DeviceName).delete()
+    db_session.get().query(models.Client).delete()
     db_session.get().query(models.DeviceType).delete()
     db_session.get().commit()
 
@@ -51,28 +53,41 @@ def empty_test_db():
 
 @pytest.fixture
 def populated_test_db(empty_test_db):
-    device_type_1 = models.DeviceType(name="TEST_DEVICE_TYPE_NAME_1")
-    device_type_2 = models.DeviceType(name="TEST_DEVICE_TYPE_NAME_2")
-    empty_test_db.add(device_type_1)
-    empty_test_db.add(device_type_2)
+    test_db = empty_test_db
+
+    client_1 = models.Client(mqtt_id=123)
+    client_2 = models.Client(mqtt_id=456)
+
+    type_1 = models.DeviceType(name="TEST_DEVICE_TYPE_NAME_1")
+    type_2 = models.DeviceType(name="TEST_DEVICE_TYPE_NAME_2")
+
+    name_1 = models.DeviceName(name="Test Device Name 1")
+    name_2 = models.DeviceName(name="Test Device Name 2")
 
     device_1 = models.Device(
-        mqtt_id=111,
-        device_type=device_type_1,
-        remote_name="Remote Name 1",
-        name="Name 1",
         online=True,
+        remote_name="Remote Name 1",
+        client=client_1,
+        device_type=type_1,
+        device_name=name_1,
     )
     device_2 = models.Device(
-        mqtt_id=222,
-        device_type=device_type_2,
-        remote_name="Remote Name 2",
-        name="Name 2",
         online=False,
+        remote_name="Remote Name 2",
+        client=client_2,
+        device_type=type_2,
+        device_name=name_2,
     )
-    empty_test_db.add(device_1)
-    empty_test_db.add(device_2)
 
-    empty_test_db.commit()
+    test_db.add(client_1)
+    test_db.add(client_2)
+    test_db.add(type_1)
+    test_db.add(type_2)
+    test_db.add(name_1)
+    test_db.add(name_2)
+    test_db.add(device_1)
+    test_db.add(device_2)
 
-    yield empty_test_db
+    test_db.commit()
+
+    yield test_db

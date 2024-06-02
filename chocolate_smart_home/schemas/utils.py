@@ -10,9 +10,9 @@ def device_type_to_schema(device_type_data: models.Device) -> DeviceType:
 def device_to_schema(device_data: models.Device) -> Device:
     return Device(
         id=device_data.id,
-        mqtt_id=device_data.mqtt_id,
+        mqtt_id=device_data.client.mqtt_id,
         device_type=device_type_to_schema(device_data.device_type),
-        name=device_data.name,
+        device_name=device_data.device_name.name,
         remote_name=device_data.remote_name,
         online=device_data.online,
     )

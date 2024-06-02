@@ -7,9 +7,9 @@ def on_off_device_to_full_device_data_schema(on_off_device: OnOff) -> OnOffDevic
     return OnOffDeviceData(
         id=on_off_device.id,
         on=on_off_device.on,
-        mqtt_id=on_off_device.device.mqtt_id,
+        mqtt_id=on_off_device.device.client.mqtt_id,
         device_type=device_type_to_schema(on_off_device.device.device_type),
-        name=on_off_device.device.name,
+        device_name=on_off_device.device.device_name.name,
         remote_name=on_off_device.device.remote_name,
         online=on_off_device.device.online,
     )
