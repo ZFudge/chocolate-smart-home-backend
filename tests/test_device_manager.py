@@ -28,34 +28,34 @@ def test_device_reboots(populated_test_db):
     orig_device_data = {
         "mqtt_id": 123,
         "device_type_name": "TEST_DEVICE_TYPE_NAME_1",
-        "remote_name": "Remote Name 1",
+        "remote_name": "Remote Name 1 - 1",
     }
 
     assert device_manager.update_device(orig_device_data).reboots == 0
 
-    remote_name = "Remote Name 1 - 123"
+    remote_name = "Remote Name 1 - 1 - 123"
     for _ in range(3):
         device_data = orig_device_data | dict(remote_name=remote_name)
         device: models.Device = device_manager.update_device(device_data)
         assert device.reboots == 1
 
-    remote_name = "Remote Name 1 - 234"
+    remote_name = "Remote Name 1 - 1 - 234"
     device_data = orig_device_data | dict(remote_name=remote_name)
     device: models.Device = device_manager.update_device(device_data)
     assert device.reboots == 2
 
-    remote_name = "Remote Name 1 - 345"
+    remote_name = "Remote Name 1 - 1 - 345"
     device_data = orig_device_data | dict(remote_name=remote_name)
     device: models.Device = device_manager.update_device(device_data)
     assert device.reboots == 3
 
-    remote_name = "Remote Name 1 - 456"
+    remote_name = "Remote Name 1 - 1 - 456"
     for _ in range(3):
         device_data = orig_device_data | dict(remote_name=remote_name)
         device: models.Device = device_manager.update_device(device_data)
         assert device.reboots == 4
 
-    remote_name = "Remote Name 1 - 567"
+    remote_name = "Remote Name 1 - 1 - 567"
     for _ in range(3):
         device_data = orig_device_data | dict(remote_name=remote_name)
         device: models.Device = device_manager.update_device(device_data)
@@ -82,7 +82,7 @@ def test_device_marked_online(populated_test_db):
     device_data = {
         "mqtt_id": 456,
         "device_type_name": "TEST_DEVICE_TYPE_NAME_2",
-        "remote_name": "Remote Name 2",
+        "remote_name": "Remote Name 2 - 2",
     }
     updated_device = BaseDeviceManager().update_device(device_data)
 

@@ -9,8 +9,8 @@ def test_device_model_str(populated_test_db):
         .one()
     )
     expected_str_1 = (
-        "Device(id=1, remote_name=Remote Name 1, online=True, reboots=0, client_id=1, device_type_id=1, device_name_id=1)\n"
-        "DeviceName(id=1, name=Test Device Name 1)\n"
+        "Device(id=1, remote_name=Remote Name 1 - 1, online=True, reboots=0, client_id=1, device_type_id=1, device_name_id=1)\n"
+        "DeviceName(id=1, name=Test Device Name 1, is_server_side_name=False)\n"
         "Client(id=1, mqtt_id=123)\n"
         "DeviceType(id=1, name=TEST_DEVICE_TYPE_NAME_1)"
     )
@@ -24,8 +24,8 @@ def test_device_model_str(populated_test_db):
         .one()
     )
     expected_str_2 = (
-        "Device(id=2, remote_name=Remote Name 2, online=False, reboots=0, client_id=2, device_type_id=2, device_name_id=2)\n"
-        "DeviceName(id=2, name=Test Device Name 2)\n"
+        "Device(id=2, remote_name=Remote Name 2 - 2, online=False, reboots=0, client_id=2, device_type_id=2, device_name_id=2)\n"
+        "DeviceName(id=2, name=Test Device Name 2, is_server_side_name=True)\n"
         "Client(id=2, mqtt_id=456)\n"
         "DeviceType(id=2, name=TEST_DEVICE_TYPE_NAME_2)"
     )
@@ -62,7 +62,7 @@ def test_device_name_model_str(populated_test_db):
         .filter(models.DeviceName.id == 1)
         .one()
     )
-    expected_str_1 = "DeviceName(id=1, name=Test Device Name 1)"
+    expected_str_1 = "DeviceName(id=1, name=Test Device Name 1, is_server_side_name=False)"
     assert str(device_name_1) == expected_str_1
     assert repr(device_name_1) == expected_str_1
 
@@ -72,7 +72,7 @@ def test_device_name_model_str(populated_test_db):
         .filter(models.DeviceName.id == 2)
         .one()
     )
-    expected_str_2 = "DeviceName(id=2, name=Test Device Name 2)"
+    expected_str_2 = "DeviceName(id=2, name=Test Device Name 2, is_server_side_name=True)"
     assert str(device_name_2) == expected_str_2
     assert repr(device_name_2) == expected_str_2
 

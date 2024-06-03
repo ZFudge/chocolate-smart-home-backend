@@ -22,7 +22,7 @@ def populated_test_db(empty_test_db):
     on_off_client_2 = models.Client(mqtt_id=456)
 
     on_off_name_1 = models.DeviceName(name="Test On Device")
-    on_off_name_2 = models.DeviceName(name="Test Off Device")
+    on_off_name_2 = models.DeviceName(name="Test Off Device", is_server_side_name=True)
 
     device__id_1 = models.Device(
         online=True,

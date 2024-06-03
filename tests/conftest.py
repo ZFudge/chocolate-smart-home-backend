@@ -62,18 +62,18 @@ def populated_test_db(empty_test_db):
     type_2 = models.DeviceType(name="TEST_DEVICE_TYPE_NAME_2")
 
     name_1 = models.DeviceName(name="Test Device Name 1")
-    name_2 = models.DeviceName(name="Test Device Name 2")
+    name_2 = models.DeviceName(name="Test Device Name 2", is_server_side_name=True)
 
     device_1 = models.Device(
         online=True,
-        remote_name="Remote Name 1",
+        remote_name="Remote Name 1 - 1",
         client=client_1,
         device_type=type_1,
         device_name=name_1,
     )
     device_2 = models.Device(
         online=False,
-        remote_name="Remote Name 2",
+        remote_name="Remote Name 2 - 2",
         client=client_2,
         device_type=type_2,
         device_name=name_2,

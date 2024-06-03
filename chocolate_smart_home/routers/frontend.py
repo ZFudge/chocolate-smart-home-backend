@@ -35,7 +35,7 @@ def create_device(device: schemas.DeviceReceived,
 
 
 @router.get("/get_device_data/{device_id}", response_model=schemas.Device)
-def get_device_data(device_id: int, db: Session = Depends(dependencies.get_db)):
+def get_device_data(device_id: int):
     try:
         device = crud.get_device_by_device_id(device_id)
 
@@ -54,6 +54,16 @@ def get_devices_data(db: Session = Depends(dependencies.get_db)):
 def delete_device(device_id: int):
     try:
         crud.delete_device(Model=models.Device, device_id=device_id)
+    except NoResultFound as e:
+        (detail,) = e.args
+        raise HTTPException(status_code=500, detail=detail)
+
+
+@router.put("/update_device_name/{device_name_id}", response_model=schemas.DeviceName)
+def update_device_name(device_name_id: int, device_name: schemas.DeviceNameUpdate):
+    try:
+        device_name: models.DeviceName = crud.update_device_name(device_name)
+        return schemas.DeviceName(id=device_name.id, name=device_name.name, is_server_side_name=device_name.is_server_side_name)
     except NoResultFound as e:
         (detail,) = e.args
         raise HTTPException(status_code=500, detail=detail)
