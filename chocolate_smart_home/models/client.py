@@ -1,5 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer
 
 from chocolate_smart_home.database import Base
 from .model_str_formatter import ModelStrFormatter

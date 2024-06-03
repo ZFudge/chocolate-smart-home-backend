@@ -2,7 +2,16 @@ import pytest
 from psycopg2.errors import UniqueViolation
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
-from chocolate_smart_home import crud, models
+from chocolate_smart_home import crud, database, models
+
+
+def test_get_sqlalchemy_database_url(empty_test_db):
+    sqlalchemy_database_url = database.get_sqlalchemy_database_url()
+    expected_sqlalchemy_database_url = (
+        "postgresql://testuser:testpw@csm-postgres-db:5432/testdb"
+    )
+
+    assert sqlalchemy_database_url == expected_sqlalchemy_database_url
 
 
 def test_create_device_type(empty_test_db):

@@ -1,13 +1,10 @@
 import logging
-from functools import singledispatch
 
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
 from chocolate_smart_home import models
 from chocolate_smart_home.dependencies import db_session
-import chocolate_smart_home.crud.device_types as device_types
-import chocolate_smart_home.schemas as schemas
 import chocolate_smart_home.utils as utils
 
 
@@ -25,16 +22,8 @@ def get_device_by_device_id(device_id: int) -> models.Device:
 
 def get_device_by_mqtt_client_id(mqtt_id: int) -> models.Device:
     db: Session = db_session.get()
-    client = (
-        db.query(models.Client)
-        .filter(models.Client.mqtt_id == mqtt_id)
-        .one()
-    )
-    return (
-        db.query(models.Device)
-        .filter(models.Device.client == client)
-        .one()
-    )
+    client = db.query(models.Client).filter(models.Client.mqtt_id == mqtt_id).one()
+    return db.query(models.Device).filter(models.Device.client == client).one()
 
 
 def get_all_devices_data(db: Session) -> list[models.Device]:

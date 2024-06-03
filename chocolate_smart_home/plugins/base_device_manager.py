@@ -57,7 +57,11 @@ class BaseDeviceManager:
         )
 
         truncated_remote_name = device_data["remote_name"].split(" - ")[0]
-        device_name = db.query(models.DeviceName).filter(models.DeviceName.id == device.device_name_id).one()
+        device_name = (
+            db.query(models.DeviceName)
+            .filter(models.DeviceName.id == device.device_name_id)
+            .one()
+        )
         device_name.name = truncated_remote_name
 
         if device.remote_name != device_data["remote_name"]:
