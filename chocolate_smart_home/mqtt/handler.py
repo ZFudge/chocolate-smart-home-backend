@@ -4,7 +4,7 @@ from typing import Callable, Dict
 from paho.mqtt.client import Client, MQTTMessage
 from sqlalchemy.exc import NoResultFound
 
-from chocolate_smart_home.crud import get_device_by_mqtt_id
+from chocolate_smart_home.crud import get_device_by_mqtt_client_id
 from chocolate_smart_home.models import Device
 from chocolate_smart_home.plugins.discovered_plugins import (
     get_device_plugin_by_device_type,
@@ -41,7 +41,7 @@ class MQTTMessageHandler:
             ) from None
 
         try:
-            _: Device = get_device_by_mqtt_id(mqtt_id)
+            _: Device = get_device_by_mqtt_client_id(mqtt_id)
         except NoResultFound:
             return DeviceManager().create_device(msg_data)
 

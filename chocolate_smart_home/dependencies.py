@@ -1,4 +1,5 @@
 import logging
+import sys
 from contextvars import ContextVar
 
 import sqlalchemy.exc as exc
@@ -9,10 +10,13 @@ from chocolate_smart_home.database import Base, SessionLocal, engine
 
 logger = logging.getLogger()
 
+
 try:
     Base.metadata.create_all(bind=engine)
 except exc.SQLAlchemyError as e:
-    logger.error(e)
+    if "pytest" not in sys.modules:
+        logger.error(e)
+        raise
 
 
 def db_closure():

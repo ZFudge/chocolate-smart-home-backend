@@ -2,7 +2,16 @@ import pytest
 from psycopg2.errors import UniqueViolation
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
-from chocolate_smart_home import crud, models
+from chocolate_smart_home import crud, database, models
+
+
+def test_get_sqlalchemy_database_url(empty_test_db):
+    sqlalchemy_database_url = database.get_sqlalchemy_database_url()
+    expected_sqlalchemy_database_url = (
+        "postgresql://testuser:testpw@csm-postgres-db:5432/testdb"
+    )
+
+    assert sqlalchemy_database_url == expected_sqlalchemy_database_url
 
 
 def test_create_device_type(empty_test_db):
@@ -20,34 +29,15 @@ def test_create_device_type_fail_on_duplicate(empty_test_db):
     assert isinstance(e.value.orig, UniqueViolation)
 
 
-def test_create_device(empty_test_db):
-    device = crud.create_device("123", "Device Type Name", "Device Name", "")
-
-    assert isinstance(device, models.Device)
-    assert device.mqtt_id == 123
-    assert device.remote_name == "Device Name"
-    assert device.device_type.name == "Device Type Name"
-    assert device.name == ""
-    assert device.online is True
-
-
-def test_create_device_fail_on_duplicate_mqtt_id(empty_test_db):
-    crud.create_device("123", "Device Type Name 1", "Device Name 1", "")
-    with pytest.raises(IntegrityError) as e:
-        crud.create_device("123", "Device Type Name 2", "Device Name 2", "")
-
-    assert isinstance(e.value.orig, UniqueViolation)
-
-
 def test_get_device_by_device_id(populated_test_db):
     device = crud.get_device_by_device_id(2)
 
     assert isinstance(device, models.Device)
     assert device.id == 2
-    assert device.mqtt_id == 222
+    assert device.client.mqtt_id == 456
     assert device.device_type.name == "TEST_DEVICE_TYPE_NAME_2"
-    assert device.remote_name == "Remote Name 2"
-    assert device.name == "Name 2"
+    assert device.remote_name == "Remote Name 2 - 2"
+    assert device.device_name.name == "Test Device Name 2"
     assert device.online is False
 
 
@@ -57,47 +47,23 @@ def test_get_device_by_device_id_fails_on_device_id_does_not_exist(empty_test_db
 
 
 def test_get_device_by_mqtt_id(populated_test_db):
-    device = crud.get_device_by_mqtt_id(222)
+    device = crud.get_device_by_mqtt_client_id(456)
 
     assert isinstance(device, models.Device)
     assert device.id == 2
-    assert device.mqtt_id == 222
+    assert device.client.mqtt_id == 456
     assert device.device_type.name == "TEST_DEVICE_TYPE_NAME_2"
-    assert device.remote_name == "Remote Name 2"
-    assert device.name == "Name 2"
+    assert device.remote_name == "Remote Name 2 - 2"
+    assert device.device_name.name == "Test Device Name 2"
     assert device.online is False
 
 
 def test_get_device_by_mqtt_id_fails_on_mqtt_id_does_not_exist(empty_test_db):
     with pytest.raises(NoResultFound):
-        crud.get_device_by_mqtt_id(111)
+        crud.get_device_by_mqtt_client_id(123)
 
 
-def test_update_device(populated_test_db):
-    device = crud.get_device_by_device_id(2)
-
-    assert isinstance(device, models.Device)
-    assert device.id == 2
-    assert device.mqtt_id == 222
-    assert device.device_type.name == "TEST_DEVICE_TYPE_NAME_2"
-    assert device.remote_name == "Remote Name 2"
-    assert device.name == "Name 2"
-    assert device.online is False
-
-    device_updated = crud.update_device(
-        "222", "TEST_DEVICE_TYPE_NAME_NEW", "New Remote Name", "New Name"
-    )
-
-    assert isinstance(device_updated, models.Device)
-    assert device_updated.id == 2
-    assert device_updated.mqtt_id == 222
-    assert device_updated.device_type.name == "TEST_DEVICE_TYPE_NAME_NEW"
-    assert device_updated.remote_name == "New Remote Name"
-    assert device_updated.name == "New Name"
-    assert device_updated.online is True
-
-
-def test_update_device_fails_on_device_id_does_not_exist(empty_test_db):
+def test_get_device_fails_on_device_id_does_not_exist(empty_test_db):
     with pytest.raises(NoResultFound):
         crud.get_device_by_device_id(1)
 
@@ -114,17 +80,17 @@ def test_get_all_devices_data(populated_test_db):
     device_1, device_2 = devices
 
     assert device_1.id == 1
-    assert device_1.mqtt_id == 111
+    assert device_1.client.mqtt_id == 123
     assert device_1.device_type.name == "TEST_DEVICE_TYPE_NAME_1"
-    assert device_1.remote_name == "Remote Name 1"
-    assert device_1.name == "Name 1"
+    assert device_1.remote_name == "Remote Name 1 - 1"
+    assert device_1.device_name.name == "Test Device Name 1"
     assert device_1.online is True
 
     assert device_2.id == 2
-    assert device_2.mqtt_id == 222
+    assert device_2.client.mqtt_id == 456
     assert device_2.device_type.name == "TEST_DEVICE_TYPE_NAME_2"
-    assert device_2.remote_name == "Remote Name 2"
-    assert device_2.name == "Name 2"
+    assert device_2.remote_name == "Remote Name 2 - 2"
+    assert device_2.device_name.name == "Test Device Name 2"
     assert device_2.online is False
 
 

@@ -18,13 +18,13 @@ def test_get_on_off_device(populated_test_db):
     expected_resp_json = {
         "id": 1,
         "on": True,
-        "mqtt_id": 111,
+        "mqtt_id": 123,
         "device_type": {
             "name": "on_off",
             "id": 1,
         },
         "remote_name": "Test On Device - 1",
-        "name": "Test On Device",
+        "device_name": "Test On Device",
         "online": True,
     }
 

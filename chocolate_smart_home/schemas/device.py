@@ -11,7 +11,7 @@ class DeviceBase(BaseModel):
     mqtt_id: int
     device_type: DeviceType
     remote_name: str
-    name: str
+    device_name: str
     online: bool | None = False
 
 
@@ -28,7 +28,6 @@ class DeviceReceived(BaseModel):
     mqtt_id: int
     device_type_name: str
     remote_name: str
-    name: str | None = ""
 
 
 __all__ = [

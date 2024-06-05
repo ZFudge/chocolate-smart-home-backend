@@ -6,57 +6,6 @@ from chocolate_smart_home.main import app
 client = TestClient(app)
 
 
-def test_create_device(empty_test_db):
-    resp = client.post(
-        "/create_device/",
-        json={
-            "mqtt_id": 0,
-            "device_type_name": "test_device_type_name",
-            "remote_name": "Test Device - 123",
-            "name": "",
-        },
-    )
-
-    assert resp.status_code == 200
-
-    data = resp.json()
-    assert data["mqtt_id"] == 0
-    assert data["device_type"]["name"] == "test_device_type_name"
-    assert data["remote_name"] == "Test Device - 123"
-    assert data["name"] == ""
-
-
-def test_create_device_used_mqtt_id_fails(empty_test_db):
-    resp = client.post(
-        "/create_device/",
-        json={
-            "mqtt_id": 0,
-            "device_type_name": "test_device_type_name_1",
-            "remote_name": "Test Device - 1",
-            "name": "This Name",
-        },
-    )
-    resp = client.post(
-        "/create_device/",
-        json={
-            "mqtt_id": 0,
-            "device_type_name": "test_device_type_name_2",
-            "remote_name": "Test Device - 2",
-            "name": "Other Name",
-        },
-    )
-
-    assert resp.status_code == 500
-    assert resp.json() == {"detail": "Key (mqtt_id)=(0) already exists."}
-
-
-def test_create_device_methods_not_allowed(empty_test_db):
-    url = "/create_device/"
-    assert 405 == client.get(url).status_code
-    assert 405 == client.delete(url).status_code
-    assert 405 == client.patch(url, json={}).status_code
-
-
 def test_get_devices_data_empty(empty_test_db):
     resp = client.get("/get_devices_data/")
 
@@ -71,24 +20,24 @@ def test_get_devices_data(populated_test_db):
 
     expected_resp_json = [
         {
-            "mqtt_id": 111,
+            "mqtt_id": 123,
             "device_type": {
                 "name": "TEST_DEVICE_TYPE_NAME_1",
                 "id": 1,
             },
-            "remote_name": "Remote Name 1",
-            "name": "Name 1",
+            "remote_name": "Remote Name 1 - 1",
+            "device_name": "Test Device Name 1",
             "online": True,
             "id": 1,
         },
         {
-            "mqtt_id": 222,
+            "mqtt_id": 456,
             "device_type": {
                 "name": "TEST_DEVICE_TYPE_NAME_2",
                 "id": 2,
             },
-            "remote_name": "Remote Name 2",
-            "name": "Name 2",
+            "remote_name": "Remote Name 2 - 2",
+            "device_name": "Test Device Name 2",
             "online": False,
             "id": 2,
         },
@@ -103,10 +52,10 @@ def test_get_device_data(populated_test_db):
     assert resp.status_code == 200
 
     expected_resp_json = {
-        "mqtt_id": 111,
+        "mqtt_id": 123,
         "device_type": {"name": "TEST_DEVICE_TYPE_NAME_1", "id": 1},
-        "remote_name": "Remote Name 1",
-        "name": "Name 1",
+        "remote_name": "Remote Name 1 - 1",
+        "device_name": "Test Device Name 1",
         "online": True,
         "id": 1,
     }
