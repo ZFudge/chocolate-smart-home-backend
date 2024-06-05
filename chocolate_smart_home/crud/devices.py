@@ -22,8 +22,12 @@ def get_device_by_device_id(device_id: int) -> models.Device:
 
 def get_device_by_mqtt_client_id(mqtt_id: int) -> models.Device:
     db: Session = db_session.get()
-    client = db.query(models.Client).filter(models.Client.mqtt_id == mqtt_id).one()
-    return db.query(models.Device).filter(models.Device.client == client).one()
+    return (
+        db.query(models.Client)
+        .filter(models.Client.mqtt_id == mqtt_id)
+        .one()
+        .device
+    )
 
 
 def get_all_devices_data(db: Session) -> list[models.Device]:

@@ -1,9 +1,5 @@
 import logging
 
-from functools import singledispatch
-
-from sqlalchemy.orm import Session
-
 from chocolate_smart_home import models
 from chocolate_smart_home.dependencies import db_session
 import chocolate_smart_home.schemas as schemas
@@ -12,31 +8,26 @@ import chocolate_smart_home.schemas as schemas
 logger = logging.getLogger()
 
 
-def update_device_name(device_name_new_name: schemas.DeviceNameUpdate) -> models.DeviceName:
+def update_device_name(new_device_name_data: schemas.DeviceNameUpdate) -> models.DeviceName:
     db = db_session.get()
-    db_device_name = (
+
+    device_name = (
         db.query(models.DeviceName)
-        .filter(models.DeviceName.id == device_name_new_name.id)
+        .filter(models.DeviceName.id == new_device_name_data.id)
         .one()
     )
-    if db_device_name.name == device_name_new_name.name:
-        return db_device_name
+    if device_name.name == new_device_name_data.name:
+        return device_name
 
-    device = (
-        db.query(models.Device)
-        .filter(models.Device.device_name_id == device_name_new_name.id)
-        .one()
-    )
-
-    truncated_remote_name = device.remote_name.split(" - ")[0]
-    if device_name_new_name.name == truncated_remote_name:
-        db_device_name.is_server_side_name = False
+    truncated_remote_name = device_name.device.remote_name.split(" - ")[0]
+    if new_device_name_data.name == truncated_remote_name:
+        device_name.is_server_side_name = False
     else:
-        db_device_name.is_server_side_name = True
+        device_name.is_server_side_name = True
     
-    db_device_name.name = device_name_new_name.name
+    device_name.name = new_device_name_data.name
 
-    db.add(db_device_name)
+    db.add(device_name)
 
     try:
         db.commit()
@@ -44,5 +35,5 @@ def update_device_name(device_name_new_name: schemas.DeviceNameUpdate) -> models
         db.rollback()
         raise
 
-    db.refresh(db_device_name)
-    return db_device_name
+    db.refresh(device_name)
+    return device_name
