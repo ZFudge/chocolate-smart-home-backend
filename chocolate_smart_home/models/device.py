@@ -6,25 +6,24 @@ from chocolate_smart_home.database import Base
 from .client import Client
 from .device_name import DeviceName
 from .model_str_formatter import ModelStrFormatter
+from .space import Space
 
 
 class DeviceClientError(SQLAlchemyError):
-    def __init__(self, text="", client=None):
-        if client is not None:
-            text = (
-                "Client object with mqtt_id of %s is already "
-                "assigned to Device object of Device.id %s"
-            ) % (client.mqtt_id, client.device.id)
+    def __init__(self, client):
+        text = (
+            "Client object with mqtt_id of %s is already "
+            "assigned to Device object of Device.id %s"
+        ) % (client.mqtt_id, client.device.id)
         super().__init__(text)
 
 
 class DeviceNameError(SQLAlchemyError):
-    def __init__(self, text="", device_name=None):
-        if device_name is not None:
-            text = (
-                "DeviceName object with DeviceName.name of %s is already "
-                "assigned to Device object of Device.id %s"
-            ) % (device_name.name, device_name.device.id)
+    def __init__(self, device_name):
+        text = (
+            "DeviceName object with DeviceName.name of %s is already "
+            "assigned to Device object of Device.id %s"
+        ) % (device_name.name, device_name.device.id)
         super().__init__(text)
     
 
@@ -45,6 +44,9 @@ class Device(Base, ModelStrFormatter):
 
     device_type_id = Column(Integer, ForeignKey("device_types.id"))
     device_type = relationship("DeviceType", back_populates="devices")
+
+    space_id = Column(Integer, ForeignKey("spaces.id"))
+    space = relationship("Space", back_populates="devices")
 
     def __init__(self, *args, client: Client, device_name: DeviceName, **kwargs):
         excs = []
@@ -67,6 +69,7 @@ class Device(Base, ModelStrFormatter):
             str(self.device_name),
             str(self.client),
             str(self.device_type),
+            str(self.space) if self.space else "Space=None",
         ]
         return "\n".join(attrs)
 
