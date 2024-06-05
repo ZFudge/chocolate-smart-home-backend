@@ -1,8 +1,9 @@
+from .client import Client
 from .device import Device, DeviceClientError, DeviceNameError
 from .device_name import DeviceName
 from .device_type import DeviceType
 from .model_str_formatter import ModelStrFormatter
-from .client import Client
+from .space import Space
 
 
 __all__ = [
@@ -13,4 +14,5 @@ __all__ = [
     "DeviceNameError",
     "DeviceType",
     "ModelStrFormatter",
+    "Space",
 ]

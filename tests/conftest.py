@@ -58,11 +58,14 @@ def populated_test_db(empty_test_db):
     client_1 = models.Client(mqtt_id=123)
     client_2 = models.Client(mqtt_id=456)
 
+    name_1 = models.DeviceName(name="Test Device Name 1")
+    name_2 = models.DeviceName(name="Test Device Name 2", is_server_side_name=True)
+
     type_1 = models.DeviceType(name="TEST_DEVICE_TYPE_NAME_1")
     type_2 = models.DeviceType(name="TEST_DEVICE_TYPE_NAME_2")
 
-    name_1 = models.DeviceName(name="Test Device Name 1")
-    name_2 = models.DeviceName(name="Test Device Name 2", is_server_side_name=True)
+    space_1 = models.Space(name="Main Space")
+    space_2 = models.Space(name="Other Space")
 
     device_1 = models.Device(
         online=True,
@@ -70,6 +73,7 @@ def populated_test_db(empty_test_db):
         client=client_1,
         device_type=type_1,
         device_name=name_1,
+        space=space_1,
     )
     device_2 = models.Device(
         online=False,
@@ -81,10 +85,12 @@ def populated_test_db(empty_test_db):
 
     test_db.add(client_1)
     test_db.add(client_2)
-    test_db.add(type_1)
-    test_db.add(type_2)
     test_db.add(name_1)
     test_db.add(name_2)
+    test_db.add(type_1)
+    test_db.add(type_2)
+    test_db.add(space_1)
+    test_db.add(space_2)
     test_db.add(device_1)
     test_db.add(device_2)
 
