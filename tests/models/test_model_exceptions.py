@@ -29,7 +29,7 @@ def test_used_client_raises_device_client_error(empty_test_db):
         ")])"
     )
 
-    with pytest.raises(SQLAlchemyError, match=expected_text) as e:
+    with pytest.raises(SQLAlchemyError, match=expected_text):
         models.Device(client=client, device_name=other_name)
 
 
@@ -57,7 +57,7 @@ def test_used_name_raises_device_name_error(empty_test_db):
         ")])"
     )
 
-    with pytest.raises(SQLAlchemyError, match=expected_text) as e:
+    with pytest.raises(SQLAlchemyError, match=expected_text):
         models.Device(device_name=name, client=other_client)
 
 
@@ -87,5 +87,5 @@ def test_used_client_and_name_raises_device_client_and_device_name_errors(empty_
         ")])"
     )
 
-    with pytest.raises(SQLAlchemyError, match=expected_text) as e:
+    with pytest.raises(SQLAlchemyError, match=expected_text):
         models.Device(client=client, device_name=name)

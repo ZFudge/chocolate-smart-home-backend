@@ -66,10 +66,10 @@ class BaseDeviceManager:
 
         if device.remote_name != device_data["remote_name"]:
             device.reboots += 1
+        device.remote_name = device_data["remote_name"]
 
         device.device_type = device_type
         device.device_name = device_name
-        device.remote_name = device_data["remote_name"]
         device.online = True
 
         db.add(device_name)

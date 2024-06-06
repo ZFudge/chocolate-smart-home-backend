@@ -6,7 +6,6 @@ from chocolate_smart_home.database import Base
 from .client import Client
 from .device_name import DeviceName
 from .model_str_formatter import ModelStrFormatter
-from .space import Space
 
 
 class DeviceClientError(SQLAlchemyError):
@@ -25,7 +24,7 @@ class DeviceNameError(SQLAlchemyError):
             "assigned to Device object of Device.id %s"
         ) % (device_name.name, device_name.device.id)
         super().__init__(text)
-    
+
 
 class Device(Base, ModelStrFormatter):
     __tablename__ = "devices"
