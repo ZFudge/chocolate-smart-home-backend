@@ -5,7 +5,7 @@ import pytest
 
 from chocolate_smart_home import models
 from chocolate_smart_home.database import Base
-from chocolate_smart_home.dependencies import db_session, get_db, engine
+from chocolate_smart_home.dependencies import db_session, engine, get_db
 from chocolate_smart_home.main import app
 
 
@@ -46,6 +46,7 @@ def empty_test_db():
     db_session.get().query(models.DeviceName).delete()
     db_session.get().query(models.Client).delete()
     db_session.get().query(models.DeviceType).delete()
+    db_session.get().query(models.Space).delete()
     db_session.get().commit()
 
     Base.metadata.drop_all(bind=engine)

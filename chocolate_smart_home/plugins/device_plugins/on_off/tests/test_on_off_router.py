@@ -62,6 +62,12 @@ def test_delete_device_fails_on_invalid_device_id(populated_test_db):
 
 
 def test_update_single_on_off_device(populated_test_db):
+    with patch("chocolate_smart_home.plugins.device_plugins.on_off.router.publish_update") as publish_update:
+        resp = client.post("/on_off/1/false")
+        publish_update.assert_called_once_with(on_off_device_id=1, on=False)
+
+    assert resp.status_code == 204
+
     with patch("chocolate_smart_home.mqtt.client.MQTTClient.publish") as publish:
         resp = client.post("/on_off/1/false")
         publish.assert_called_once_with(topic="/on_off/1/", message="0")

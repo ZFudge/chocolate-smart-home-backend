@@ -17,4 +17,7 @@ class DeviceNameUpdate(DeviceNameId, DeviceNameBase):
     pass
 
 
-__all__ = ["DeviceName", "DeviceNameUpdate",]
+__all__ = [
+    "DeviceName",
+    "DeviceNameUpdate",
+]

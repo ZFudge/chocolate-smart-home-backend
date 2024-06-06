@@ -58,5 +58,5 @@ def test_message_handler_fails_on_missing_values(populated_test_db):
     message = MQTTMessage(b"test_topic")
     message.payload = b"111,on_off,Remote Name40 - uid"
 
-    with pytest.raises(StopIteration) as e:
+    with pytest.raises(StopIteration):
         MQTTMessageHandler().device_data_received(0, None, message)

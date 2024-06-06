@@ -1,3 +1,5 @@
+import pytest
+
 from chocolate_smart_home import models
 from chocolate_smart_home.plugins.base_device_manager import BaseDeviceManager
 
@@ -88,3 +90,39 @@ def test_device_marked_online(populated_test_db):
 
     assert updated_device is offline_device
     assert updated_device.online is True
+
+
+def test_device_manager_create_fails_missing_keys(empty_test_db):
+    with pytest.raises(KeyError, match="mqtt_id"):
+        BaseDeviceManager().create_device({
+            "device_type_name": "on_off",
+            "remote_name": "On Off Device - 1",
+        })
+    with pytest.raises(KeyError, match="device_type_name"):
+        BaseDeviceManager().create_device({
+            "mqtt_id": 123,
+            "remote_name": "On Off Device - 1",
+        })
+    with pytest.raises(KeyError, match="remote_name"):
+        BaseDeviceManager().create_device({
+            "mqtt_id": 123,
+            "device_type_name": "on_off",
+        })
+
+
+def test_device_manager_update_fails_missing_keys(populated_test_db):
+    with pytest.raises(KeyError, match="mqtt_id"):
+        BaseDeviceManager().update_device({
+            "device_type_name": "on_off",
+            "remote_name": "On Off Device - 1",
+        })
+    with pytest.raises(KeyError, match="device_type_name"):
+        BaseDeviceManager().update_device({
+            "mqtt_id": 123,
+            "remote_name": "On Off Device - 1",
+        })
+    with pytest.raises(KeyError, match="remote_name"):
+        BaseDeviceManager().update_device({
+            "mqtt_id": 123,
+            "device_type_name": "on_off",
+        })

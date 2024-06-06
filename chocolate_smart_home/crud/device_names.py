@@ -8,7 +8,9 @@ import chocolate_smart_home.schemas as schemas
 logger = logging.getLogger()
 
 
-def update_device_name(new_device_name_data: schemas.DeviceNameUpdate) -> models.DeviceName:
+def update_device_name(
+    new_device_name_data: schemas.DeviceNameUpdate,
+) -> models.DeviceName:
     db = db_session.get()
 
     device_name = (
@@ -24,7 +26,7 @@ def update_device_name(new_device_name_data: schemas.DeviceNameUpdate) -> models
         device_name.is_server_side_name = False
     else:
         device_name.is_server_side_name = True
-    
+
     device_name.name = new_device_name_data.name
 
     db.add(device_name)

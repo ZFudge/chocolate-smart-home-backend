@@ -21,10 +21,11 @@ class MQTTMessageHandler:
         _userdata: None,
         message: MQTTMessage,
     ) -> Device | None:
+        if message.payload is None:
+            return
+
         payload: str = message.payload.decode()
         logger.info('Message received: "%s"' % payload)
-        if payload is None:
-            return
 
         mqtt_id, device_type_name = payload.split(",")[:2]
 
@@ -36,9 +37,7 @@ class MQTTMessageHandler:
         try:
             msg_data: Dict = MessageHandler().parse_msg(payload)
         except StopIteration:
-            raise StopIteration(
-                f"Not enough comma-separated values in message.payload. {payload=}."
-            ) from None
+            raise
 
         try:
             _: Device = get_device_by_mqtt_client_id(mqtt_id)

@@ -11,9 +11,14 @@ class BaseDuplexMessenger:
         msg_seq: Iterable[str] = iter(raw_msg.split(","))
 
         device_data = dict()
-        device_data["mqtt_id"] = next(msg_seq)
-        device_data["device_type_name"] = next(msg_seq)
-        device_data["remote_name"] = next(msg_seq)
+        try:
+            device_data["mqtt_id"] = next(msg_seq)
+            device_data["device_type_name"] = next(msg_seq)
+            device_data["remote_name"] = next(msg_seq)
+        except StopIteration:
+            raise StopIteration(
+                f"Not enough comma-separated values in message.payload. payload='{raw_msg}'."
+            ) from None
 
         return device_data, msg_seq
 
