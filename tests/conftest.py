@@ -1,7 +1,7 @@
 from contextvars import ContextVar
 
-from sqlalchemy.orm import Session, sessionmaker
 import pytest
+from sqlalchemy.orm import Session, sessionmaker
 
 from chocolate_smart_home import models
 from chocolate_smart_home.database import Base

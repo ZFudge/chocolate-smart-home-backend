@@ -11,20 +11,19 @@ def test_create_device_type(empty_test_db):
         "/create_device_type/",
         json={"name": "test_device_type_name"},
     )
-
     assert resp.status_code == 200
-
-    data = resp.json()
-    assert data["name"] == "test_device_type_name"
+    expected_data = {
+        "id": 1,
+        "name": "test_device_type_name",
+    }
+    assert resp.json() == expected_data
 
 
 def test_create_duplicate_device_type_fails(empty_test_db):
     device_type_name = "test_device_type_name"
     resp = client.post("/create_device_type/", json={"name": device_type_name})
     resp = client.post("/create_device_type/", json={"name": device_type_name})
-
     assert resp.status_code == 500
-
     assert resp.json() == {
         "detail": "Key (name)=(test_device_type_name) already exists."
     }

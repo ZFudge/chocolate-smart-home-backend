@@ -14,7 +14,6 @@ def test_device_manager_create(empty_test_db):
         "remote_name": "On Off Device - 1",
     }
     on_off_device = OnOffDeviceManager().create_device(device_data)
-
     assert on_off_device.id == 1
     assert on_off_device.on is True
     assert on_off_device.device.remote_name == "On Off Device - 1"

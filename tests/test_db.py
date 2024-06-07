@@ -10,13 +10,11 @@ def test_get_sqlalchemy_database_url(empty_test_db):
     expected_sqlalchemy_database_url = (
         "postgresql://testuser:testpw@csm-postgres-db:5432/testdb"
     )
-
     assert sqlalchemy_database_url == expected_sqlalchemy_database_url
 
 
 def test_create_device_type(empty_test_db):
     device_type = crud.create_device_type("Device Type Name")
-
     assert isinstance(device_type, models.DeviceType)
     assert device_type.name == "Device Type Name"
 
@@ -25,13 +23,11 @@ def test_create_device_type_fail_on_duplicate(empty_test_db):
     crud.create_device_type("Device Type Name")
     with pytest.raises(IntegrityError) as e:
         crud.create_device_type("Device Type Name")
-
     assert isinstance(e.value.orig, UniqueViolation)
 
 
 def test_get_device_by_device_id(populated_test_db):
     device = crud.get_device_by_device_id(2)
-
     assert isinstance(device, models.Device)
     assert device.id == 2
     assert device.client.mqtt_id == 456
@@ -48,7 +44,6 @@ def test_get_device_by_device_id_fails_on_device_id_does_not_exist(empty_test_db
 
 def test_get_device_by_mqtt_id(populated_test_db):
     device = crud.get_device_by_mqtt_client_id(456)
-
     assert isinstance(device, models.Device)
     assert device.id == 2
     assert device.client.mqtt_id == 456
@@ -69,12 +64,11 @@ def test_get_device_fails_on_device_id_does_not_exist(empty_test_db):
 
 
 def test_get_all_devices_data_empty(empty_test_db):
-    assert crud.get_all_devices_data(empty_test_db) == []
+    assert crud.get_all_devices_data() == []
 
 
 def test_get_all_devices_data(populated_test_db):
-    devices = crud.get_all_devices_data(populated_test_db)
-
+    devices = crud.get_all_devices_data()
     assert len(devices) == 2
 
     device_1, device_2 = devices
@@ -96,12 +90,9 @@ def test_get_all_devices_data(populated_test_db):
 
 def test_delete_device(populated_test_db):
     crud.delete_device(Model=models.Device, device_id=1)
-
-    assert len(crud.get_all_devices_data(populated_test_db)) == 1
-
+    assert len(crud.get_all_devices_data()) == 1
     crud.delete_device(Model=models.Device, device_id=2)
-
-    assert len(crud.get_all_devices_data(populated_test_db)) == 0
+    assert len(crud.get_all_devices_data()) == 0
 
 
 def test_delete_device_fails_on_device_does_not_exists(empty_test_db):
