@@ -6,7 +6,6 @@ from chocolate_smart_home.plugins.base_device_manager import BaseDeviceManager
 
 def test_create_device(empty_test_db):
     db = empty_test_db
-
     device_data = {
         "mqtt_id": 111,
         "device_type_name": "test_device_type",
@@ -32,7 +31,6 @@ def test_device_reboots(populated_test_db):
         "device_type_name": "TEST_DEVICE_TYPE_NAME_1",
         "remote_name": "Remote Name 1 - 1",
     }
-
     assert device_manager.update_device(orig_device_data).reboots == 0
 
     remote_name = "Remote Name 1 - 1 - 123"
@@ -78,7 +76,6 @@ def test_device_marked_online(populated_test_db):
         .filter(models.Device.client == client)
         .one()
     )
-
     assert offline_device.online is False
 
     device_data = {
@@ -87,7 +84,6 @@ def test_device_marked_online(populated_test_db):
         "remote_name": "Remote Name 2 - 2",
     }
     updated_device = BaseDeviceManager().update_device(device_data)
-
     assert updated_device is offline_device
     assert updated_device.online is True
 

@@ -1,6 +1,10 @@
 from pydantic import BaseModel
 
 
+class SpaceEmpty(BaseModel):
+    pass
+
+
 class SpaceId(BaseModel):
     id: int
 
@@ -16,5 +20,4 @@ class Space(SpaceId, SpaceBase):
 class SpaceCreate(SpaceBase):
     pass
 
-
-__all__ = ["SpaceBase", "Space", "SpaceCreate"]
+__all__ = ["Space", "SpaceBase", "SpaceCreate"]

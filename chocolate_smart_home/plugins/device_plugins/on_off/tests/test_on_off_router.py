@@ -18,14 +18,29 @@ def test_get_on_off_device(populated_test_db):
     expected_resp_json = {
         "id": 1,
         "on": True,
-        "mqtt_id": 123,
-        "device_type": {
-            "name": "on_off",
+        "device": {
             "id": 1,
+            "client": {
+                "id": 1,
+                "mqtt_id": 123,
+            },
+            "device_name": {
+                "id": 1,
+                "name": "Test On Device",
+                "is_server_side_name": False
+            },
+            "device_type": {
+                "id": 1,
+                "name": "on_off",
+            },
+            "space": {
+                "id": 1,
+                "name": "Main Space",
+            },
+            "remote_name": "Test On Device - 1",
+            "online": True,
+            "reboots": 0,
         },
-        "remote_name": "Test On Device - 1",
-        "device_name": "Test On Device",
-        "online": True,
     }
 
     assert resp.json() == expected_resp_json
