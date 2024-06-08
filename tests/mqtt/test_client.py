@@ -1,9 +1,18 @@
 from unittest.mock import Mock
 
-from paho.mqtt.client import MQTT_ERR_SUCCESS
 import pytest
+from paho.mqtt import MQTTException
+from paho.mqtt.client import MQTT_ERR_SUCCESS
 
 from chocolate_smart_home.mqtt.client import MQTTClient
+
+
+@pytest.fixture
+def mqtt_client_unconnected():
+    mqtt_client = MQTTClient(host="127.0.0.1")
+    mqtt_client._client = Mock()
+    mqtt_client._client.publish.return_value = (MQTT_ERR_SUCCESS, None)
+    yield mqtt_client
 
 
 @pytest.fixture
@@ -11,10 +20,12 @@ def mqtt_client():
     mqtt_client = MQTTClient(host="127.0.0.1")
     mqtt_client._client = Mock()
     mqtt_client._client.publish.return_value = (MQTT_ERR_SUCCESS, None)
+    mqtt_client.connect()
     yield mqtt_client
 
 
-def test_client_connect(mqtt_client):
+def test_client_connect(mqtt_client_unconnected):
+    mqtt_client = mqtt_client_unconnected
     _client = mqtt_client._client
 
     assert _client.connect.call_count == 0
@@ -28,21 +39,14 @@ def test_client_connect(mqtt_client):
 
 
 def test_client_publish(mqtt_client):
-    _client = mqtt_client._client
-    mqtt_client.connect()
-
     TEST_TOPIC = "TEST_TOPIC"
     TEST_MESSAGE = ""
     mqtt_client.publish(topic=TEST_TOPIC, message=TEST_MESSAGE)
-
     mqtt_client._client.publish.assert_called_once_with(TEST_TOPIC, TEST_MESSAGE)
 
 
 def test_client_disconnect(mqtt_client):
-    _client = mqtt_client._client
-    mqtt_client.connect()
     mqtt_client.disconnect()
-
     mqtt_client._client.disconnect.assert_called()
 
 
@@ -53,6 +57,11 @@ def test_client_publish_fail():
 
     mqtt_client.connect()
     callback = Mock()
-    mqtt_client.publish(topic="TEST_TOPIC", message="TEST_MESSAGE", callback=callback)
-
+    with pytest.raises(MQTTException, match="Failed!"):
+        mqtt_client.publish(topic="TEST_TOPIC", message="TEST_MESSAGE", callback=callback)
     callback.assert_called_once()
+
+
+def test_client_request_all_devices_data(mqtt_client):
+    mqtt_client.request_all_devices_data()
+    mqtt_client._client.publish.assert_called_once_with("/request_devices_state/", "")

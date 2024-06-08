@@ -1,7 +1,7 @@
 import logging
 from typing import Callable
 
-import paho.mqtt.client as mqtt
+from paho.mqtt import MQTTException, client as mqtt
 
 import chocolate_smart_home.mqtt.topics as topics
 from chocolate_smart_home.mqtt.handler import MQTTMessageHandler
@@ -39,7 +39,7 @@ class MQTTClient:
 
     def publish(
         self, *, topic: str, message: str = "0", callback: Callable = lambda x: None
-    ) -> bool:
+    ) -> None:
         logger.info(
             'Publishing message: "%s" through topic: "%s"...' % (message, topic)
         )
@@ -53,6 +53,14 @@ class MQTTClient:
             )
             logger.error(err)
             callback(err)
-            return False
+            raise MQTTException(err)
         logger.info("Success")
-        return True
+
+    def request_all_devices_data(self) -> None:
+        """Publishes an empty message to topic "/request_devices_state/".
+        All controllers are subscribed to this topic and will respond by publishing
+        both their device-level configuration, and any relevant state values, back to
+        the application, using topic "/receive_device_state/"."""
+        logger.info('Publishing to topic: "%s"...' % topics.REQUEST_DEVICE_DATA_ALL)
+
+        self.publish(topic=topics.REQUEST_DEVICE_DATA_ALL, message="")
