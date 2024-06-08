@@ -1,13 +1,8 @@
-from typing import Tuple
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.orm import Session
 
-from chocolate_smart_home import dependencies, models
-import chocolate_smart_home.crud as crud
-import chocolate_smart_home.schemas as schemas
-import chocolate_smart_home.schemas.utils as schema_utils
+from chocolate_smart_home import crud, dependencies, models, schemas
 
 
 router = APIRouter()

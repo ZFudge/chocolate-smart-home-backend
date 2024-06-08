@@ -155,3 +155,9 @@ def test_add_device_space(populated_test_db):
     }
 
     assert resp.json() == expected_data
+
+
+def test_request_controllers_state():
+    resp = client.head(f"/device/request_devices_state/")
+    assert resp.status_code == 204
+

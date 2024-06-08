@@ -1,11 +1,10 @@
 from typing import Tuple
 
 from fastapi import APIRouter, HTTPException
+from paho.mqtt import MQTTException
 from sqlalchemy.exc import NoResultFound
 
-from chocolate_smart_home import models
-import chocolate_smart_home.crud as crud
-import chocolate_smart_home.schemas as schemas
+from chocolate_smart_home import crud, models, mqtt, schemas
 import chocolate_smart_home.schemas.utils as schema_utils
 
 
@@ -55,3 +54,12 @@ def remove_device_space(device_id: int):
         (detail,) = e.args
         raise HTTPException(status_code=500, detail=detail)
     return schema_utils.device_to_schema(updated_device)
+
+
+@device_router.head("/request_devices_state/", response_model=None, status_code=204)
+def request_devices_state():
+    try:
+        mqtt.mqtt_client_ctx.get().request_all_devices_data()
+    except MQTTException as e:
+        (detail,) = e.args
+        raise HTTPException(status_code=500, detail=detail)
