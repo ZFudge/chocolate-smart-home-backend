@@ -1,10 +1,6 @@
 from pydantic import BaseModel
 
 
-class SpaceEmpty(BaseModel):
-    pass
-
-
 class SpaceId(BaseModel):
     id: int
 

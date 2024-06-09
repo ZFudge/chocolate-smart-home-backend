@@ -1,4 +1,5 @@
 import logging
+from typing import List
 
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
@@ -15,6 +16,11 @@ ON_OFF_SEND_TOPIC_TEMPLATE = topics.SEND_DEVICE_DATA_TEMPLATE.format(
 )
 
 
+def get_all_on_off_devices_data() -> List[OnOff]:
+    db: Session = dependencies.db_session.get()
+    return db.query(OnOff).all()
+
+
 def get_on_off_device_by_device_id(on_off_device_id: int) -> OnOff:
     logger.info('Retrieving OnOff with id of "%s"' % on_off_device_id)
     db: Session = dependencies.db_session.get()
@@ -27,7 +33,7 @@ def get_on_off_device_by_device_id(on_off_device_id: int) -> OnOff:
     return on_off_device
 
 
-def publish_update(*, on_off_device_id: int, on: bool):
+def publish_message(*, on_off_device_id: int, on: bool):
     topic: str = ON_OFF_SEND_TOPIC_TEMPLATE.format(device_id=on_off_device_id)
     outgoing_msg: str = OnOffDuplexMessenger().compose_msg(on)
     mqtt_client_ctx.get().publish(topic=topic, message=outgoing_msg)

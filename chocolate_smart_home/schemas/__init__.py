@@ -1,14 +1,15 @@
-from chocolate_smart_home.schemas.client import Client
-from chocolate_smart_home.schemas.device import (
+from .client import Client
+from .device import (
     Device,
     DeviceBase,
     DeviceId,
     DeviceReceived,
     DeviceUpdate,
 )
-from chocolate_smart_home.schemas.device_name import DeviceName, DeviceNameUpdate
-from chocolate_smart_home.schemas.device_type import DeviceType, DeviceTypeBase
-from chocolate_smart_home.schemas.space import Space, SpaceBase, SpaceEmpty, SpaceId
+from .device_name import DeviceName, DeviceNameUpdate
+from .device_type import DeviceType, DeviceTypeBase
+from .space import Space, SpaceBase, SpaceId
+from .utils import to_schema
 
 __all__ = [
     "Client",
@@ -23,6 +24,6 @@ __all__ = [
     "DeviceUpdate",
     "Space",
     "SpaceBase",
-    "SpaceEmpty",
     "SpaceId",
+    "to_schema",
 ]

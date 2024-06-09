@@ -1,11 +1,11 @@
-from chocolate_smart_home.schemas.utils import device_to_schema
+from chocolate_smart_home.schemas.utils import to_schema
 from .model import OnOff
-from .schemas import OnOffDeviceData
+from .schemas import OnOffDevice
 
 
-def on_off_device_to_full_device_data_schema(on_off: OnOff) -> OnOffDeviceData:
-    return OnOffDeviceData(
+def to_on_off_schema(on_off: OnOff) -> OnOffDevice:
+    return OnOffDevice(
         id=on_off.id,
         on=on_off.on,
-        device=device_to_schema(on_off.device),
+        device=to_schema(on_off.device),
     )

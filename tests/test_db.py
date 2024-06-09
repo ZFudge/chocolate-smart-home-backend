@@ -89,12 +89,12 @@ def test_get_all_devices_data(populated_test_db):
 
 
 def test_delete_device(populated_test_db):
-    crud.delete_device(Model=models.Device, device_id=1)
+    crud.delete_device(device_id=1)
     assert len(crud.get_all_devices_data()) == 1
-    crud.delete_device(Model=models.Device, device_id=2)
+    crud.delete_device(device_id=2)
     assert len(crud.get_all_devices_data()) == 0
 
 
 def test_delete_device_fails_on_device_does_not_exists(empty_test_db):
     with pytest.raises(NoResultFound):
-        crud.delete_device(Model=models.Device, device_id=1)
+        crud.delete_device(device_id=1)

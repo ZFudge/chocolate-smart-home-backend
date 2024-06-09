@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from chocolate_smart_home.schemas.client import Client
 from chocolate_smart_home.schemas.device_name import DeviceName
 from chocolate_smart_home.schemas.device_type import DeviceType
-from chocolate_smart_home.schemas.space import Space, SpaceEmpty
+from chocolate_smart_home.schemas.space import Space
 
 
 class DeviceId(BaseModel):
@@ -14,7 +14,7 @@ class DeviceBase(BaseModel):
     client: Client
     device_name: DeviceName
     device_type: DeviceType
-    space: Space | SpaceEmpty
+    space: Space | None
     remote_name: str
     online: bool
     reboots: int
