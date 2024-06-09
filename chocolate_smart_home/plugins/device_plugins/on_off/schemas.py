@@ -17,5 +17,5 @@ class OnOffDevices(OnOffValue):
     ids: List[int]
 
 
-class OnOffDeviceData(OnOffId, OnOffValue):
+class OnOffDevice(OnOffId, OnOffValue):
     device: Device

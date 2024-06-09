@@ -12,6 +12,14 @@ def test_get_devices_data_empty(empty_test_db):
     assert resp.json() == []
 
 
+def test_get_device_does_not_exist(empty_test_db):
+    resp = client.get("/device/1")
+    assert resp.status_code == 404
+    assert resp.json() == {
+        "detail": "No Device with an id of 1 found."
+    }
+
+
 def test_get_devices_data(populated_test_db):
     resp = client.get("/device")
     assert resp.status_code == 200
@@ -55,7 +63,7 @@ def test_get_devices_data(populated_test_db):
                 "name": "TEST_DEVICE_TYPE_NAME_2",
                 "id": 2,
             },
-            "space": {},
+            "space": None,
             "remote_name": "Remote Name 2 - 2",
             "online": False,
             "reboots": 0,
@@ -65,7 +73,7 @@ def test_get_devices_data(populated_test_db):
     assert resp.json() == expected_resp_json
 
 
-def test_get_device_data(populated_test_db):
+def test_get_device_data_by_id(populated_test_db):
     resp = client.get("/device/{device_id}".format(device_id=1))
     assert resp.status_code == 200
 
@@ -97,30 +105,27 @@ def test_get_device_data(populated_test_db):
 
 
 def test_delete_device_request(populated_test_db):
-    device_id = 1
-    resp = client.delete(f"/device/{device_id}")
+    resp = client.delete("/device/1")
     assert resp.status_code == 204
-    resp = client.get(f"/device/{device_id}")
+    resp = client.get("/device/1")
     assert resp.status_code == 404
-    assert resp.json() == {"detail": f"No Device with an id of {device_id} found."}
+    assert resp.json() == {"detail": "No Device with an id of 1 found."}
 
 
 def test_delete_device_duplicate_deletion_fails(populated_test_db):
-    device_id = 1
-    resp = client.delete(f"/device/{device_id}")
-    resp = client.delete(f"/device/{device_id}")
+    resp = client.delete("/device/1")
+    resp = client.delete("/device/1")
     assert resp.status_code == 500
     assert resp.json() == {
-        "detail": f"Device deletion failed. No Device with an id of {device_id} found."
+        "detail": "Device deletion failed. No Device with an id of 1 found."
     }
 
 
 def test_delete_device_fails_on_invalid_device_id(populated_test_db):
-    device_id = 777
-    resp = client.delete(f"/device/{device_id}")
+    resp = client.delete("/device/777")
     assert resp.status_code == 500
     assert resp.json() == {
-        "detail": f"Device deletion failed. No Device with an id of {device_id} found."
+        "detail": "Device deletion failed. No Device with an id of 777 found."
     }
 
 
@@ -158,6 +163,6 @@ def test_add_device_space(populated_test_db):
 
 
 def test_request_controllers_state():
-    resp = client.head(f"/device/request_devices_state/")
+    resp = client.head("/device/request_devices_state/")
     assert resp.status_code == 204
 

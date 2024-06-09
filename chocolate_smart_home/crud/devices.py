@@ -4,7 +4,7 @@ from typing import List
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
-from chocolate_smart_home import dependencies, models, utils
+from chocolate_smart_home import dependencies, models
 
 
 logger = logging.getLogger()
@@ -29,19 +29,15 @@ def get_device_by_mqtt_client_id(mqtt_id: int) -> models.Device:
     return db.query(models.Client).filter(models.Client.mqtt_id == mqtt_id).one().device
 
 
-def delete_device(*, Model, device_id: int) -> None:
+def delete_device(device_id: int) -> None:
     """Dynamically delete row of any device model."""
-    model_name: str = utils.get_model_class_name(Model)
-    logger.info('Deleting %s with id of "%s"' % (model_name, device_id))
+    logger.info('Deleting Device with id of "%s"' % device_id)
     db: Session = dependencies.db_session.get()
 
     try:
-        device = db.query(Model).filter(Model.id == device_id).one()
+        device = db.query(models.Device).filter(models.Device.id == device_id).one()
     except NoResultFound:
-        msg = (
-            f"{model_name} deletion failed. No {model_name} "
-            f"with an id of {device_id} found."
-        )
+        msg = "Device deletion failed. No Device with an id of %s found." % device_id
         logger.error(msg)
         raise NoResultFound(msg)
 
@@ -86,7 +82,7 @@ def remove_device_space(device_id: int) -> models.Device:
     except NoResultFound as e:
         msg = (
             "Failed to remove Space from "
-            "Device with id of %s - %s" % (device_id, device_id, e.args[0])
+            "Device with id of %s - %s" % (device_id, e.args[0])
         )
         logger.error(msg)
         raise NoResultFound(msg)

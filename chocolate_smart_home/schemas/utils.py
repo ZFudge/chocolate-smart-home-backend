@@ -1,36 +1,25 @@
+from typing import Any, List, Mapping, Tuple, Type
+
+import pydantic
+from sqlalchemy.orm.decl_api import DeclarativeMeta
+
 from chocolate_smart_home import models, schemas
 
 
-def client_to_schema(client: models.Client) -> schemas.Client:
-    return schemas.Client(id=client.id, mqtt_id=client.mqtt_id)
+def to_schema(model_obj: Type[DeclarativeMeta]) -> Mapping:
+    """Return a sqlalchemy model object's data in its corresponding pydantic schema"""
+    if model_obj is None:
+        return None
+    model_name: str = models.get_model_class_name(model_obj)
+    schema_cls: Type[pydantic.BaseModel] = getattr(schemas, model_name)
+    attr_name_value_pairs: List[Tuple[str, Any]] = []
 
+    for name in schema_cls.model_fields.keys():
+        value: Any = getattr(model_obj, name)
+        # Any attribute value that is also a sqlalchemy model object should be
+        # recursively converted to its corresponding schema.
+        if type(type(value)) is DeclarativeMeta:
+            value: Mapping = to_schema(value)
+        attr_name_value_pairs.append((name, value))
 
-def device_name_to_schema(device_name: models.DeviceName) -> schemas.DeviceName:
-    return schemas.DeviceName(
-        id=device_name.id,
-        name=device_name.name,
-        is_server_side_name=device_name.is_server_side_name,
-    )
-
-
-def device_type_to_schema(device_type_data: models.Device) -> schemas.DeviceType:
-    return schemas.DeviceType(id=device_type_data.id, name=device_type_data.name)
-
-
-def space_to_schema(space: models.Space | None) -> schemas.Space | schemas.SpaceEmpty:
-    if space is None:
-        return schemas.SpaceEmpty()
-    return schemas.Space(id=space.id, name=space.name)
-
-
-def device_to_schema(device_data: models.Device) -> schemas.Device:
-    return schemas.Device(
-        id=device_data.id,
-        client=client_to_schema(device_data.client),
-        device_name=device_name_to_schema(device_data.device_name),
-        device_type=device_type_to_schema(device_data.device_type),
-        space=space_to_schema(device_data.space),
-        remote_name=device_data.remote_name,
-        online=device_data.online,
-        reboots=device_data.reboots,
-    )
+    return schema_cls(**dict(attr_name_value_pairs))

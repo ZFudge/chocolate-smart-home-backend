@@ -28,14 +28,12 @@ def test_get_spaces(populated_test_db):
     assert resp.json() == expected_data
 
 
-def test_get_space(populated_test_db):
+def test_get_space_does_not_exist(empty_test_db):
     resp = client.get("/spaces/1")
-    assert resp.status_code == 200
-    expected_data = {
-        "id": 1,
-        "name": "Main Space",
+    assert resp.status_code == 404
+    assert resp.json() == {
+        "detail": "No Space with an id of 1 found."
     }
-    assert resp.json() == expected_data
 
 
 def test_get_space(populated_test_db):
@@ -105,8 +103,8 @@ def test_delete_space_fails_on_invalid_device_id(populated_test_db):
 
 
 def test_delete_device_duplicate_deletion_fails(populated_test_db):
-    resp = client.delete(f"/spaces/1")
-    resp = client.delete(f"/spaces/1")
+    resp = client.delete("/spaces/1")
+    resp = client.delete("/spaces/1")
     assert resp.status_code == 500
     assert resp.json() == {
         "detail": (
