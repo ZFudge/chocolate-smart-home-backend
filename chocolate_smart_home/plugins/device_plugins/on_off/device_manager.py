@@ -20,7 +20,6 @@ class OnOffDeviceManager(BaseDeviceManager):
         device: models.Device = super().create_device(device_data)
         new_on_off = OnOff(on=device_data["on"], device=device)
 
-        db.add(device)
         db.add(new_on_off)
 
         try:
