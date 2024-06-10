@@ -58,6 +58,9 @@ cleanmqtt:
 	@docker stop mqtt 2> ${TRASH_PATH} || true
 	@docker rm mqtt 2> ${TRASH_PATH} || true
 
+attachmqtt:
+	@docker exec -it mqtt /bin/sh -c 'tail -25 -f /mosquitto/log/mosquitto.log'
+
 up:
 	@docker-compose up -d
 

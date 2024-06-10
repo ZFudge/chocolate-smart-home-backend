@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import Callable
 
 from paho.mqtt import MQTTException, client as mqtt
@@ -22,27 +23,34 @@ class MQTTClient:
         return cls._instance
 
     def __init__(self, *, host: str = DEFAULT_MQTT_HOST, port: int = DEFAULT_MQTT_PORT):
-        self._client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+        client_id = os.environ.get("MQTT_CLIENT_ID", "CSM-FASTAPI-SERVER")
+        logger.info(
+            "Initializing MQTT client with client_id %s, host %s, and port %s"
+            % (client_id, host, port)
+        )
+        self._client = mqtt.Client(
+            mqtt.CallbackAPIVersion.VERSION2, client_id=client_id
+        )
         self._host = host
         self._port = port
 
     def connect(self):
+        logger.info("Connecting MQTT client to %s:%s" % (self._host, self._port))
         self._client.connect(self._host, self._port, 60)
         self._client.loop_start()
+        self._client.subscribe(topics.RECEIVE_DEVICE_DATA)
         self._client.message_callback_add(
             topics.RECEIVE_DEVICE_DATA, MQTTMessageHandler().device_data_received
         )
-        self._client.subscribe(topics.RECEIVE_DEVICE_DATA)
 
     def disconnect(self):
+        logger.info("Disconnecting MQTT client from %s:%s" % (self._host, self._port))
         self._client.disconnect()
 
     def publish(
         self, *, topic: str, message: str = "0", callback: Callable = lambda x: None
     ) -> None:
-        logger.info(
-            'Publishing message: "%s" through topic: "%s"...' % (message, topic)
-        )
+        logger.info('Publishing message: "%s" through topic: %s...' % (message, topic))
 
         (rc_update, message_id_update) = self._client.publish(topic, message)
         if rc_update != mqtt.MQTT_ERR_SUCCESS:

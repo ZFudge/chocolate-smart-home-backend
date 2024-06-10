@@ -43,5 +43,5 @@ def test_device_to_schema_empty_space(populated_test_db):
 
 
 def test_to_schema_empty_schema():
-    assert to_schema(None) == None
+    assert to_schema(None) is None
 
