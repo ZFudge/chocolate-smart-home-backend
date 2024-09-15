@@ -56,8 +56,8 @@ def remove_device_space(device_id: int):
     return schema_utils.to_schema(updated_device)
 
 
-@device_router.head("/request_devices_state/", response_model=None, status_code=204)
-def request_devices_state():
+@device_router.head("/broadcast_request_devices_state/", response_model=None, status_code=204)
+def broadcast_request_devices_state():
     try:
         mqtt.mqtt_client_ctx.get().request_all_devices_data()
     except MQTTException as e:

@@ -163,6 +163,6 @@ def test_add_device_space(populated_test_db):
 
 
 def test_request_controllers_state():
-    resp = client.head("/device/request_devices_state/")
+    resp = client.head("/device/broadcast_request_devices_state/")
     assert resp.status_code == 204
 

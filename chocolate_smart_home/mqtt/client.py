@@ -65,7 +65,7 @@ class MQTTClient:
         logger.info("Success")
 
     def request_all_devices_data(self) -> None:
-        """Publishes an empty message to topic "/request_devices_state/".
+        """Publishes an empty message to topic "/broadcast_request_devices_state/".
         All controllers are subscribed to this topic and will respond by publishing
         both their device-level configuration, and any relevant state values, back to
         the application, using topic "/receive_device_state/"."""

@@ -64,4 +64,4 @@ def test_client_publish_fail():
 
 def test_client_request_all_devices_data(mqtt_client):
     mqtt_client.request_all_devices_data()
-    mqtt_client._client.publish.assert_called_once_with("/request_devices_state/", "")
+    mqtt_client._client.publish.assert_called_once_with("/broadcast_request_devices_state/", "")
