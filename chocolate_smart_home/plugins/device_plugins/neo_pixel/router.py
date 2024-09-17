@@ -11,7 +11,7 @@ from .crud import (
     publish_message,
 )
 from .model import NeoPixel
-from .schemas import NeoPixelDevice, NeoPixelDevices
+from .schemas import NeoPixelDevice, NeoPixelDevices, NeoPixelOptions
 from .utils import to_neo_pixel_schema
 
 
@@ -41,16 +41,16 @@ def get_device(neo_pixel_device_id: int) -> NeoPixelDevice:
 
 
 @plugin_router.post("/", response_model=None, status_code=204)
-def update_devices(data: NeoPixelDevices):
-    """Publish new "on" value to multiple devices."""
-    for neo_pixel_device_id in data.ids:
-        publish_message(neo_pixel_device_id=neo_pixel_device_id, on=data.on)
+def update_devices(neo_pixel_data: NeoPixelDevices):
+    """Publish new values to multiple Neo Pixel devices."""
+    for neo_pixel_device_id in neo_pixel_data.ids:
+        publish_message(neo_pixel_device_id=neo_pixel_device_id, data=neo_pixel_data.data)
 
 
-@plugin_router.post("/{neo_pixel_device_id}/{on_value}", response_model=None, status_code=204)
-def update_device(neo_pixel_device_id: int, on_value: bool):
-    """Publish new "on" value to single device."""
-    publish_message(neo_pixel_device_id=neo_pixel_device_id, on=on_value)
+@plugin_router.post("/{neo_pixel_device_id}", response_model=None, status_code=204)
+def update_device(neo_pixel_device_id: int, data: NeoPixelOptions):
+    """Publish new values to a single Neo Pixel device."""
+    publish_message(neo_pixel_device_id=neo_pixel_device_id, data=data)
 
 
 @plugin_router.delete("/{neo_pixel_device_id}", response_model=None, status_code=204)

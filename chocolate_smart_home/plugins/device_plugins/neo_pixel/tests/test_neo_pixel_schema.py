@@ -16,13 +16,17 @@ def test_to_neo_pixel_schema(populated_test_db):
     expected_schema = neo_pixel_schemas.NeoPixelDevice(
         id=1,
         on=True,
+        twinkle=True,
+        transform=True,
+        ms=5,
+        brightness=255,
         device=schemas.Device(
             id=1,
             online=True,
             reboots=0,
-            remote_name="Test On Device - 1",
+            remote_name="Test Neo Pixel Device - 1",
             client=schemas.Client(id=1, mqtt_id=123),
-            device_name=schemas.DeviceName(id=1, name="Test On Device", is_server_side_name=False),
+            device_name=schemas.DeviceName(id=1, name="Test Neo Pixel Device One", is_server_side_name=False),
             device_type=schemas.DeviceType(id=1, name="neo_pixel"),
             space=schemas.Space(id=1, name="Main Space"),
         )
@@ -40,13 +44,17 @@ def test_to_neo_pixel_schema_no_space(populated_test_db):
     expected_schema = neo_pixel_schemas.NeoPixelDevice(
         id=2,
         on=False,
+        twinkle=True,
+        transform=False,
+        ms=55,
+        brightness=123,
         device=schemas.Device(
             id=2,
             online=True,
             reboots=0,
-            remote_name="Test Off Device - 2",
+            remote_name="Test Neo Pixel Device - 2",
             client=schemas.Client(id=2, mqtt_id=456),
-            device_name=schemas.DeviceName(id=2, name="Test Off Device", is_server_side_name=True),
+            device_name=schemas.DeviceName(id=2, name="Test Neo Pixel Device Two", is_server_side_name=True),
             device_type=schemas.DeviceType(id=1, name="neo_pixel"),
             space=None,
         )

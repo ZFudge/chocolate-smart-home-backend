@@ -3,7 +3,7 @@ from unittest.mock import call, patch
 from fastapi.testclient import TestClient
 
 from chocolate_smart_home.main import app
-
+from chocolate_smart_home.plugins.device_plugins.neo_pixel.schemas import NeoPixelOptions
 
 client = TestClient(app)
 
@@ -16,6 +16,10 @@ def test_get_neo_pixel_devices(populated_test_db):
         {
             "id": 1,
             "on": True,
+            "twinkle": True,
+            "transform": True,
+            "ms": 5,
+            "brightness": 255,
             "device": {
                 "id": 1,
                 "client": {
@@ -24,7 +28,7 @@ def test_get_neo_pixel_devices(populated_test_db):
                 },
                 "device_name": {
                     "id": 1,
-                    "name": "Test On Device",
+                    "name": "Test Neo Pixel Device One",
                     "is_server_side_name": False
                 },
                 "device_type": {
@@ -35,7 +39,7 @@ def test_get_neo_pixel_devices(populated_test_db):
                     "id": 1,
                     "name": "Main Space",
                 },
-                "remote_name": "Test On Device - 1",
+                "remote_name": "Test Neo Pixel Device - 1",
                 "online": True,
                 "reboots": 0,
             },
@@ -43,6 +47,10 @@ def test_get_neo_pixel_devices(populated_test_db):
         {
             "id": 2,
             "on": False,
+            "twinkle": True,
+            "transform": False,
+            "ms": 55,
+            "brightness": 123,
             "device": {
                 "id": 2,
                 "client": {
@@ -51,7 +59,7 @@ def test_get_neo_pixel_devices(populated_test_db):
                 },
                 "device_name": {
                     "id": 2,
-                    "name": "Test Off Device",
+                    "name": "Test Neo Pixel Device Two",
                     "is_server_side_name": True
                 },
                 "device_type": {
@@ -59,7 +67,7 @@ def test_get_neo_pixel_devices(populated_test_db):
                     "name": "neo_pixel",
                 },
                 "space": None,
-                "remote_name": "Test Off Device - 2",
+                "remote_name": "Test Neo Pixel Device - 2",
                 "online": True,
                 "reboots": 0,
             },
@@ -79,6 +87,10 @@ def test_get_neo_pixel_device(populated_test_db):
     expected_resp_json = {
         "id": 1,
         "on": True,
+        "twinkle": True,
+        "transform": True,
+        "ms": 5,
+        "brightness": 255,
         "device": {
             "id": 1,
             "client": {
@@ -87,7 +99,7 @@ def test_get_neo_pixel_device(populated_test_db):
             },
             "device_name": {
                 "id": 1,
-                "name": "Test On Device",
+                "name": "Test Neo Pixel Device One",
                 "is_server_side_name": False
             },
             "device_type": {
@@ -98,7 +110,7 @@ def test_get_neo_pixel_device(populated_test_db):
                 "id": 1,
                 "name": "Main Space",
             },
-            "remote_name": "Test On Device - 1",
+            "remote_name": "Test Neo Pixel Device - 1",
             "online": True,
             "reboots": 0,
         },
@@ -139,26 +151,29 @@ def test_delete_device_fails_on_invalid_device_id(populated_test_db):
 
 def test_update_single_neo_pixel_device(populated_test_db):
     with patch("chocolate_smart_home.plugins.device_plugins.neo_pixel.router.publish_message") as publish_message:
-        resp = client.post("/neo_pixel/1/false")
-        publish_message.assert_called_once_with(neo_pixel_device_id=1, on=False)
+        resp = client.post("/neo_pixel/1", json={"on": False})
+        publish_message.assert_called_once_with(
+            neo_pixel_device_id=1,
+            data=NeoPixelOptions(on=False),
+        )
 
     assert resp.status_code == 204
 
     with patch("chocolate_smart_home.mqtt.client.MQTTClient.publish") as publish:
-        resp = client.post("/neo_pixel/1/false")
-        publish.assert_called_once_with(topic="/neo_pixel/1/", message="0")
+        resp = client.post("/neo_pixel/1", json={"on": True})
+        publish.assert_called_once_with(topic="/neo_pixel/1/", message="on=1;")
 
     assert resp.status_code == 204
 
 
 def test_update_multiple_devices(populated_test_db):
-    post_data = dict(ids=[1, 2], on=False)
+    post_data = {"ids":[1, 2], "data":{"on":False, "twinkle":True}}
 
     with patch("chocolate_smart_home.mqtt.client.MQTTClient.publish") as publish:
         resp = client.post("/neo_pixel", json=post_data)
         assert publish.call_args_list == [
-            call(topic="/neo_pixel/1/", message="0"),
-            call(topic="/neo_pixel/2/", message="0"),
+            call(topic="/neo_pixel/1/", message="on=0;twinkle=1;"),
+            call(topic="/neo_pixel/2/", message="on=0;twinkle=1;"),
         ]
 
     assert resp.status_code == 204

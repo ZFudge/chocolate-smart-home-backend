@@ -18,7 +18,14 @@ class NeoPixelDeviceManager(BaseDeviceManager):
         db = db_session.get()
 
         device: models.Device = super().create_device(device_data)
-        new_neo_pixel = NeoPixel(on=device_data["on"], device=device)
+        new_neo_pixel = NeoPixel(
+            on=device_data["on"],
+            twinkle=device_data["twinkle"],
+            transform=device_data["transform"],
+            ms=device_data["ms"],
+            brightness=device_data["brightness"],
+            device=device,
+        )
 
         db.add(new_neo_pixel)
 
@@ -40,6 +47,10 @@ class NeoPixelDeviceManager(BaseDeviceManager):
         neo_pixel = db.query(NeoPixel).filter(NeoPixel.device == device).one()
 
         neo_pixel.on = device_data["on"]
+        neo_pixel.twinkle = device_data["twinkle"]
+        neo_pixel.transform = device_data["transform"]
+        neo_pixel.ms = device_data["ms"]
+        neo_pixel.brightness = device_data["brightness"]
 
         db.add(device)
         db.add(neo_pixel)

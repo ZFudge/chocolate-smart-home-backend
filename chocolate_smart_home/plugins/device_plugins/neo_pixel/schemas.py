@@ -11,10 +11,23 @@ class NeoPixelId(BaseModel):
 
 class NeoPixelValue(BaseModel):
     on: bool
+    twinkle: bool
+    transform: bool
+    ms: int
+    brightness: int
 
 
-class NeoPixelDevices(NeoPixelValue):
+class NeoPixelOptions(BaseModel):
+    on: bool = None
+    twinkle: bool = None
+    transform: bool = None
+    ms: int = None
+    brightness: int = None
+
+
+class NeoPixelDevices(BaseModel):
     ids: List[int]
+    data: NeoPixelOptions
 
 
 class NeoPixelDevice(NeoPixelId, NeoPixelValue):

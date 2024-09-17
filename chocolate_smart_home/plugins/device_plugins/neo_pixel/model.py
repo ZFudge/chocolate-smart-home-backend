@@ -14,7 +14,11 @@ class NeoPixel(Base, PluginModelStrFormatter):
     device_id = Column(Integer, ForeignKey("devices.id"))
     device = relationship("Device")
 
-    on = Column(Boolean, default=False)
+    on = Column(Boolean)
+    twinkle = Column(Boolean)
+    transform = Column(Boolean)
+    ms = Column(Integer)
+    brightness = Column(Integer)
 
 
 Base.metadata.create_all(bind=engine)

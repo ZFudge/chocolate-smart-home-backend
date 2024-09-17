@@ -19,8 +19,8 @@ def populated_test_db(empty_test_db):
     neo_pixel_client_1 = models.Client(mqtt_id=123)
     neo_pixel_client_2 = models.Client(mqtt_id=456)
 
-    neo_pixel_name_1 = models.DeviceName(name="Test On Device")
-    neo_pixel_name_2 = models.DeviceName(name="Test Off Device", is_server_side_name=True)
+    neo_pixel_name_1 = models.DeviceName(name="Test Neo Pixel Device One")
+    neo_pixel_name_2 = models.DeviceName(name="Test Neo Pixel Device Two", is_server_side_name=True)
 
     device_type = models.DeviceType(name="neo_pixel")
 
@@ -28,7 +28,7 @@ def populated_test_db(empty_test_db):
 
     device__id_1 = models.Device(
         online=True,
-        remote_name="Test On Device - 1",
+        remote_name="Test Neo Pixel Device - 1",
         client=neo_pixel_client_1,
         device_type=device_type,
         device_name=neo_pixel_name_1,
@@ -36,14 +36,28 @@ def populated_test_db(empty_test_db):
     )
     device__id_2 = models.Device(
         online=True,
-        remote_name="Test Off Device - 2",
+        remote_name="Test Neo Pixel Device - 2",
         client=neo_pixel_client_2,
         device_type=device_type,
         device_name=neo_pixel_name_2,
     )
 
-    on_device__id_1 = NeoPixel(on=True, device=device__id_1)
-    off_device__id_2 = NeoPixel(on=False, device=device__id_2)
+    neo_pixel_device__id_1 = NeoPixel(
+        on=True,
+        twinkle=True,
+        transform=True,
+        ms=5,
+        brightness=255,
+        device=device__id_1,
+    )
+    neo_pixel_device__id_2 = NeoPixel(
+        on=False,
+        twinkle=True,
+        transform=False,
+        ms=55,
+        brightness=123,
+        device=device__id_2,
+    )
 
     db = empty_test_db
 
@@ -59,8 +73,8 @@ def populated_test_db(empty_test_db):
     db.add(device__id_1)
     db.add(device__id_2)
 
-    db.add(on_device__id_1)
-    db.add(off_device__id_2)
+    db.add(neo_pixel_device__id_1)
+    db.add(neo_pixel_device__id_2)
 
     db.commit()
 

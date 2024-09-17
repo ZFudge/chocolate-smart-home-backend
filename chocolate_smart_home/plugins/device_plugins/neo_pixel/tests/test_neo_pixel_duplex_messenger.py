@@ -8,7 +8,7 @@ def test_turn_off_message(populated_test_db):
     """Turn off, on, and off again, validating the returned device's .on
     attribute value each time."""
     message = MQTTMessage(b"test_topic")
-    message.payload = b"123,neo_pixel,Remote Name - uid,0"
+    message.payload = b"123,neo_pixel,Remote Name - uid,0,5,255"
 
     neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
     device = neo_pixel_device.device
@@ -18,12 +18,12 @@ def test_turn_off_message(populated_test_db):
     assert device.device_name.name == "Remote Name"
     assert neo_pixel_device.on is False
 
-    message.payload = b"123,neo_pixel,Remote Name - uid,1"
+    message.payload = b"123,neo_pixel,Remote Name - uid,1,5,255"
     neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
     assert neo_pixel_device.on is True
     assert neo_pixel_device.device is device
 
-    message.payload = b"123,neo_pixel,Remote Name - uid,0"
+    message.payload = b"123,neo_pixel,Remote Name - uid,0,5,255"
     neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
     assert neo_pixel_device.on is False
     assert neo_pixel_device.device is device
@@ -33,7 +33,7 @@ def test_turn_on_message(populated_test_db):
     """Turn on, off, and on again, validating the returned device's .on
     attribute value each time."""
     message = MQTTMessage(b"test_topic")
-    message.payload = b"456,neo_pixel,Remote Name - uid,1"
+    message.payload = b"456,neo_pixel,Remote Name - uid,1,5,255"
 
     neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
     device = neo_pixel_device.device
@@ -43,11 +43,11 @@ def test_turn_on_message(populated_test_db):
     assert device.device_name.name == "Remote Name"
     assert neo_pixel_device.on is True
 
-    message.payload = b"456,neo_pixel,Remote Name - uid,0"
+    message.payload = b"456,neo_pixel,Remote Name - uid,0,5,255"
     neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
     assert neo_pixel_device.on is False
 
-    message.payload = b"456,neo_pixel,Remote Name - uid,1"
+    message.payload = b"456,neo_pixel,Remote Name - uid,1,5,255"
     neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
     assert neo_pixel_device.on is True
 

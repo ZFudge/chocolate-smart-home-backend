@@ -9,9 +9,8 @@ from chocolate_smart_home.mqtt import mqtt_client_ctx, topics
 from .duplex_messenger import NeoPixelDuplexMessenger
 from .model import NeoPixel
 
-
 logger = logging.getLogger()
-neo_pixel_SEND_TOPIC_TEMPLATE = topics.SEND_DEVICE_DATA_TEMPLATE.format(
+NEO_PIXEL_SEND_TOPIC_TEMPLATE = topics.SEND_DEVICE_DATA_TEMPLATE.format(
     device_type="neo_pixel"
 )
 
@@ -33,9 +32,9 @@ def get_neo_pixel_device_by_device_id(neo_pixel_device_id: int) -> NeoPixel:
     return neo_pixel_device
 
 
-def publish_message(*, neo_pixel_device_id: int, on: bool):
-    topic: str = neo_pixel_SEND_TOPIC_TEMPLATE.format(device_id=neo_pixel_device_id)
-    outgoing_msg: str = NeoPixelDuplexMessenger().compose_msg(on)
+def publish_message(*, neo_pixel_device_id: int, data: dict):
+    topic: str = NEO_PIXEL_SEND_TOPIC_TEMPLATE.format(device_id=neo_pixel_device_id)
+    outgoing_msg: str = NeoPixelDuplexMessenger().compose_msg(data)
     mqtt_client_ctx.get().publish(topic=topic, message=outgoing_msg)
 
 
