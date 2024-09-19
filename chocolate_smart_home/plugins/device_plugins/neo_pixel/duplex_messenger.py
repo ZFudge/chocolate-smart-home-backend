@@ -38,10 +38,10 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
         if hasattr(data, "transform") and data.transform is not None:
             msg += "transform={};".format(NeoPixelDuplexMessenger.OUTGOING_LOOKUP[data.transform])
         if hasattr(data, "ms") and data.ms is not None:
-            msg += "ms={};".format(data["ms"])
+            msg += "ms={};".format(data.ms)
         if hasattr(data, "brightness") and data.brightness is not None:
-            msg += "brightness={};".format(data["brightness"])
-      
+            msg += "brightness={};".format(data.brightness)
+
         return msg
 
 

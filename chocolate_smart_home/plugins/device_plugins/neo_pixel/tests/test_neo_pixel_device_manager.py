@@ -67,6 +67,10 @@ def test_device_manager_update(populated_test_db):
 def test_device_manager_update_fails_device_does_not_exist(empty_test_db):
     device_data = {
         "on": True,
+        "twinkle": True,
+        "transform": True,
+        "ms": 5,
+        "brightness": 255,
         "mqtt_id": 123,
         "device_type_name": "neo_pixel",
         "remote_name": "Neo Pixel Device - 1",
@@ -76,18 +80,6 @@ def test_device_manager_update_fails_device_does_not_exist(empty_test_db):
 
 
 def test_device_manager_update_fails_missing_keys(populated_test_db):
-    with pytest.raises(KeyError, match="on"):
-        NeoPixelDeviceManager().update_device(
-            {
-                "twinkle": True,
-                "transform": True,
-                "ms": 5,
-                "brightness": 255,
-                "mqtt_id": 123,
-                "device_type_name": "neo_pixel",
-                "remote_name": "Neo Pixel Device - 1",
-            }
-        )
     with pytest.raises(KeyError, match="mqtt_id"):
         NeoPixelDeviceManager().update_device(
             {
@@ -122,5 +114,80 @@ def test_device_manager_update_fails_missing_keys(populated_test_db):
                 "brightness": 255,
                 "mqtt_id": 123,
                 "device_type_name": "neo_pixel",
+            }
+        )
+
+
+def test_device_manager_update_fails_missing_key_on(populated_test_db):
+    with pytest.raises(KeyError, match="on"):
+        NeoPixelDeviceManager().update_device(
+            {
+                "twinkle": True,
+                "transform": True,
+                "ms": 5,
+                "brightness": 255,
+                "mqtt_id": 123,
+                "device_type_name": "neo_pixel",
+                "remote_name": "Neo Pixel Device - 1",
+            }
+        )
+
+
+def test_device_manager_update_fails_missing_key_twinkle(populated_test_db):
+    with pytest.raises(KeyError, match="twinkle"):
+        NeoPixelDeviceManager().update_device(
+            {
+                "on": True,
+                "transform": True,
+                "ms": 5,
+                "brightness": 255,
+                "mqtt_id": 123,
+                "device_type_name": "neo_pixel",
+                "remote_name": "Neo Pixel Device - 1",
+            }
+        )
+
+
+def test_device_manager_update_fails_missing_key_transform(populated_test_db):
+    with pytest.raises(KeyError, match="transform"):
+        NeoPixelDeviceManager().update_device(
+            {
+                "on": True,
+                "twinkle": True,
+                "ms": 5,
+                "brightness": 255,
+                "mqtt_id": 123,
+                "device_type_name": "neo_pixel",
+                "remote_name": "Neo Pixel Device - 1",
+            }
+        )
+
+
+def test_device_manager_update_fails_missing_key_ms(populated_test_db):
+    with pytest.raises(KeyError, match="ms"):
+        NeoPixelDeviceManager().update_device(
+            {
+                "on": True,
+                "twinkle": True,
+                "transform": True,
+                "brightness": 255,
+                "mqtt_id": 123,
+                "device_type_name": "neo_pixel",
+                "remote_name": "Neo Pixel Device - 1",
+            }
+        )
+
+
+def test_device_manager_update_fails_missing_key_brightness(populated_test_db):
+    with pytest.raises(KeyError, match="brightness"):
+        NeoPixelDeviceManager().update_device(
+            {
+                "on": True,
+                "twinkle": True,
+                "transform": True,
+                "ms": 5,
+                "mqtt_id": 123,
+                "device_type_name": "neo_pixel",
+                "remote_name": "Neo Pixel Device - 1",
             }
         )
