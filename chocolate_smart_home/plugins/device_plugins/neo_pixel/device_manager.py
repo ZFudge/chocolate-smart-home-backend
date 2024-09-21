@@ -24,6 +24,7 @@ class NeoPixelDeviceManager(BaseDeviceManager):
             transform=device_data["transform"],
             ms=device_data["ms"],
             brightness=device_data["brightness"],
+            palette=device_data["palette"],
             device=device,
         )
 
@@ -51,6 +52,7 @@ class NeoPixelDeviceManager(BaseDeviceManager):
         neo_pixel.transform = device_data["transform"]
         neo_pixel.ms = device_data["ms"]
         neo_pixel.brightness = device_data["brightness"]
+        neo_pixel.palette = device_data["palette"]
 
         db.add(device)
         db.add(neo_pixel)

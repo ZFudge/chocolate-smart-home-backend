@@ -1,4 +1,5 @@
-from sqlalchemy import Boolean, Column, Integer, ForeignKey
+from sqlalchemy import Boolean, Column, ForeignKey, Integer
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
 
 from chocolate_smart_home.database import Base, engine
@@ -19,6 +20,8 @@ class NeoPixel(Base, PluginModelStrFormatter):
     transform = Column(Boolean)
     ms = Column(Integer)
     brightness = Column(Integer)
+
+    palette = Column(ARRAY(Integer))
 
 
 Base.metadata.create_all(bind=engine)

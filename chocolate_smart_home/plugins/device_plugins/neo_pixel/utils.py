@@ -11,5 +11,6 @@ def to_neo_pixel_schema(neo_pixel: NeoPixel) -> NeoPixelDevice:
         transform=neo_pixel.transform,
         ms=neo_pixel.ms,
         brightness=neo_pixel.brightness,
+        palette=neo_pixel.palette,
         device=to_schema(neo_pixel.device),
     )
