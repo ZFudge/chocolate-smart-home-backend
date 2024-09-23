@@ -1,7 +1,10 @@
 from types import MappingProxyType
 from typing import Dict
 
-from chocolate_smart_home.plugins.base_duplex_messenger import BaseDuplexMessenger
+from chocolate_smart_home.plugins.base_duplex_messenger import (
+    BaseDuplexMessenger,
+)
+from .schemas import OnOffDeviceReceived
 
 
 class OnOffDuplexMessenger(BaseDuplexMessenger):
@@ -19,12 +22,15 @@ class OnOffDuplexMessenger(BaseDuplexMessenger):
 
     def parse_msg(self, incoming_msg: str) -> Dict:
         """Parse incoming message from controller."""
-        device_data, msg_seq = super().parse_msg(incoming_msg)
+        device, msg_seq = super().parse_msg(incoming_msg)
 
         on_off_value: str = next(msg_seq)
-        device_data["on"] = OnOffDuplexMessenger.INCOMING_LOOKUP[on_off_value]
+        on_off_device_data = OnOffDeviceReceived(
+            on=OnOffDuplexMessenger.INCOMING_LOOKUP[on_off_value],
+            device=device
+        )
 
-        return device_data
+        return on_off_device_data
 
     def compose_msg(self, on: bool) -> str:
         """Compose outgoing message to be published to controller."""

@@ -4,16 +4,17 @@ from chocolate_smart_home.plugins.base_duplex_messenger import (
     BaseDuplexMessenger,
     DefaultDuplexMessenger,
 )
+from chocolate_smart_home.schemas import DeviceReceived
 
 
 def test_parse_msg():
     msg = "1,device_type_name,remote_name - 1"
     device_data, _ = BaseDuplexMessenger().parse_msg(msg)
-    expected_device_data = {
-        "mqtt_id": "1",
-        "device_type_name": "device_type_name",
-        "remote_name": "remote_name - 1",
-    }
+    expected_device_data = DeviceReceived(
+        mqtt_id=1,
+        device_type_name="device_type_name",
+        remote_name="remote_name - 1",
+    )
     assert device_data == expected_device_data
 
 
@@ -44,11 +45,11 @@ def test_default_parse_msg():
     msg = "1,device_type_name,remote_name - 1"
     device_data = default_duplex_messenger.parse_msg(msg)
 
-    expected_device_data = {
-        "mqtt_id": "1",
-        "device_type_name": "device_type_name",
-        "remote_name": "remote_name - 1",
-    }
+    expected_device_data = DeviceReceived(
+        mqtt_id="1",
+        device_type_name="device_type_name",
+        remote_name="remote_name - 1",
+    )
     assert device_data == expected_device_data
 
 
