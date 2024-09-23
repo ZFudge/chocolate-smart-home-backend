@@ -1,10 +1,10 @@
 import logging
-from typing import Dict
 
 import chocolate_smart_home.models as models
 from chocolate_smart_home.dependencies import db_session
 from chocolate_smart_home.plugins.base_device_manager import BaseDeviceManager
 from .model import NeoPixel
+from .schemas import NeoPixelDeviceReceived
 
 
 logger = logging.getLogger()
@@ -13,22 +13,22 @@ logger = logging.getLogger()
 class NeoPixelDeviceManager(BaseDeviceManager):
     """Manage "neo_pixels" and "devices" table rows using incoming device data."""
 
-    def create_device(self, device_data: Dict) -> NeoPixel:
-        logger.info('Creating device "%s"' % device_data)
+    def create_device(self, incoming_neo_pixel: NeoPixelDeviceReceived) -> NeoPixel:
+        logger.info('Creating device "%s"' % incoming_neo_pixel)
         db = db_session.get()
 
-        device: models.Device = super().create_device(device_data)
-        new_neo_pixel = NeoPixel(
-            on=device_data["on"],
-            twinkle=device_data["twinkle"],
-            transform=device_data["transform"],
-            ms=device_data["ms"],
-            brightness=device_data["brightness"],
-            palette=device_data["palette"],
+        device: models.Device = super().create_device(incoming_neo_pixel.device)
+        new_db_neo_pixel = NeoPixel(
+            on=incoming_neo_pixel.on,
+            twinkle=incoming_neo_pixel.twinkle,
+            transform=incoming_neo_pixel.transform,
+            ms=incoming_neo_pixel.ms,
+            brightness=incoming_neo_pixel.brightness,
+            palette=incoming_neo_pixel.palette,
             device=device,
         )
 
-        db.add(new_neo_pixel)
+        db.add(new_db_neo_pixel)
 
         try:
             db.commit()
@@ -36,26 +36,26 @@ class NeoPixelDeviceManager(BaseDeviceManager):
             db.rollback()
             raise
 
-        db.refresh(new_neo_pixel)
-        return new_neo_pixel
+        db.refresh(new_db_neo_pixel)
+        return new_db_neo_pixel
 
-    def update_device(self, device_data: Dict) -> NeoPixel:
-        logger.info('Updating device "%s"' % device_data)
+    def update_device(self, incoming_neo_pixel: NeoPixelDeviceReceived) -> NeoPixel:
+        logger.info('Updating device "%s"' % incoming_neo_pixel)
         db = db_session.get()
 
-        device: models.Device = super().update_device(device_data)
+        device: models.Device = super().update_device(incoming_neo_pixel.device)
 
-        neo_pixel = db.query(NeoPixel).filter(NeoPixel.device == device).one()
+        db_neo_pixel = db.query(NeoPixel).filter(NeoPixel.device == device).one()
 
-        neo_pixel.on = device_data["on"]
-        neo_pixel.twinkle = device_data["twinkle"]
-        neo_pixel.transform = device_data["transform"]
-        neo_pixel.ms = device_data["ms"]
-        neo_pixel.brightness = device_data["brightness"]
-        neo_pixel.palette = device_data["palette"]
+        db_neo_pixel.on = incoming_neo_pixel.on
+        db_neo_pixel.twinkle = incoming_neo_pixel.twinkle
+        db_neo_pixel.transform = incoming_neo_pixel.transform
+        db_neo_pixel.ms = incoming_neo_pixel.ms
+        db_neo_pixel.brightness = incoming_neo_pixel.brightness
+        db_neo_pixel.palette = incoming_neo_pixel.palette
 
         db.add(device)
-        db.add(neo_pixel)
+        db.add(db_neo_pixel)
 
         try:
             db.commit()
@@ -63,8 +63,8 @@ class NeoPixelDeviceManager(BaseDeviceManager):
             db.rollback()
             raise
 
-        db.refresh(neo_pixel)
-        return neo_pixel
+        db.refresh(db_neo_pixel)
+        return db_neo_pixel
 
 
 # Alias NeoPixelDeviceManager for use in ..discovered_plugins.DISCOVERED_PLUGINS["neo_pixel"] dict

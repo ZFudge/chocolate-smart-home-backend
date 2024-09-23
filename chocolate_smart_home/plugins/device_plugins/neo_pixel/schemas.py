@@ -2,7 +2,7 @@ from typing import List, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
-from chocolate_smart_home.schemas.device import Device
+from chocolate_smart_home.schemas.device import Device, DeviceReceived
 
 
 class NeoPixelId(BaseModel):
@@ -47,3 +47,7 @@ class NeoPixelDevices(BaseModel):
 
 class NeoPixelDevice(NeoPixelId, NeoPixelValues):
     device: Device
+
+
+class NeoPixelDeviceReceived(NeoPixelValues):
+    device: DeviceReceived

@@ -1,26 +1,32 @@
 import logging
 from typing import Dict, Iterable, Tuple
 
+from chocolate_smart_home.schemas import DeviceReceived
+
 
 logger = logging.getLogger()
 
 
 class BaseDuplexMessenger:
-    def parse_msg(self, raw_msg: str) -> Tuple[Dict, Iterable[str]]:
+    def parse_msg(self, raw_msg: str) -> Tuple[DeviceReceived, Iterable[str]]:
         """Parse message from remote controller."""
         msg_seq: Iterable[str] = iter(raw_msg.split(","))
 
-        device_data = dict()
         try:
-            device_data["mqtt_id"] = next(msg_seq)
-            device_data["device_type_name"] = next(msg_seq)
-            device_data["remote_name"] = next(msg_seq)
+            mqtt_id = next(msg_seq)
+            device_type_name = next(msg_seq)
+            remote_name = next(msg_seq)
+            device = DeviceReceived(
+                mqtt_id=mqtt_id,
+                device_type_name=device_type_name,
+                remote_name=remote_name
+            )
         except StopIteration:
             raise StopIteration(
                 f"Not enough comma-separated values in message.payload. payload='{raw_msg}'."
             ) from None
 
-        return device_data, msg_seq
+        return device, msg_seq
 
     def compose_msg():
         """Implemented at the plugin level"""

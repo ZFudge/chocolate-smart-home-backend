@@ -1,10 +1,9 @@
 from types import MappingProxyType
-from typing import Dict
 
 from pydantic import ValidationError
 
 from chocolate_smart_home.plugins.base_duplex_messenger import BaseDuplexMessenger
-from .schemas import NeoPixelOptions, NeoPixelValues
+from .schemas import NeoPixelOptions, NeoPixelDeviceReceived
 
 
 class NeoPixelDuplexMessenger(BaseDuplexMessenger):
@@ -15,34 +14,33 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
         True: "1",
     })
 
-    def parse_msg(self, incoming_msg: str) -> Dict:
+    def parse_msg(self, incoming_msg: str) -> NeoPixelDeviceReceived:
         """Parse incoming message from controller."""
-        device_data, msg_seq = super().parse_msg(incoming_msg)
+        device, msg_seq = super().parse_msg(incoming_msg)
 
         bools_byte = int(next(msg_seq))
 
-        device_data["on"] = bools_byte & 1
-        device_data["twinkle"] = bools_byte >> 1 & 1
-        device_data["transform"] = bools_byte >> 2 & 1
-
-        device_data["ms"] = int(next(msg_seq))
-        device_data["brightness"] = int(next(msg_seq))
-
-        device_data["palette"] = tuple(map(int, [next(msg_seq) for _ in range(27)]))
+        on = bools_byte & 1
+        twinkle = bools_byte >> 1 & 1
+        transform = bools_byte >> 2 & 1
+        ms = int(next(msg_seq))
+        brightness = int(next(msg_seq))
+        palette = tuple(map(int, [next(msg_seq) for _ in range(27)]))
 
         try:
-            NeoPixelValues(
-                on=device_data["on"],
-                twinkle=device_data["twinkle"],
-                transform=device_data["transform"],
-                ms=device_data["ms"],
-                brightness=device_data["brightness"],
-                palette=device_data["palette"],
+            neo_pixel_device = NeoPixelDeviceReceived(
+                on=on,
+                twinkle=twinkle,
+                transform=transform,
+                ms=ms,
+                brightness=brightness,
+                palette=palette,
+                device=device,
             )
         except ValidationError:
             raise
 
-        return device_data
+        return neo_pixel_device
 
     def compose_msg(self, data: NeoPixelOptions) -> str:
         """Compose outgoing message to be published to controller."""

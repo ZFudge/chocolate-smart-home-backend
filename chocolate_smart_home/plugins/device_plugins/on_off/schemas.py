@@ -2,7 +2,7 @@ from typing import List
 
 from pydantic import BaseModel
 
-from chocolate_smart_home.schemas.device import Device
+from chocolate_smart_home.schemas.device import Device, DeviceReceived
 
 
 class OnOffId(BaseModel):
@@ -19,3 +19,7 @@ class OnOffDevices(OnOffValue):
 
 class OnOffDevice(OnOffId, OnOffValue):
     device: Device
+
+
+class OnOffDeviceReceived(OnOffValue):
+    device: DeviceReceived
