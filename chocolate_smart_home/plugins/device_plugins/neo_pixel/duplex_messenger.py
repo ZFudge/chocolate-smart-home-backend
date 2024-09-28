@@ -3,7 +3,7 @@ from types import MappingProxyType
 from pydantic import ValidationError
 
 from chocolate_smart_home.plugins.base_duplex_messenger import BaseDuplexMessenger
-from .schemas import NeoPixelOptions, NeoPixelDeviceReceived
+from .schemas import NeoPixelDeviceReceived, NeoPixelOptions, PIR
 
 
 class NeoPixelDuplexMessenger(BaseDuplexMessenger):
@@ -23,11 +23,19 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
         on = bools_byte & 1
         twinkle = bools_byte >> 1 & 1
         transform = bools_byte >> 2 & 1
+        pir_enabled = bools_byte >> 4 & 1
+        pir_armed = bools_byte >> 5 & 1
+
         ms = int(next(msg_seq))
         brightness = int(next(msg_seq))
+        pir_timeout_seconds = int(next(msg_seq))
         palette = tuple(map(int, [next(msg_seq) for _ in range(27)]))
 
         try:
+            pir = None
+            if pir_enabled:
+                pir = PIR(armed=pir_armed, timeout_seconds=pir_timeout_seconds)
+
             neo_pixel_device = NeoPixelDeviceReceived(
                 on=on,
                 twinkle=twinkle,
@@ -36,6 +44,7 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
                 brightness=brightness,
                 palette=palette,
                 device=device,
+                pir=pir,
             )
         except ValidationError:
             raise
@@ -64,6 +73,12 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
         if hasattr(data, "palette") and data.palette is not None:
             palette_str = ",".join(map(str, data.palette))
             msg += "palette={};".format(palette_str)
+
+        if hasattr(data, "pir_armed") and data.pir_armed is not None:
+            msg += "pir_armed={};".format(NeoPixelDuplexMessenger.OUTGOING_LOOKUP[data.pir_armed])
+
+        if hasattr(data, "pir_timeout_seconds") and data.pir_timeout_seconds is not None:
+            msg += "pir_timeout={};".format(data.pir_timeout_seconds)
 
         return msg
 

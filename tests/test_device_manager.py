@@ -1,5 +1,3 @@
-import pytest
-
 from chocolate_smart_home import models
 from chocolate_smart_home.plugins.base_device_manager import BaseDeviceManager
 from chocolate_smart_home.schemas import DeviceReceived
