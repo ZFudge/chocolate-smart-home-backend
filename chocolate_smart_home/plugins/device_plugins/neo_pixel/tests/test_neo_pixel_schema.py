@@ -24,6 +24,7 @@ def test_to_neo_pixel_schema(populated_test_db):
         ms=5,
         brightness=255,
         palette=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26],
+        pir=neo_pixel_schemas.PIR(armed=True, timeout_seconds=172),
         device=schemas.Device(
             id=1,
             online=True,
@@ -53,6 +54,7 @@ def test_to_neo_pixel_schema_no_space(populated_test_db):
         ms=55,
         brightness=123,
         palette=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26],
+        pir=None,
         device=schemas.Device(
             id=2,
             online=True,

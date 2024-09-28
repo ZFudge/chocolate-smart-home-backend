@@ -22,6 +22,11 @@ class PaletteValidator:
         return v
 
 
+class PIR(BaseModel):
+    armed: bool
+    timeout_seconds: int
+
+
 class NeoPixelValues(BaseModel, PaletteValidator):
     on: bool
     twinkle: bool
@@ -29,6 +34,7 @@ class NeoPixelValues(BaseModel, PaletteValidator):
     ms: int = Field(None, ge=0, le=255)
     brightness: int = Field(None, ge=0, le=255)
     palette: Tuple[*([int]*27)]
+    pir: PIR | None = None
 
 
 class NeoPixelOptions(BaseModel, PaletteValidator):
@@ -38,6 +44,8 @@ class NeoPixelOptions(BaseModel, PaletteValidator):
     ms: int = Field(None, ge=0, le=255)
     brightness: int = Field(None, ge=0, le=255)
     palette: Tuple[*([int]*27)] = None
+    pir_armed: bool = None
+    pir_timeout_seconds: int | None = None
 
 
 class NeoPixelDevices(BaseModel):

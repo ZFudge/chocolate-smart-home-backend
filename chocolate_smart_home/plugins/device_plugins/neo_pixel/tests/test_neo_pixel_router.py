@@ -21,6 +21,10 @@ def test_get_neo_pixel_devices(populated_test_db):
             "ms": 5,
             "brightness": 255,
             "palette": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26],
+            "pir": {
+                "armed": True,
+                "timeout_seconds": 172,
+            },
             "device": {
                 "id": 1,
                 "client": {
@@ -53,6 +57,7 @@ def test_get_neo_pixel_devices(populated_test_db):
             "ms": 55,
             "brightness": 123,
             "palette": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26],
+            "pir": None,
             "device": {
                 "id": 2,
                 "client": {
@@ -94,6 +99,10 @@ def test_get_neo_pixel_device(populated_test_db):
         "ms": 5,
         "brightness": 255,
         "palette": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26],
+        "pir": {
+            "armed": True,
+            "timeout_seconds": 172,
+        },
         "device": {
             "id": 1,
             "client": {

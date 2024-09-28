@@ -27,6 +27,9 @@ class NeoPixelDeviceManager(BaseDeviceManager):
             palette=incoming_neo_pixel.palette,
             device=device,
         )
+        if incoming_neo_pixel.pir is not None:
+            new_db_neo_pixel.pir_armed = incoming_neo_pixel.pir.armed
+            new_db_neo_pixel.pir_timeout_seconds = incoming_neo_pixel.pir.timeout_seconds
 
         db.add(new_db_neo_pixel)
 
@@ -53,6 +56,9 @@ class NeoPixelDeviceManager(BaseDeviceManager):
         db_neo_pixel.ms = incoming_neo_pixel.ms
         db_neo_pixel.brightness = incoming_neo_pixel.brightness
         db_neo_pixel.palette = incoming_neo_pixel.palette
+        if incoming_neo_pixel.pir is not None:
+            db_neo_pixel.pir_armed = incoming_neo_pixel.pir.armed
+            db_neo_pixel.pir_timeout_seconds = incoming_neo_pixel.pir.timeout_seconds
 
         db.add(device)
         db.add(db_neo_pixel)

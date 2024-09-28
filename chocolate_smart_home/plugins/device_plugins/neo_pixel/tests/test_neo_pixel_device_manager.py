@@ -5,7 +5,7 @@ from chocolate_smart_home.plugins.device_plugins.neo_pixel.device_manager import
     NeoPixelDeviceManager,
 )
 from chocolate_smart_home.plugins.device_plugins.neo_pixel.schemas import (
-    DeviceReceived, NeoPixelDeviceReceived,
+    DeviceReceived, NeoPixelDeviceReceived, PIR
 )
 
 
@@ -17,6 +17,7 @@ def test_device_manager_create(empty_test_db):
         ms=5,
         brightness=255,
         palette=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        pir=PIR(armed=True, timeout_seconds=65),
         device=DeviceReceived(
             mqtt_id=123,
             device_type_name="neo_pixel",
@@ -30,6 +31,9 @@ def test_device_manager_create(empty_test_db):
     assert neo_pixel_device.transform is True
     assert neo_pixel_device.ms == 5
     assert neo_pixel_device.brightness == 255
+    assert neo_pixel_device.pir_armed is True
+    assert neo_pixel_device.pir_timeout_seconds == 65
+    assert neo_pixel_device.palette == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     assert neo_pixel_device.device.remote_name == "Neo Pixel Device - 1"
     assert neo_pixel_device.device.client.mqtt_id == 123
     assert neo_pixel_device.device.device_type.name == "neo_pixel"
@@ -43,6 +47,7 @@ def test_device_manager_update(populated_test_db):
         ms=5,
         brightness=255,
         palette=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        pir=PIR(armed=False, timeout_seconds=20),
         device=DeviceReceived(
             mqtt_id=123,
             device_type_name="neo_pixel",
@@ -57,6 +62,9 @@ def test_device_manager_update(populated_test_db):
     assert neo_pixel_device.transform is True
     assert neo_pixel_device.ms == 5
     assert neo_pixel_device.brightness == 255
+    assert neo_pixel_device.pir_armed is False
+    assert neo_pixel_device.pir_timeout_seconds == 20
+    assert neo_pixel_device.palette == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     assert neo_pixel_device.device.remote_name == "Neo Pixel Device - 1"
     assert neo_pixel_device.device.client.mqtt_id == 123
     assert neo_pixel_device.device.device_type.name == "neo_pixel"
@@ -70,6 +78,7 @@ def test_device_manager_update_fails_device_does_not_exist(empty_test_db):
         ms=5,
         brightness=255,
         palette=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        pir=None,
         device=DeviceReceived(
             mqtt_id=123,
             device_type_name="neo_pixel",
