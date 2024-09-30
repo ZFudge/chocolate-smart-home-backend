@@ -13,6 +13,7 @@ def test_device_manager_create(empty_test_db):
     device_data = NeoPixelDeviceReceived(
         on=True,
         twinkle=True,
+        all_twinkle_colors_are_current=False,
         transform=True,
         ms=5,
         brightness=255,
@@ -28,6 +29,7 @@ def test_device_manager_create(empty_test_db):
     assert neo_pixel_device.id == 1
     assert neo_pixel_device.on is True
     assert neo_pixel_device.twinkle is True
+    assert neo_pixel_device.all_twinkle_colors_are_current is False
     assert neo_pixel_device.transform is True
     assert neo_pixel_device.ms == 5
     assert neo_pixel_device.brightness == 255
@@ -43,6 +45,7 @@ def test_device_manager_update(populated_test_db):
     device_data = NeoPixelDeviceReceived(
         on=True,
         twinkle=True,
+        all_twinkle_colors_are_current=True,
         transform=True,
         ms=5,
         brightness=255,
@@ -59,6 +62,7 @@ def test_device_manager_update(populated_test_db):
     assert neo_pixel_device.id == 1
     assert neo_pixel_device.on is True
     assert neo_pixel_device.twinkle is True
+    assert neo_pixel_device.all_twinkle_colors_are_current is True
     assert neo_pixel_device.transform is True
     assert neo_pixel_device.ms == 5
     assert neo_pixel_device.brightness == 255
@@ -74,6 +78,7 @@ def test_device_manager_update_fails_device_does_not_exist(empty_test_db):
     device_data = NeoPixelDeviceReceived(
         on=True,
         twinkle=True,
+        all_twinkle_colors_are_current=True,
         transform=True,
         ms=5,
         brightness=255,

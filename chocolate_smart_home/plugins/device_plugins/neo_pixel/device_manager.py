@@ -21,6 +21,7 @@ class NeoPixelDeviceManager(BaseDeviceManager):
         new_db_neo_pixel = NeoPixel(
             on=incoming_neo_pixel.on,
             twinkle=incoming_neo_pixel.twinkle,
+            all_twinkle_colors_are_current=incoming_neo_pixel.all_twinkle_colors_are_current,
             transform=incoming_neo_pixel.transform,
             ms=incoming_neo_pixel.ms,
             brightness=incoming_neo_pixel.brightness,
@@ -52,6 +53,7 @@ class NeoPixelDeviceManager(BaseDeviceManager):
 
         db_neo_pixel.on = incoming_neo_pixel.on
         db_neo_pixel.twinkle = incoming_neo_pixel.twinkle
+        db_neo_pixel.all_twinkle_colors_are_current = incoming_neo_pixel.all_twinkle_colors_are_current
         db_neo_pixel.transform = incoming_neo_pixel.transform
         db_neo_pixel.ms = incoming_neo_pixel.ms
         db_neo_pixel.brightness = incoming_neo_pixel.brightness

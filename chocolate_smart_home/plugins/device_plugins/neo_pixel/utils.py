@@ -15,6 +15,7 @@ def to_neo_pixel_schema(neo_pixel: NeoPixel) -> NeoPixelDevice:
         id=neo_pixel.id,
         on=neo_pixel.on,
         twinkle=neo_pixel.twinkle,
+        all_twinkle_colors_are_current=neo_pixel.all_twinkle_colors_are_current,
         transform=neo_pixel.transform,
         ms=neo_pixel.ms,
         brightness=neo_pixel.brightness,

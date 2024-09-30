@@ -45,6 +45,7 @@ def populated_test_db(empty_test_db):
     neo_pixel_device__id_1 = NeoPixel(
         on=True,
         twinkle=True,
+        all_twinkle_colors_are_current=True,
         transform=True,
         ms=5,
         brightness=255,
@@ -56,6 +57,7 @@ def populated_test_db(empty_test_db):
     neo_pixel_device__id_2 = NeoPixel(
         on=False,
         twinkle=True,
+        all_twinkle_colors_are_current=False,
         transform=False,
         ms=55,
         brightness=123,

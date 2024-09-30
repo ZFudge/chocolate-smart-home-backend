@@ -17,6 +17,7 @@ def test_get_neo_pixel_devices(populated_test_db):
             "id": 1,
             "on": True,
             "twinkle": True,
+            "all_twinkle_colors_are_current": True,
             "transform": True,
             "ms": 5,
             "brightness": 255,
@@ -53,6 +54,7 @@ def test_get_neo_pixel_devices(populated_test_db):
             "id": 2,
             "on": False,
             "twinkle": True,
+            "all_twinkle_colors_are_current": False,
             "transform": False,
             "ms": 55,
             "brightness": 123,
@@ -95,6 +97,7 @@ def test_get_neo_pixel_device(populated_test_db):
         "id": 1,
         "on": True,
         "twinkle": True,
+        "all_twinkle_colors_are_current": True,
         "transform": True,
         "ms": 5,
         "brightness": 255,
@@ -165,7 +168,7 @@ def test_update_single_neo_pixel_device_publish(populated_test_db):
     post_data = dict(on=False, twinkle=True, transform=False, ms=77, brightness=44)
     expected_params = NeoPixelOptions(**post_data)
 
-    with patch("chocolate_smart_home.plugins.device_plugins.neo_pixel.router.publish_message") as publish_message:
+    with patch("chocolate_smart_home.plugins.device_plugins.neo_pixel.router.crud.publish_message") as publish_message:
         resp = client.post("/neo_pixel/1", json=post_data)
         publish_message.assert_called_once_with(neo_pixel_device_id=1, data=expected_params)
 

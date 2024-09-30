@@ -23,7 +23,10 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
         on = bools_byte & 1
         twinkle = bools_byte >> 1 & 1
         transform = bools_byte >> 2 & 1
+        # Start incoming value only.
+        all_twinkle_colors_are_current = bools_byte >> 3 & 1
         pir_enabled = bools_byte >> 4 & 1
+        # End incoming value only.
         pir_armed = bools_byte >> 5 & 1
 
         ms = int(next(msg_seq))
@@ -39,6 +42,7 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
             neo_pixel_device = NeoPixelDeviceReceived(
                 on=on,
                 twinkle=twinkle,
+                all_twinkle_colors_are_current=all_twinkle_colors_are_current,
                 transform=transform,
                 ms=ms,
                 brightness=brightness,

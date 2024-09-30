@@ -57,6 +57,18 @@ def test_incoming_msg_twinkle(populated_test_db):
     assert neo_pixel_device.twinkle is False
 
 
+def test_incoming_msg_all_twinkle_colors_are_current(populated_test_db):
+    message = MQTTMessage(b"test_topic")
+
+    message.payload = b"789,neo_pixel,Remote Name - uid,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
+    neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
+    assert neo_pixel_device.all_twinkle_colors_are_current is True
+
+    message.payload = b"789,neo_pixel,Remote Name - uid,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
+    neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
+    assert neo_pixel_device.all_twinkle_colors_are_current is False
+
+
 def test_incoming_msg_transform(populated_test_db):
     message = MQTTMessage(b"test_topic")
 

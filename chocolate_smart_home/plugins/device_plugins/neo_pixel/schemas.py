@@ -30,6 +30,8 @@ class PIR(BaseModel):
 class NeoPixelValues(BaseModel, PaletteValidator):
     on: bool
     twinkle: bool
+    # all_twinkle_colors_are_current is an incoming value only.
+    all_twinkle_colors_are_current: bool
     transform: bool
     ms: int = Field(None, ge=0, le=255)
     brightness: int = Field(None, ge=0, le=255)

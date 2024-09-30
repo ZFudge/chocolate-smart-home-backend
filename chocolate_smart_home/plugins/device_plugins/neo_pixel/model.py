@@ -17,6 +17,7 @@ class NeoPixel(Base, PluginModelStrFormatter):
 
     on = Column(Boolean)
     twinkle = Column(Boolean)
+    all_twinkle_colors_are_current = Column(Boolean)
     transform = Column(Boolean)
     ms = Column(Integer)
     brightness = Column(Integer)

@@ -1,5 +1,5 @@
-import pytest
 import pydantic
+import pytest
 
 from chocolate_smart_home import schemas
 from chocolate_smart_home.plugins.device_plugins.neo_pixel import (
@@ -20,6 +20,7 @@ def test_to_neo_pixel_schema(populated_test_db):
         id=1,
         on=True,
         twinkle=True,
+        all_twinkle_colors_are_current=True,
         transform=True,
         ms=5,
         brightness=255,
@@ -50,6 +51,7 @@ def test_to_neo_pixel_schema_no_space(populated_test_db):
         id=2,
         on=False,
         twinkle=True,
+        all_twinkle_colors_are_current=False,
         transform=False,
         ms=55,
         brightness=123,
