@@ -155,10 +155,14 @@ def test_compose_msg_twinkle():
 
 
 def test_compose_msg_transform():
-    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(NeoPixelOptions(transform=True))
+    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
+        NeoPixelOptions(transform=True)
+    )
     assert outgoing_msg == "transform=1;"
 
-    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(NeoPixelOptions(transform=False))
+    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
+        NeoPixelOptions(transform=False)
+    )
     assert outgoing_msg == "transform=0;"
 
 
@@ -174,7 +178,9 @@ def test_compose_msg_brightness():
     outgoing_msg = NeoPixelDuplexMessenger().compose_msg(NeoPixelOptions(brightness=24))
     assert outgoing_msg == "brightness=24;"
 
-    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(NeoPixelOptions(brightness=195))
+    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
+        NeoPixelOptions(brightness=195)
+    )
     assert outgoing_msg == "brightness=195;"
 
 
@@ -189,16 +195,24 @@ def test_compose_msg_palette():
 
 
 def test_compose_msg_pir_armed():
-    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(NeoPixelOptions(pir_armed=True))
+    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
+        NeoPixelOptions(pir_armed=True)
+    )
     assert outgoing_msg == "pir_armed=1;"
 
-    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(NeoPixelOptions(pir_armed=False))
+    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
+        NeoPixelOptions(pir_armed=False)
+    )
     assert outgoing_msg == "pir_armed=0;"
 
 
 def test_compose_msg_pir_timeout():
-    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(NeoPixelOptions(pir_timeout_seconds=123))
+    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
+        NeoPixelOptions(pir_timeout_seconds=123)
+    )
     assert outgoing_msg == "pir_timeout=123;"
 
-    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(NeoPixelOptions(pir_timeout_seconds=234))
+    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
+        NeoPixelOptions(pir_timeout_seconds=234)
+    )
     assert outgoing_msg == "pir_timeout=234;"

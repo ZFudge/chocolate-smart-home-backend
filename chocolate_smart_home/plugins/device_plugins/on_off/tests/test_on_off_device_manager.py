@@ -17,7 +17,7 @@ def test_device_manager_create(empty_test_db):
             mqtt_id=123,
             device_type_name="on_off",
             remote_name="On Off Device - 1",
-        )
+        ),
     )
     on_off_device = OnOffDeviceManager().create_device(device_data)
     assert on_off_device.id == 1
@@ -34,7 +34,7 @@ def test_device_manager_update(populated_test_db):
             mqtt_id=123,
             device_type_name="on_off",
             remote_name="On Off Device - 1",
-        )
+        ),
     )
     on_off_device = OnOffDeviceManager().update_device(device_data)
 
@@ -52,7 +52,7 @@ def test_device_manager_update_fails_device_does_not_exist(empty_test_db):
             mqtt_id=123,
             device_type_name="on_off",
             remote_name="On Off Device - 1",
-        )
+        ),
     )
     with pytest.raises(NoResultFound):
         OnOffDeviceManager().update_device(device_data)

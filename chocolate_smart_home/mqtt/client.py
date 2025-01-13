@@ -22,8 +22,16 @@ class MQTTClient:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, *, host: str = DEFAULT_MQTT_HOST, port: int = DEFAULT_MQTT_PORT):
-        client_id = os.environ.get("MQTT_CLIENT_ID", "CSM-FASTAPI-SERVER")
+    def __init__(
+        self,
+        *,
+        host: str = DEFAULT_MQTT_HOST,
+        port: int = DEFAULT_MQTT_PORT,
+        client_id_prefix: str = ""
+    ):
+        client_id = client_id_prefix + os.environ.get(
+            "MQTT_CLIENT_ID", "CSM-FASTAPI-SERVER"
+        )
         logger.info(
             "Initializing MQTT client with client_id %s, host %s, and port %s"
             % (client_id, host, port)

@@ -25,7 +25,7 @@ def test_get_on_off_devices(populated_test_db):
                 "device_name": {
                     "id": 1,
                     "name": "Test On Device",
-                    "is_server_side_name": False
+                    "is_server_side_name": False,
                 },
                 "device_type": {
                     "id": 1,
@@ -52,7 +52,7 @@ def test_get_on_off_devices(populated_test_db):
                 "device_name": {
                     "id": 2,
                     "name": "Test Off Device",
-                    "is_server_side_name": True
+                    "is_server_side_name": True,
                 },
                 "device_type": {
                     "id": 1,
@@ -88,7 +88,7 @@ def test_get_on_off_device(populated_test_db):
             "device_name": {
                 "id": 1,
                 "name": "Test On Device",
-                "is_server_side_name": False
+                "is_server_side_name": False,
             },
             "device_type": {
                 "id": 1,
@@ -138,7 +138,9 @@ def test_delete_device_fails_on_invalid_device_id(populated_test_db):
 
 
 def test_update_single_on_off_device(populated_test_db):
-    with patch("chocolate_smart_home.plugins.device_plugins.on_off.router.publish_message") as publish_message:
+    with patch(
+        "chocolate_smart_home.plugins.device_plugins.on_off.router.publish_message"
+    ) as publish_message:
         resp = client.post("/on_off/1/false")
         publish_message.assert_called_once_with(on_off_device_id=1, on=False)
 

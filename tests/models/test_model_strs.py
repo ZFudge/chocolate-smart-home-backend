@@ -64,7 +64,9 @@ def test_device_name_model_str(populated_test_db):
         .filter(models.DeviceName.id == 1)
         .one()
     )
-    expected_str_1 = "DeviceName(id=1, name=Test Device Name 1, is_server_side_name=False)"
+    expected_str_1 = (
+        "DeviceName(id=1, name=Test Device Name 1, is_server_side_name=False)"
+    )
     assert str(device_name_1) == expected_str_1
     assert repr(device_name_1) == expected_str_1
 
@@ -74,7 +76,9 @@ def test_device_name_model_str(populated_test_db):
         .filter(models.DeviceName.id == 2)
         .one()
     )
-    expected_str_2 = "DeviceName(id=2, name=Test Device Name 2, is_server_side_name=True)"
+    expected_str_2 = (
+        "DeviceName(id=2, name=Test Device Name 2, is_server_side_name=True)"
+    )
     assert str(device_name_2) == expected_str_2
     assert repr(device_name_2) == expected_str_2
 

@@ -25,7 +25,9 @@ def get_neo_pixel_device_by_device_id(neo_pixel_device_id: int) -> NeoPixel:
     db: Session = dependencies.db_session.get()
 
     try:
-        neo_pixel_device = db.query(NeoPixel).filter(NeoPixel.id == neo_pixel_device_id).one()
+        neo_pixel_device = (
+            db.query(NeoPixel).filter(NeoPixel.id == neo_pixel_device_id).one()
+        )
     except NoResultFound:
         raise NoResultFound(f"No NeoPixel with an id of {neo_pixel_device_id} found.")
 
@@ -44,7 +46,9 @@ def delete_neo_pixel_device(neo_pixel_device_id: int):
     db: Session = dependencies.db_session.get()
 
     try:
-        neo_pixel_device = db.query(NeoPixel).filter(NeoPixel.id == neo_pixel_device_id).one()
+        neo_pixel_device = (
+            db.query(NeoPixel).filter(NeoPixel.id == neo_pixel_device_id).one()
+        )
     except NoResultFound:
         raise NoResultFound(f"No NeoPixel with an id of {neo_pixel_device_id} found.")
 

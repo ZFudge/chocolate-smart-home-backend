@@ -89,7 +89,7 @@ def delete_space(space_id: int) -> None:
         logger.error(msg)
         raise NoResultFound(msg)
     devices_ids = [d.id for d in space.devices]
-    logger.info(space, f"{devices_ids=}")
+    logger.info("%s %s" % (space, f"{devices_ids=}"))
 
     for device in space.devices:
         device.space = None

@@ -11,4 +11,6 @@ class Client(Base, ModelStrFormatter):
     id = Column(Integer, primary_key=True)
     mqtt_id = Column(Integer, unique=True)
 
-    device = relationship("Device", uselist=False, back_populates="client", single_parent=True)
+    device = relationship(
+        "Device", uselist=False, back_populates="client", single_parent=True
+    )

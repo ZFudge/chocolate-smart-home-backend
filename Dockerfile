@@ -7,7 +7,7 @@ COPY . /chocolate-smart-home-backend/
 RUN mkdir -p /var/logs/chocolate_smart_home/
 RUN pip install pipenv && pipenv install
 
-ENV PYTHONPATH $PYTHONPATH:/chocolate-smart-home-backend/
+ENV PYTHONPATH=$PYTHONPATH:/chocolate-smart-home-backend/
 
 EXPOSE 8000
 

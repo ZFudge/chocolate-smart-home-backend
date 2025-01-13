@@ -47,7 +47,9 @@ def update_devices(data: OnOffDevices):
         publish_message(on_off_device_id=on_off_device_id, on=data.on)
 
 
-@plugin_router.post("/{on_off_device_id}/{on_value}", response_model=None, status_code=204)
+@plugin_router.post(
+    "/{on_off_device_id}/{on_value}", response_model=None, status_code=204
+)
 def update_device(on_off_device_id: int, on_value: bool):
     """Publish new "on" value to single device."""
     publish_message(on_off_device_id=on_off_device_id, on=on_value)

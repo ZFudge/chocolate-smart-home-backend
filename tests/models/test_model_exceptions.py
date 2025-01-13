@@ -61,7 +61,9 @@ def test_used_name_raises_device_name_error(empty_test_db):
         models.Device(device_name=name, client=other_client)
 
 
-def test_used_client_and_name_raises_device_client_and_device_name_errors(empty_test_db):
+def test_used_client_and_name_raises_device_client_and_device_name_errors(
+    empty_test_db,
+):
     client = models.Client(mqtt_id=555)
     name = models.DeviceName(name="Test Device")
     device_type = models.DeviceType(name="test_device_type")

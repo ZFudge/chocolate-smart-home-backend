@@ -5,7 +5,9 @@ from chocolate_smart_home.plugins.device_plugins.neo_pixel.device_manager import
     NeoPixelDeviceManager,
 )
 from chocolate_smart_home.plugins.device_plugins.neo_pixel.schemas import (
-    DeviceReceived, NeoPixelDeviceReceived, PIR
+    DeviceReceived,
+    NeoPixelDeviceReceived,
+    PIR,
 )
 
 
@@ -22,7 +24,7 @@ def test_device_manager_create(empty_test_db):
             mqtt_id=123,
             device_type_name="neo_pixel",
             remote_name="Neo Pixel Device - 1",
-        )
+        ),
     )
     neo_pixel_device = NeoPixelDeviceManager().create_device(device_data)
     assert neo_pixel_device.id == 1
@@ -52,7 +54,7 @@ def test_device_manager_update(populated_test_db):
             mqtt_id=123,
             device_type_name="neo_pixel",
             remote_name="Neo Pixel Device - 1",
-        )
+        ),
     )
     neo_pixel_device = NeoPixelDeviceManager().update_device(device_data)
 
@@ -83,7 +85,7 @@ def test_device_manager_update_fails_device_does_not_exist(empty_test_db):
             mqtt_id=123,
             device_type_name="neo_pixel",
             remote_name="Neo Pixel Device - 1",
-        )
+        ),
     )
     with pytest.raises(NoResultFound):
         NeoPixelDeviceManager().update_device(device_data)
