@@ -15,9 +15,7 @@ def test_get_devices_data_empty(empty_test_db):
 def test_get_device_does_not_exist(empty_test_db):
     resp = client.get("/device/1")
     assert resp.status_code == 404
-    assert resp.json() == {
-        "detail": "No Device with an id of 1 found."
-    }
+    assert resp.json() == {"detail": "No Device with an id of 1 found."}
 
 
 def test_get_devices_data(populated_test_db):
@@ -136,27 +134,27 @@ def test_add_device_space(populated_test_db):
     assert resp.status_code == 200
 
     expected_data = {
-        'id': 1,
-        'client': {
-            'id': 1,
-            'mqtt_id': 123,
+        "id": 1,
+        "client": {
+            "id": 1,
+            "mqtt_id": 123,
         },
-        'device_name': {
-            'id': 1,
-            'is_server_side_name': False,
-            'name': 'Test Device Name 1',
+        "device_name": {
+            "id": 1,
+            "is_server_side_name": False,
+            "name": "Test Device Name 1",
         },
-        'device_type': {
-            'id': 1,
-            'name': 'TEST_DEVICE_TYPE_NAME_1',
+        "device_type": {
+            "id": 1,
+            "name": "TEST_DEVICE_TYPE_NAME_1",
         },
-        'space': {
-            'id': 2,
-            'name': 'Other Space',
+        "space": {
+            "id": 2,
+            "name": "Other Space",
         },
-        'online': True,
-        'reboots': 0,
-        'remote_name': 'Remote Name 1 - 1',
+        "online": True,
+        "reboots": 0,
+        "remote_name": "Remote Name 1 - 1",
     }
 
     assert resp.json() == expected_data
@@ -165,4 +163,3 @@ def test_add_device_space(populated_test_db):
 def test_request_controllers_state():
     resp = client.head("/device/broadcast_request_devices_state/")
     assert resp.status_code == 204
-

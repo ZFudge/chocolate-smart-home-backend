@@ -16,4 +16,5 @@ class Space(SpaceId, SpaceBase):
 class SpaceCreate(SpaceBase):
     pass
 
+
 __all__ = ["Space", "SpaceBase", "SpaceCreate"]

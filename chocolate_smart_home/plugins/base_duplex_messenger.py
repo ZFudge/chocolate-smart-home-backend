@@ -1,25 +1,25 @@
 import logging
 from typing import Dict, Iterable, Tuple
 
-from chocolate_smart_home.schemas import DeviceReceived
+import chocolate_smart_home.schemas as schemas
 
 
 logger = logging.getLogger()
 
 
 class BaseDuplexMessenger:
-    def parse_msg(self, raw_msg: str) -> Tuple[DeviceReceived, Iterable[str]]:
+    def parse_msg(self, raw_msg: str) -> Tuple[schemas.DeviceReceived, Iterable[str]]:
         """Parse message from remote controller."""
         msg_seq: Iterable[str] = iter(raw_msg.split(","))
 
         try:
-            mqtt_id = next(msg_seq)
-            device_type_name = next(msg_seq)
-            remote_name = next(msg_seq)
-            device = DeviceReceived(
+            mqtt_id: str = next(msg_seq)
+            device_type_name: str = next(msg_seq)
+            remote_name: str = next(msg_seq)
+            device = schemas.DeviceReceived(
                 mqtt_id=mqtt_id,
                 device_type_name=device_type_name,
-                remote_name=remote_name
+                remote_name=remote_name,
             )
         except StopIteration:
             raise StopIteration(

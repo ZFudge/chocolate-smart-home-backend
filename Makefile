@@ -1,4 +1,4 @@
-include $(PWD)/.env
+include $(shell pwd)/.env
 
 TRASH_PATH := /tmp/null
 NETWORK_NAME := chocolate-smart-home-network
@@ -7,8 +7,8 @@ APP_IMAGE := chocolate-smart-home-backend
 APP_CONTAINER_NAME := csm-fastapi-server
 CSM_IMAGE_NAME := chocolate-smart-home-backend
 
-MQTT_IMAGE := eclipse-mosquitto:2.0.15
-MQTT_VOLUME_PATH := $(PWD)/mosquitto.conf:/mosquitto/config/mosquitto.conf
+MQTT_IMAGE := eclipse-mosquitto:2.0.20
+MQTT_VOLUME_PATH := $(shell pwd)/mosquitto.conf:/mosquitto/config/mosquitto.conf
 
 POSTGRES_IMAGE := postgres:12.18-bullseye
 POSTGRES_VOLUME_NAME := chocolate-smart-home-postgres-vol
@@ -54,34 +54,37 @@ mqtt: network
 		-v $(MQTT_VOLUME_PATH) \
 		$(MQTT_IMAGE)
 
+mqttlogs:
+	@docker exec -it mqtt /bin/sh -c 'tail -50 -f /mosquitto/log/mosquitto.log'
+
 cleanmqtt:
 	@docker stop mqtt 2> ${TRASH_PATH} || true
 	@docker rm mqtt 2> ${TRASH_PATH} || true
 
-attachmqtt:
-	@docker exec -it mqtt /bin/sh -c 'tail -25 -f /mosquitto/log/mosquitto.log'
-
 up:
 	@docker-compose up -d
 
-createtestdb:
+testdb:
 	@docker exec -it $(POSTGRES_CONTAINER_NAME) /bin/bash -c \
 		"psql -c 'CREATE DATABASE testdb OWNER testuser;' chocolatesmarthome"
 
-createtestuser:
+testuser:
 	@docker exec -it $(POSTGRES_CONTAINER_NAME) /bin/bash -c \
 		"psql -c \"CREATE USER testuser WITH ENCRYPTED PASSWORD 'testpw';\" chocolatesmarthome"
 
-run: up createtestuser createtestdb
+run: up testuser testdb
 
 clean:
 	@docker-compose down
 
-removevolume:
+rmdbvolume:
 	@docker volume rm $(POSTGRES_VOLUME_NAME)
 
 attach:
 	@docker-compose logs --follow $(APP_CONTAINER_NAME)
+
+shell:
+	@docker-compose exec -it $(APP_CONTAINER_NAME) sh
 
 test:
 	@docker exec -it $(APP_CONTAINER_NAME) sh -c 'pipenv run pytest'

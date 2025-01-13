@@ -58,9 +58,10 @@ def add_device_space(device_id: int, space_id: int) -> models.Device:
         space = db.query(models.Space).filter(models.Space.id == space_id).one()
         device = db.query(models.Device).filter(models.Device.id == device_id).one()
     except NoResultFound as e:
-        msg = (
-            "Failed to add Space with id of %s to "
-            "Device with id of %s - %s" % (space_id, device_id, e.args[0])
+        msg = "Failed to add Space with id of %s to " "Device with id of %s - %s" % (
+            space_id,
+            device_id,
+            e.args[0],
         )
         logger.error(msg)
         raise NoResultFound(msg)
@@ -80,9 +81,9 @@ def remove_device_space(device_id: int) -> models.Device:
     try:
         device = db.query(models.Device).filter(models.Device.id == device_id).one()
     except NoResultFound as e:
-        msg = (
-            "Failed to remove Space from "
-            "Device with id of %s - %s" % (device_id, e.args[0])
+        msg = "Failed to remove Space from " "Device with id of %s - %s" % (
+            device_id,
+            e.args[0],
         )
         logger.error(msg)
         raise NoResultFound(msg)

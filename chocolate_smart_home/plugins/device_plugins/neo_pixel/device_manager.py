@@ -14,7 +14,7 @@ class NeoPixelDeviceManager(BaseDeviceManager):
     """Manage "neo_pixels" and "devices" table rows using incoming device data."""
 
     def create_device(self, incoming_neo_pixel: NeoPixelDeviceReceived) -> NeoPixel:
-        logger.info('Creating device "%s"' % incoming_neo_pixel)
+        logger.info('Creating Neo Pixel device "%s"' % incoming_neo_pixel)
         db = db_session.get()
 
         device: models.Device = super().create_device(incoming_neo_pixel.device)
@@ -43,7 +43,7 @@ class NeoPixelDeviceManager(BaseDeviceManager):
         return new_db_neo_pixel
 
     def update_device(self, incoming_neo_pixel: NeoPixelDeviceReceived) -> NeoPixel:
-        logger.info('Updating device "%s"' % incoming_neo_pixel)
+        logger.info('Updating Neo Pixel device "%s"' % incoming_neo_pixel)
         db = db_session.get()
 
         device: models.Device = super().update_device(incoming_neo_pixel.device)

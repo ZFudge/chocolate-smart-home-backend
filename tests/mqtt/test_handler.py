@@ -73,8 +73,9 @@ def test_empty_payload():
 def test_too_short_msg_raises_stop_iteration(empty_test_db):
     msg = MQTTMessage(b"test_topic")
     msg.payload = b"1,DEVICE_TYPE"
-    expected_exc_text = "Not enough comma-separated values in message.payload. payload='1,DEVICE_TYPE'."
+    expected_exc_text = (
+        "Not enough comma-separated values in message.payload. payload='1,DEVICE_TYPE'."
+    )
 
     with pytest.raises(StopIteration, match=expected_exc_text):
         mqtt_handler.MQTTMessageHandler().device_data_received(0, None, msg)
-

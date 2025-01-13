@@ -14,7 +14,7 @@ logger = logging.getLogger()
 
 class BaseDeviceManager:
     def create_device(self, device: DeviceReceived) -> models.Device:
-        logger.info('Creating device "%s"' % device)
+        logger.info('Creating Base device "%s"' % device)
 
         client = models.Client(mqtt_id=device.mqtt_id)
 
@@ -47,7 +47,7 @@ class BaseDeviceManager:
         return db_device
 
     def update_device(self, device: DeviceReceived) -> models.Device:
-        logger.info('Updating device "%s"' % device)
+        logger.info('Updating Base device "%s"' % device)
         db: Session = db_session.get()
 
         db_device: models.Device = get_device_by_mqtt_client_id(device.mqtt_id)

@@ -12,4 +12,6 @@ class DeviceName(Base, ModelStrFormatter):
     name = Column(String, unique=True)
     is_server_side_name = Column(Boolean, default=False)
 
-    device = relationship("Device", uselist=False, back_populates="device_name", single_parent=True)
+    device = relationship(
+        "Device", uselist=False, back_populates="device_name", single_parent=True
+    )

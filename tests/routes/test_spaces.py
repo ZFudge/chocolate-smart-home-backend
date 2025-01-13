@@ -31,9 +31,7 @@ def test_get_spaces(populated_test_db):
 def test_get_space_does_not_exist(empty_test_db):
     resp = client.get("/spaces/1")
     assert resp.status_code == 404
-    assert resp.json() == {
-        "detail": "No Space with an id of 1 found."
-    }
+    assert resp.json() == {"detail": "No Space with an id of 1 found."}
 
 
 def test_get_space(populated_test_db):
@@ -81,7 +79,7 @@ def test_update_space_name_fail(empty_test_db):
     resp = client.put("/spaces/1", json={"name": "Updated Space Name"})
     assert resp.status_code == 500
     expected_data = {
-        'detail': 'Space update failed. No Space object with an id of 1 found.',
+        "detail": "Space update failed. No Space object with an id of 1 found.",
     }
     assert resp.json() == expected_data
 

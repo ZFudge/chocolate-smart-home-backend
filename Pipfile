@@ -12,6 +12,7 @@ pytest-env = "*"
 black = "*"
 psycopg2-binary = "*"
 pytest-cov = "*"
+websockets = "*"
 
 [dev-packages]
 

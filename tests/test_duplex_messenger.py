@@ -26,7 +26,9 @@ def test_parse_msg_extra_values():
 
 def test_parse_msg_short_messages_raise_stop_iteration():
     short_msg = "1"
-    expected_exc_text = "Not enough comma-separated values in message.payload. payload='1'."
+    expected_exc_text = (
+        "Not enough comma-separated values in message.payload. payload='1'."
+    )
     with pytest.raises(StopIteration, match=expected_exc_text):
         BaseDuplexMessenger().parse_msg(short_msg)
 
@@ -57,12 +59,16 @@ def test_default_parse_msg_short_messages_raise_stop_iteration():
     default_duplex_messenger = DefaultDuplexMessenger()
 
     empty_msg = ""
-    expected_exc_text = "Not enough comma-separated values in message.payload. payload=''."
+    expected_exc_text = (
+        "Not enough comma-separated values in message.payload. payload=''."
+    )
     with pytest.raises(StopIteration, match=expected_exc_text):
         default_duplex_messenger.parse_msg(empty_msg)
 
     short_msg = "1"
-    expected_exc_text = "Not enough comma-separated values in message.payload. payload='1'."
+    expected_exc_text = (
+        "Not enough comma-separated values in message.payload. payload='1'."
+    )
     with pytest.raises(StopIteration, match=expected_exc_text):
         default_duplex_messenger.parse_msg(short_msg)
 
