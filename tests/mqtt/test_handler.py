@@ -23,7 +23,7 @@ def test_plugin_method_calls(empty_test_db):
     msg = MQTTMessage(b"test_topic")
     msg.payload = b"1,UNKNOWN_DEVICE_TYPE,Remote Name - uid"
 
-    with (patch("chocolate_smart_home.mqtt.handler.get_device_plugin_by_device_type") as get_plugin,
+    with (patch("chocolate_smart_home.mqtt.handler.get_plugin_by_device_type") as get_plugin,
           patch("chocolate_smart_home.mqtt.handler.get_device_by_mqtt_client_id", side_effect=NoResultFound) as get_device):
         mqtt_handler.MQTTMessageHandler().device_data_received(0, None, msg)
 
@@ -63,7 +63,7 @@ def test_empty_payload():
     msg = MQTTMessage(b"test_topic")
     msg.payload = None
 
-    with (patch("chocolate_smart_home.mqtt.handler.get_device_plugin_by_device_type") as get_plugin,
+    with (patch("chocolate_smart_home.mqtt.handler.get_plugin_by_device_type") as get_plugin,
           patch("chocolate_smart_home.mqtt.handler.get_device_by_mqtt_client_id", side_effect=NoResultFound) as get_device):
         mqtt_handler.MQTTMessageHandler().device_data_received(0, None, msg)
         get_plugin.assert_not_called()

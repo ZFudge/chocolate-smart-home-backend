@@ -1,9 +1,11 @@
 from types import MappingProxyType
+from typing import Callable
 
 from pydantic import ValidationError
 
 from chocolate_smart_home.plugins.base_duplex_messenger import BaseDuplexMessenger
 import chocolate_smart_home.plugins.device_plugins.neo_pixel.schemas as np_schemas
+import chocolate_smart_home.plugins.device_plugins.neo_pixel.utils as utils
 
 
 class NeoPixelDuplexMessenger(BaseDuplexMessenger):
@@ -15,7 +17,7 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
     })
 
     def parse_msg(self, incoming_msg: str) -> np_schemas.NeoPixelDeviceReceived:
-        """Parse incoming message from controller."""
+        """Parse incoming MQTT message from controller."""
         device, msg_seq = super().parse_msg(incoming_msg)
 
         bools_byte = int(next(msg_seq))
@@ -53,45 +55,65 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
 
         return neo_pixel_device
 
-    def compose_msg(self, data: np_schemas.NeoPixelOptions) -> str:
-        """Compose outgoing message to be published to controller."""
+    def serialize(self, data: np_schemas.NeoPixelDeviceReceived) -> dict:
+        """Serialize neo pixel data for broadcast through webocket."""
+        np_dict = data.model_dump()
+
+        np_dict["palette"] = utils.byte_list_to_hex_tuple(np_dict["palette"])
+        # TODO: check online status
+        np_dict["online"] = True
+
+        device_dict = super().serialize(data.device)
+        del np_dict["device"]
+
+        np_dict.update(device_dict)
+
+        return np_dict
+
+    def compose_msg(self, data: dict | np_schemas.NeoPixelOptions) -> str:
+        """Compose outgoing message to be published through MQTT."""
         msg = ""
 
-        if hasattr(data, "on") and data.on is not None:
-            msg += "on={};".format(NeoPixelDuplexMessenger.OUTGOING_LOOKUP[data.on])
+        if isinstance(data, np_schemas.NeoPixelOptions):
+            data = data.model_dump()
 
-        if hasattr(data, "twinkle") and data.twinkle is not None:
-            msg += "twinkle={};".format(
-                NeoPixelDuplexMessenger.OUTGOING_LOOKUP[data.twinkle]
-            )
+        _add_bool_key_value = self._get_add_key_value_func(
+            data, value_mutator=lambda x: NeoPixelDuplexMessenger.OUTGOING_LOOKUP[x]
+        )
+        _add_key_value = self._get_add_key_value_func(data)
 
-        if hasattr(data, "transform") and data.transform is not None:
-            msg += "transform={};".format(
-                NeoPixelDuplexMessenger.OUTGOING_LOOKUP[data.transform]
-            )
+        msg += _add_bool_key_value("on")
+        msg += _add_bool_key_value("twinkle")
+        msg += _add_bool_key_value("transform")
 
-        if hasattr(data, "ms") and data.ms is not None:
-            msg += "ms={};".format(data.ms)
+        msg += _add_key_value("ms")
+        msg += _add_key_value("brightness")
 
-        if hasattr(data, "brightness") and data.brightness is not None:
-            msg += "brightness={};".format(data.brightness)
+        msg += _add_bool_key_value("pir_armed")
+        msg += _add_key_value("pir_timeout_seconds", preferred_key="pir_timeout")
 
-        if hasattr(data, "palette") and data.palette is not None:
-            palette_str = ",".join(map(str, data.palette))
+        if data.get("palette") is not None:
+            palette_str = ",".join(map(str, data["palette"]))
             msg += "palette={};".format(palette_str)
 
-        if hasattr(data, "pir_armed") and data.pir_armed is not None:
-            msg += "pir_armed={};".format(
-                NeoPixelDuplexMessenger.OUTGOING_LOOKUP[data.pir_armed]
-            )
-
-        if (
-            hasattr(data, "pir_timeout_seconds")
-            and data.pir_timeout_seconds is not None
-        ):
-            msg += "pir_timeout={};".format(data.pir_timeout_seconds)
-
         return msg
+
+    @staticmethod
+    def _get_add_key_value_func(
+        data: dict, *, value_mutator=lambda x: x
+    ) -> Callable[[dict, str], str]:
+        """Return a function that adds a key value to a message string with an optional value mutator function."""
+
+        def _func(key: str, *, preferred_key: str = None) -> str:
+            if data.get(key) is None:
+                return ""
+            if preferred_key is None:
+                preferred_key = key
+            # Apply value mutator function to value, if it exists
+            value = value_mutator(data[key])
+            return f"{preferred_key}={value};"
+
+        return _func
 
 
 # Alias messenger for use in ..discovered_plugins.DISCOVERED_PLUGINS["neo_pixel"] dict.

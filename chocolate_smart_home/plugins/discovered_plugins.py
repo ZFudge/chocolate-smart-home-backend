@@ -54,6 +54,6 @@ DEFAULT_PLUGIN = {
 }
 
 
-def get_device_plugin_by_device_type(plugin_name: str) -> Dict:
+def get_plugin_by_device_type(plugin_name: str) -> Dict:
     """Return plugin dictionary, using device_type_name/plugin_name as key."""
     return DISCOVERED_PLUGINS.get(plugin_name.lower(), DEFAULT_PLUGIN)

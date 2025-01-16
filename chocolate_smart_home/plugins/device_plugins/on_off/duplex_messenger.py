@@ -32,9 +32,19 @@ class OnOffDuplexMessenger(BaseDuplexMessenger):
 
         return on_off_device_data
 
-    def compose_msg(self, on: bool) -> str:
+    def compose_msg(self, on: bool | dict) -> str:
         """Compose outgoing message to be published to controller."""
+        if isinstance(on, dict):
+            return OnOffDuplexMessenger.OUTGOING_LOOKUP[on["on"]]
         return OnOffDuplexMessenger.OUTGOING_LOOKUP[on]
+
+    def serialize(self, data: OnOffDeviceReceived) -> dict:
+        """Serialize neo pixel data for broadcast through webocket."""
+        device_dict = super().serialize(data.device)
+        on_off_dict = data.model_dump()
+        on_off_dict.update(device_dict)
+        del on_off_dict["device"]
+        return on_off_dict
 
 
 # Alias messenger for use in ..discovered_plugins.DISCOVERED_PLUGINS["on_off"] dict.
