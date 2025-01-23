@@ -8,7 +8,7 @@ from sqlalchemy.exc import NoResultFound
 from chocolate_smart_home.crud import get_device_by_mqtt_client_id
 from chocolate_smart_home.models import Device
 from chocolate_smart_home.plugins.discovered_plugins import (
-    get_device_plugin_by_device_type,
+    get_plugin_by_device_type,
 )
 from chocolate_smart_home.websocket.connection_manager import manager
 
@@ -30,26 +30,22 @@ class MQTTMessageHandler:
 
         mqtt_id, device_type_name = payload.split(",")[:2]
 
-        plugin: Dict = get_device_plugin_by_device_type(device_type_name)
+        plugin: Dict = get_plugin_by_device_type(device_type_name)
 
-        MessageHandler: Callable = plugin["DuplexMessenger"]
+        DuplexMessenger: Callable = plugin["DuplexMessenger"]
         DeviceManager: Callable = plugin["DeviceManager"]
 
         # Parse message data
         try:
-            msg_data: Dict = MessageHandler().parse_msg(payload)
+            msg_data: Dict = DuplexMessenger().parse_msg(payload)
             logger.debug("msg_data %s" % msg_data)
         except StopIteration:
             raise
 
-        # Broadcast message data to all connected clients
+        # Broadcast message data through websocket, to all connected clients
         async def broadcast_to_fe_clients():
-            fe_data = msg_data.model_dump()
-            logger.debug("fe_data %s" % fe_data)
-            if "device" in fe_data:
-                # hoist device data in json response
-                fe_data |= fe_data["device"]
-                del fe_data["device"]
+            fe_data = DuplexMessenger().serialize(msg_data)
+            logger.info("Sending FE data %s" % fe_data)
             await manager.broadcast(fe_data)
 
         asyncio.run(broadcast_to_fe_clients())

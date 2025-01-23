@@ -1,9 +1,10 @@
 import pytest
 from paho.mqtt.client import MQTTMessage
 
+from chocolate_smart_home import schemas
 from chocolate_smart_home.mqtt.handler import MQTTMessageHandler
 from chocolate_smart_home.plugins.device_plugins.neo_pixel.duplex_messenger import NeoPixelDuplexMessenger
-from chocolate_smart_home.plugins.device_plugins.neo_pixel.schemas import NeoPixelOptions
+import chocolate_smart_home.plugins.device_plugins.neo_pixel.schemas as np_schemas
 
 
 def test_incoming_msg_device(populated_test_db):
@@ -139,80 +140,148 @@ def test_incoming_msg_pir_timeout(populated_test_db):
 
 
 def test_compose_msg_on():
-    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(NeoPixelOptions(on=True))
+    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
+        np_schemas.NeoPixelOptions(on=True)
+    )
     assert outgoing_msg == "on=1;"
 
-    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(NeoPixelOptions(on=False))
+    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
+        np_schemas.NeoPixelOptions(on=False)
+    )
     assert outgoing_msg == "on=0;"
 
 
 def test_compose_msg_twinkle():
-    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(NeoPixelOptions(twinkle=True))
+    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
+        np_schemas.NeoPixelOptions(twinkle=True)
+    )
     assert outgoing_msg == "twinkle=1;"
 
-    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(NeoPixelOptions(twinkle=False))
+    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
+        np_schemas.NeoPixelOptions(twinkle=False)
+    )
     assert outgoing_msg == "twinkle=0;"
 
 
 def test_compose_msg_transform():
     outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
-        NeoPixelOptions(transform=True)
+        np_schemas.NeoPixelOptions(transform=True)
     )
     assert outgoing_msg == "transform=1;"
 
     outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
-        NeoPixelOptions(transform=False)
+        np_schemas.NeoPixelOptions(transform=False)
     )
     assert outgoing_msg == "transform=0;"
 
 
 def test_compose_msg_ms():
-    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(NeoPixelOptions(ms=7))
+    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
+        np_schemas.NeoPixelOptions(ms=7)
+    )
     assert outgoing_msg == "ms=7;"
 
-    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(NeoPixelOptions(ms=209))
+    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
+        np_schemas.NeoPixelOptions(ms=209)
+    )
     assert outgoing_msg == "ms=209;"
 
 
 def test_compose_msg_brightness():
-    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(NeoPixelOptions(brightness=24))
+    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
+        np_schemas.NeoPixelOptions(brightness=24)
+    )
     assert outgoing_msg == "brightness=24;"
 
     outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
-        NeoPixelOptions(brightness=195)
+        np_schemas.NeoPixelOptions(brightness=195)
     )
     assert outgoing_msg == "brightness=195;"
 
 
 def test_compose_msg_palette():
-    outgoing_palette = [0,0,0,1,1,1,2,2,2,3,3,3,4,4,4,5,5,5,6,6,6,7,7,7,8,8,8]
-    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(NeoPixelOptions(palette=outgoing_palette))
+    outgoing_palette = [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8, 8]
+    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
+        np_schemas.NeoPixelOptions(palette=outgoing_palette)
+    )
     assert outgoing_msg == "palette=0,0,0,1,1,1,2,2,2,3,3,3,4,4,4,5,5,5,6,6,6,7,7,7,8,8,8;"
 
-    outgoing_palette = [123,234,56,78,90,1,2,3,4,5,6,7,8,9,0,12,34,56,78,9,100,200,50,150,250,0,255]
-    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(NeoPixelOptions(palette=outgoing_palette))
-    assert outgoing_msg == "palette=123,234,56,78,90,1,2,3,4,5,6,7,8,9,0,12,34,56,78,9,100,200,50,150,250,0,255;"
+    outgoing_palette = [123, 234, 56, 78, 90, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 12, 34, 56, 78, 9, 100, 200, 50, 150, 250, 0, 255]
+    outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
+        np_schemas.NeoPixelOptions(palette=outgoing_palette)
+    )
+    assert outgoing_msg== "palette=123,234,56,78,90,1,2,3,4,5,6,7,8,9,0,12,34,56,78,9,100,200,50,150,250,0,255;"
 
 
 def test_compose_msg_pir_armed():
     outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
-        NeoPixelOptions(pir_armed=True)
+        np_schemas.NeoPixelOptions(pir_armed=True)
     )
     assert outgoing_msg == "pir_armed=1;"
 
     outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
-        NeoPixelOptions(pir_armed=False)
+        np_schemas.NeoPixelOptions(pir_armed=False)
     )
     assert outgoing_msg == "pir_armed=0;"
 
 
 def test_compose_msg_pir_timeout():
     outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
-        NeoPixelOptions(pir_timeout_seconds=123)
+        np_schemas.NeoPixelOptions(pir_timeout_seconds=123)
     )
     assert outgoing_msg == "pir_timeout=123;"
 
     outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
-        NeoPixelOptions(pir_timeout_seconds=234)
+        np_schemas.NeoPixelOptions(pir_timeout_seconds=234)
     )
     assert outgoing_msg == "pir_timeout=234;"
+
+
+def test_serilize_msg():
+    device = schemas.DeviceReceived(
+        mqtt_id=123,
+        device_type_name="neo_pixel",
+        remote_name="Remote Name - 1",
+    )
+
+    neo_pixel_device = np_schemas.NeoPixelDeviceReceived(
+        on=True,
+        twinkle=True,
+        transform=True,
+        ms=5,
+        brightness=255,
+        palette=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26],
+        pir=np_schemas.PIR(armed=True, timeout_seconds=172),
+        device=device,
+    )
+
+    expected_dict = {
+        "mqtt_id": 123,
+        "device_type_name": "neo_pixel",
+        "remote_name": "Remote Name - 1",
+        "on": True,
+        "twinkle": True,
+        "transform": True,
+        "ms": 5,
+        "brightness": 255,
+        "palette": (
+            "#000102",
+            "#030405",
+            "#060708",
+            "#090a0b",
+            "#0c0d0e",
+            "#0f1011",
+            "#121314",
+            "#151617",
+            "#18191a",
+        ),
+        "online": True,
+        "pir": {
+            "armed": True,
+            "timeout_seconds": 172,
+        },
+        # "reboots": 0,
+        # "online": True,
+    }
+
+    assert NeoPixelDuplexMessenger().serialize(neo_pixel_device) == expected_dict

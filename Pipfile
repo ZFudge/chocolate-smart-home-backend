@@ -7,12 +7,12 @@ name = "pypi"
 fastapi = {extras = ["all"], version = "*"}
 sqlalchemy = "*"
 paho-mqtt = "*"
-ruff = "*"
 pytest-env = "*"
 black = "*"
 psycopg2-binary = "*"
 pytest-cov = "*"
 websockets = "*"
+ruff = "*"
 
 [dev-packages]
 

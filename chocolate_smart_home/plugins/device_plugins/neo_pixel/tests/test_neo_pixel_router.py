@@ -34,7 +34,7 @@ def test_get_neo_pixel_devices(populated_test_db):
                 "device_name": {
                     "id": 1,
                     "name": "Test Neo Pixel Device One",
-                    "is_server_side_name": False
+                    "is_server_side_name": False,
                 },
                 "device_type": {
                     "id": 1,
@@ -67,7 +67,7 @@ def test_get_neo_pixel_devices(populated_test_db):
                 "device_name": {
                     "id": 2,
                     "name": "Test Neo Pixel Device Two",
-                    "is_server_side_name": True
+                    "is_server_side_name": True,
                 },
                 "device_type": {
                     "id": 1,
@@ -112,7 +112,7 @@ def test_get_neo_pixel_device(populated_test_db):
             "device_name": {
                 "id": 1,
                 "name": "Test Neo Pixel Device One",
-                "is_server_side_name": False
+                "is_server_side_name": False,
             },
             "device_type": {
                 "id": 1,

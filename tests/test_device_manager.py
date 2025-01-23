@@ -34,39 +34,49 @@ def test_device_reboots(populated_test_db):
 
     remote_name = "Remote Name 1 - 1 - 123"
     for _ in range(3):
-        device_data = DeviceReceived(mqtt_id=orig_device_data.mqtt_id,
-                                     device_type_name=orig_device_data.device_type_name,
-                                     remote_name=remote_name)
+        device_data = DeviceReceived(
+            mqtt_id=orig_device_data.mqtt_id,
+            device_type_name=orig_device_data.device_type_name,
+            remote_name=remote_name,
+        )
         device: models.Device = device_manager.update_device(device_data)
         assert device.reboots == 1
 
     remote_name = "Remote Name 1 - 1 - 234"
-    device_data = DeviceReceived(mqtt_id=orig_device_data.mqtt_id,
-                                    device_type_name=orig_device_data.device_type_name,
-                                    remote_name=remote_name)
+    device_data = DeviceReceived(
+        mqtt_id=orig_device_data.mqtt_id,
+        device_type_name=orig_device_data.device_type_name,
+        remote_name=remote_name,
+    )
     device: models.Device = device_manager.update_device(device_data)
     assert device.reboots == 2
 
     remote_name = "Remote Name 1 - 1 - 345"
-    device_data = DeviceReceived(mqtt_id=orig_device_data.mqtt_id,
-                                    device_type_name=orig_device_data.device_type_name,
-                                    remote_name=remote_name)
+    device_data = DeviceReceived(
+        mqtt_id=orig_device_data.mqtt_id,
+        device_type_name=orig_device_data.device_type_name,
+        remote_name=remote_name,
+    )
     device: models.Device = device_manager.update_device(device_data)
     assert device.reboots == 3
 
     remote_name = "Remote Name 1 - 1 - 456"
     for _ in range(3):
-        device_data = DeviceReceived(mqtt_id=orig_device_data.mqtt_id,
-                                     device_type_name=orig_device_data.device_type_name,
-                                     remote_name=remote_name)
+        device_data = DeviceReceived(
+            mqtt_id=orig_device_data.mqtt_id,
+            device_type_name=orig_device_data.device_type_name,
+            remote_name=remote_name,
+        )
         device: models.Device = device_manager.update_device(device_data)
         assert device.reboots == 4
 
     remote_name = "Remote Name 1 - 1 - 567"
     for _ in range(3):
-        device_data = DeviceReceived(mqtt_id=orig_device_data.mqtt_id,
-                                     device_type_name=orig_device_data.device_type_name,
-                                     remote_name=remote_name)
+        device_data = DeviceReceived(
+            mqtt_id=orig_device_data.mqtt_id,
+            device_type_name=orig_device_data.device_type_name,
+            remote_name=remote_name,
+        )
         device: models.Device = device_manager.update_device(device_data)
         assert device.reboots == 5
 
