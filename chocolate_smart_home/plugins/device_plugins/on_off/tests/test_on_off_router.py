@@ -18,15 +18,9 @@ def test_get_on_off_devices(populated_test_db):
             "on": True,
             "device": {
                 "id": 1,
-                "client": {
-                    "id": 1,
-                    "mqtt_id": 123,
-                },
-                "device_name": {
-                    "id": 1,
-                    "name": "Test On Device",
-                    "is_server_side_name": False,
-                },
+                "mqtt_id": 123,
+                "remote_name": "Test On Device - 1",
+                "name": "Test On Device",
                 "device_type": {
                     "id": 1,
                     "name": "on_off",
@@ -35,7 +29,6 @@ def test_get_on_off_devices(populated_test_db):
                     "id": 1,
                     "name": "Main Space",
                 },
-                "remote_name": "Test On Device - 1",
                 "online": True,
                 "reboots": 0,
             },
@@ -45,21 +38,14 @@ def test_get_on_off_devices(populated_test_db):
             "on": False,
             "device": {
                 "id": 2,
-                "client": {
-                    "id": 2,
-                    "mqtt_id": 456,
-                },
-                "device_name": {
-                    "id": 2,
-                    "name": "Test Off Device",
-                    "is_server_side_name": True,
-                },
+                "mqtt_id": 456,
+                "name": "Test Off Device",
+                "remote_name": "Test Off Device - 2",
                 "device_type": {
                     "id": 1,
                     "name": "on_off",
                 },
                 "space": None,
-                "remote_name": "Test Off Device - 2",
                 "online": True,
                 "reboots": 0,
             },
@@ -81,15 +67,9 @@ def test_get_on_off_device(populated_test_db):
         "on": True,
         "device": {
             "id": 1,
-            "client": {
-                "id": 1,
-                "mqtt_id": 123,
-            },
-            "device_name": {
-                "id": 1,
-                "name": "Test On Device",
-                "is_server_side_name": False,
-            },
+            "mqtt_id": 123,
+            "name": "Test On Device",
+            "remote_name": "Test On Device - 1",
             "device_type": {
                 "id": 1,
                 "name": "on_off",
@@ -98,7 +78,6 @@ def test_get_on_off_device(populated_test_db):
                 "id": 1,
                 "name": "Main Space",
             },
-            "remote_name": "Test On Device - 1",
             "online": True,
             "reboots": 0,
         },
@@ -154,7 +133,7 @@ def test_update_single_on_off_device(populated_test_db):
 
 
 def test_update_multiple_devices(populated_test_db):
-    post_data = dict(ids=[1, 2], on=False)
+    post_data = dict(mqtt_ids=[1, 2], on=False)
 
     with patch("chocolate_smart_home.mqtt.client.MQTTClient.publish") as publish:
         resp = client.post("/on_off", json=post_data)

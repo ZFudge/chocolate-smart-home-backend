@@ -21,10 +21,8 @@ def test_to_on_off_schema(populated_test_db):
             online=True,
             reboots=0,
             remote_name="Test On Device - 1",
-            client=schemas.Client(id=1, mqtt_id=123),
-            device_name=schemas.DeviceName(
-                id=1, name="Test On Device", is_server_side_name=False
-            ),
+            mqtt_id=123,
+            name="Test On Device",
             device_type=schemas.DeviceType(id=1, name="on_off"),
             space=schemas.Space(id=1, name="Main Space"),
         ),
@@ -47,10 +45,8 @@ def test_to_on_off_schema_no_space(populated_test_db):
             online=True,
             reboots=0,
             remote_name="Test Off Device - 2",
-            client=schemas.Client(id=2, mqtt_id=456),
-            device_name=schemas.DeviceName(
-                id=2, name="Test Off Device", is_server_side_name=True
-            ),
+            mqtt_id=456,
+            name="Test Off Device",
             device_type=schemas.DeviceType(id=1, name="on_off"),
             space=None,
         ),

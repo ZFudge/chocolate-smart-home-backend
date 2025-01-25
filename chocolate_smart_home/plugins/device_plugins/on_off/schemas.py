@@ -14,7 +14,7 @@ class OnOffValue(BaseModel):
 
 
 class OnOffDevices(OnOffValue):
-    ids: List[int]
+    mqtt_ids: List[int]
 
 
 class OnOffDevice(OnOffId, OnOffValue):

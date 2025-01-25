@@ -15,7 +15,7 @@ ws_router = APIRouter()
 
 class WebSocketMessage(TypedDict):
     device_type_name: str
-    ids: List[int]
+    mqtt_ids: List[int]
     name: str
     value: float | int | bool | List[str]
 

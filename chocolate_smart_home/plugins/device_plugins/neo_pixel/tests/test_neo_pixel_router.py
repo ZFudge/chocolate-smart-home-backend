@@ -27,15 +27,8 @@ def test_get_neo_pixel_devices(populated_test_db):
             },
             "device": {
                 "id": 1,
-                "client": {
-                    "id": 1,
-                    "mqtt_id": 123,
-                },
-                "device_name": {
-                    "id": 1,
-                    "name": "Test Neo Pixel Device One",
-                    "is_server_side_name": False,
-                },
+                "mqtt_id": 123,
+                "name": "Test Neo Pixel Device One",
                 "device_type": {
                     "id": 1,
                     "name": "neo_pixel",
@@ -60,15 +53,8 @@ def test_get_neo_pixel_devices(populated_test_db):
             "pir": None,
             "device": {
                 "id": 2,
-                "client": {
-                    "id": 2,
-                    "mqtt_id": 456,
-                },
-                "device_name": {
-                    "id": 2,
-                    "name": "Test Neo Pixel Device Two",
-                    "is_server_side_name": True,
-                },
+                "mqtt_id": 456,
+                "name": "Test Neo Pixel Device Two",
                 "device_type": {
                     "id": 1,
                     "name": "neo_pixel",
@@ -105,15 +91,11 @@ def test_get_neo_pixel_device(populated_test_db):
         },
         "device": {
             "id": 1,
-            "client": {
-                "id": 1,
-                "mqtt_id": 123,
-            },
-            "device_name": {
-                "id": 1,
-                "name": "Test Neo Pixel Device One",
-                "is_server_side_name": False,
-            },
+            "mqtt_id": 123,
+            'name': 'Test Neo Pixel Device One',
+            "remote_name": "Test Neo Pixel Device - 1",
+            "online": True,
+            "reboots": 0,
             "device_type": {
                 "id": 1,
                 "name": "neo_pixel",
@@ -122,9 +104,6 @@ def test_get_neo_pixel_device(populated_test_db):
                 "id": 1,
                 "name": "Main Space",
             },
-            "remote_name": "Test Neo Pixel Device - 1",
-            "online": True,
-            "reboots": 0,
         },
     }
 
@@ -183,7 +162,7 @@ def test_update_single_neo_pixel_device_outgoing_msg(populated_test_db):
 
 
 def test_update_multiple_devices(populated_test_db):
-    post_data = dict(ids=[1, 2], data=dict(on=False, twinkle=True, ms=201))
+    post_data = dict(mqtt_ids=[1, 2], data=dict(on=False, twinkle=True, ms=201))
     expected_msg = "on=0;twinkle=1;ms=201;"
 
     with patch("chocolate_smart_home.mqtt.client.MQTTClient.publish") as publish:

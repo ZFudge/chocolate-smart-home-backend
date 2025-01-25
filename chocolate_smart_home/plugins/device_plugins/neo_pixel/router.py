@@ -43,7 +43,7 @@ def get_device(neo_pixel_device_id: int) -> NeoPixelDevice:
 @plugin_router.post("/", response_model=None, status_code=204)
 def update_devices(neo_pixel_data: NeoPixelDevices):
     """Publish new values to multiple Neo Pixel devices."""
-    for neo_pixel_device_id in neo_pixel_data.ids:
+    for neo_pixel_device_id in neo_pixel_data.mqtt_ids:
         publish_message(neo_pixel_device_id=neo_pixel_device_id, data=neo_pixel_data.data)
 
 

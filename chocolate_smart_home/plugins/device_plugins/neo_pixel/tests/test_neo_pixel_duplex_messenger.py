@@ -16,13 +16,13 @@ def test_incoming_msg_device(populated_test_db):
 
     assert device.id == 3
     assert device.device_type.name == "neo_pixel"
-    assert device.device_name.name == "Remote Name"
+    assert device.name == "Remote Name"
 
     message.payload = b"789,neo_pixel,New Remote Name - uid,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
     neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
     device = neo_pixel_device.device
 
-    assert device.device_name.name == "New Remote Name"
+    assert device.name == "New Remote Name"
 
 
 def test_message_handler_fails_on_missing_values(populated_test_db):

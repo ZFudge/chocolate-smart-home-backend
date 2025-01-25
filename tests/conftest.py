@@ -43,8 +43,6 @@ def empty_test_db():
     yield db_session.get()
 
     db_session.get().query(models.Device).delete()
-    db_session.get().query(models.DeviceName).delete()
-    db_session.get().query(models.Client).delete()
     db_session.get().query(models.DeviceType).delete()
     db_session.get().query(models.Space).delete()
     db_session.get().commit()
@@ -56,12 +54,6 @@ def empty_test_db():
 def populated_test_db(empty_test_db):
     test_db = empty_test_db
 
-    client_1 = models.Client(mqtt_id=123)
-    client_2 = models.Client(mqtt_id=456)
-
-    name_1 = models.DeviceName(name="Test Device Name 1")
-    name_2 = models.DeviceName(name="Test Device Name 2", is_server_side_name=True)
-
     type_1 = models.DeviceType(name="TEST_DEVICE_TYPE_NAME_1")
     type_2 = models.DeviceType(name="TEST_DEVICE_TYPE_NAME_2")
 
@@ -69,25 +61,21 @@ def populated_test_db(empty_test_db):
     space_2 = models.Space(name="Other Space")
 
     device_1 = models.Device(
-        online=True,
+        mqtt_id=123,
         remote_name="Remote Name 1 - 1",
-        client=client_1,
+        name="Test Device Name 1",
         device_type=type_1,
-        device_name=name_1,
         space=space_1,
+        online=True,
     )
     device_2 = models.Device(
-        online=False,
+        mqtt_id=456,
         remote_name="Remote Name 2 - 2",
-        client=client_2,
+        name="Test Device Name 2",
         device_type=type_2,
-        device_name=name_2,
+        online=False,
     )
 
-    test_db.add(client_1)
-    test_db.add(client_2)
-    test_db.add(name_1)
-    test_db.add(name_2)
     test_db.add(type_1)
     test_db.add(type_2)
     test_db.add(space_1)

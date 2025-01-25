@@ -45,23 +45,23 @@ class BaseDuplexMessenger:
         """Accepts data from websocket and returns list of topics to broadcast this data to.
         Still returns a list of topics, even if the data contains only one id."""
 
-        if "ids" not in data and "id" not in data:
+        if "mqtt_ids" not in data and "mqtt_id" not in data:
             raise ValueError(
-                "Incoming data must contain 'ids' (iterable) or 'id' (int or str) key."
+                "Incoming data must contain 'mqtt_ids' (iterable) or 'mqtt_id' (int or str) key."
             )
 
         # Every plugin inherits the ability to broadcast data to multiple devices,
         # but only those receiving a payload that implements the "ids" key can use it.
         # Payloads intended for single devices use the "id" key.
-        if "id" in data:
-            ids = [data["id"]]
+        if "mqtt_id" in data:
+            mqtt_ids = data["mqtt_id"]
         else:
-            ids = data["ids"]
+            mqtt_ids = data["mqtt_ids"]
 
         format_topic_by_device_id: Callable = topics.get_format_topic_by_device_id(
             device_type_name
         )
-        return map(format_topic_by_device_id, ids)
+        return map(format_topic_by_device_id, mqtt_ids)
 
     @staticmethod
     def _compose_param(key: str, val: str) -> str:

@@ -37,7 +37,7 @@ def test_device_manager_create(empty_test_db):
     assert neo_pixel_device.pir_timeout_seconds == 65
     assert neo_pixel_device.palette == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     assert neo_pixel_device.device.remote_name == "Neo Pixel Device - 1"
-    assert neo_pixel_device.device.client.mqtt_id == 123
+    assert neo_pixel_device.device.mqtt_id == 123
     assert neo_pixel_device.device.device_type.name == "neo_pixel"
 
 
@@ -68,7 +68,7 @@ def test_device_manager_update(populated_test_db):
     assert neo_pixel_device.pir_timeout_seconds == 20
     assert neo_pixel_device.palette == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     assert neo_pixel_device.device.remote_name == "Neo Pixel Device - 1"
-    assert neo_pixel_device.device.client.mqtt_id == 123
+    assert neo_pixel_device.device.mqtt_id == 123
     assert neo_pixel_device.device.device_type.name == "neo_pixel"
 
 

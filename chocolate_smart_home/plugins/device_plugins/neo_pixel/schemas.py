@@ -55,7 +55,7 @@ class NeoPixelOptions(BaseModel, PaletteValidator):
 
 
 class NeoPixelDevices(BaseModel):
-    ids: List[int]
+    mqtt_ids: List[int]
     data: NeoPixelOptions
 
 

@@ -43,7 +43,7 @@ def get_device(on_off_device_id: int) -> OnOffDevice:
 @plugin_router.post("/", response_model=None, status_code=204)
 def update_devices(data: OnOffDevices):
     """Publish new "on" value to multiple devices."""
-    for on_off_device_id in data.ids:
+    for on_off_device_id in data.mqtt_ids:
         publish_message(on_off_device_id=on_off_device_id, on=data.on)
 
 

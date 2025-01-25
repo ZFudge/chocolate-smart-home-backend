@@ -24,9 +24,9 @@ def get_device_by_device_id(device_id: int) -> models.Device:
     )
 
 
-def get_device_by_mqtt_client_id(mqtt_id: int) -> models.Device:
+def get_device_by_mqtt_id(mqtt_id: int) -> models.Device:
     db: Session = dependencies.db_session.get()
-    return db.query(models.Client).filter(models.Client.mqtt_id == mqtt_id).one().device
+    return db.query(models.Device).filter(models.Device.mqtt_id == mqtt_id).one()
 
 
 def delete_device(device_id: int) -> None:

@@ -18,7 +18,7 @@ def test_turn_off_message(populated_test_db):
 
     assert device.id == 1
     assert device.device_type.name == "on_off"
-    assert device.device_name.name == "Remote Name"
+    assert device.name == "Remote Name"
     assert on_off_device.on is False
 
     message.payload = b"123,on_off,Remote Name - uid,1"
@@ -43,7 +43,7 @@ def test_turn_on_message(populated_test_db):
 
     assert device.id == 2
     assert device.device_type.name == "on_off"
-    assert device.device_name.name == "Remote Name"
+    assert device.name == "Remote Name"
     assert on_off_device.on is True
 
     message.payload = b"456,on_off,Remote Name - uid,0"

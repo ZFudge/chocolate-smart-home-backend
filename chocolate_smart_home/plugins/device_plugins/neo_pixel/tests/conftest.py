@@ -16,12 +16,6 @@ def empty_test_db(empty_test_db):
 
 @pytest.fixture
 def populated_test_db(empty_test_db):
-    neo_pixel_client_1 = models.Client(mqtt_id=123)
-    neo_pixel_client_2 = models.Client(mqtt_id=456)
-
-    neo_pixel_name_1 = models.DeviceName(name="Test Neo Pixel Device One")
-    neo_pixel_name_2 = models.DeviceName(name="Test Neo Pixel Device Two", is_server_side_name=True)
-
     device_type = models.DeviceType(name="neo_pixel")
 
     space = models.Space(name="Main Space")
@@ -29,17 +23,17 @@ def populated_test_db(empty_test_db):
     device__id_1 = models.Device(
         online=True,
         remote_name="Test Neo Pixel Device - 1",
-        client=neo_pixel_client_1,
+        mqtt_id=123,
         device_type=device_type,
-        device_name=neo_pixel_name_1,
+        name="Test Neo Pixel Device One",
         space=space,
     )
     device__id_2 = models.Device(
         online=True,
         remote_name="Test Neo Pixel Device - 2",
-        client=neo_pixel_client_2,
+        mqtt_id=456,
         device_type=device_type,
-        device_name=neo_pixel_name_2,
+        name="Test Neo Pixel Device Two",
     )
 
     neo_pixel_device__id_1 = NeoPixel(
@@ -64,12 +58,6 @@ def populated_test_db(empty_test_db):
     )
 
     db = empty_test_db
-
-    db.add(neo_pixel_client_1)
-    db.add(neo_pixel_client_2)
-
-    db.add(neo_pixel_name_1)
-    db.add(neo_pixel_name_2)
 
     db.add(device_type)
     db.add(space)
