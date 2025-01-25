@@ -1,6 +1,7 @@
 import logging
 import os
 from typing import Callable
+import threading
 
 from paho.mqtt import MQTTException, client as mqtt
 
@@ -16,10 +17,13 @@ DEFAULT_MQTT_PORT = 1883
 
 class MQTTClient:
     _instance = None
+    _initialized = False
+    _lock = threading.Lock()
 
     def __new__(cls, *args, **kwargs):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
+        with cls._lock:
+            if cls._instance is None:
+                cls._instance = super().__new__(cls)
         return cls._instance
 
     def __init__(
@@ -29,18 +33,23 @@ class MQTTClient:
         port: int = DEFAULT_MQTT_PORT,
         client_id_prefix: str = ""
     ):
-        client_id = client_id_prefix + os.environ.get(
-            "MQTT_CLIENT_ID", "CSM-FASTAPI-SERVER"
-        )
-        logger.info(
-            "Initializing MQTT client with client_id %s, host %s, and port %s"
-            % (client_id, host, port)
-        )
-        self._client = mqtt.Client(
-            mqtt.CallbackAPIVersion.VERSION2, client_id=client_id
-        )
-        self._host = host
-        self._port = port
+        with self._lock:
+            if self._initialized:
+                return
+            
+            client_id = client_id_prefix + os.environ.get(
+                "MQTT_CLIENT_ID", "CSM-FASTAPI-SERVER"
+            )
+            logger.info(
+                "Initializing MQTT client with client_id %s, host %s, and port %s"
+                % (client_id, host, port)
+            )
+            self._client = mqtt.Client(
+                mqtt.CallbackAPIVersion.VERSION2, client_id=client_id
+            )
+            self._host = host
+            self._port = port
+            self._initialized = True
 
     def connect(self):
         logger.info("Connecting MQTT client to %s:%s" % (self._host, self._port))
