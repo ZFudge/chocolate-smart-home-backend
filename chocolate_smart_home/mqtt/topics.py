@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, List
 
 
 RECEIVE_DEVICE_DATA = "/receive_device_state/"
@@ -12,7 +12,9 @@ def get_format_topic_by_device_id(device_type_name: str) -> Callable[[int], str]
         device_type=device_type_name
     )
 
-    def format_topic_by_device_id(device_id: int) -> str:
+    def format_topic_by_device_id(device_id: int | List[int]) -> str:
+        if isinstance(device_id, list):
+            return DEVICE_TOPIC_TEMPLATE.format(device_id=device_id[0])
         return DEVICE_TOPIC_TEMPLATE.format(device_id=device_id)
 
     return format_topic_by_device_id

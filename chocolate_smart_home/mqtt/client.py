@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Callable
+from typing import Callable, List
 import threading
 
 from paho.mqtt import MQTTException, client as mqtt
@@ -36,7 +36,7 @@ class MQTTClient:
         with self._lock:
             if self._initialized:
                 return
-            
+
             client_id = client_id_prefix + os.environ.get(
                 "MQTT_CLIENT_ID", "CSM-FASTAPI-SERVER"
             )
@@ -65,7 +65,12 @@ class MQTTClient:
         self._client.disconnect()
 
     def publish(
-        self, *, topic: str, message: str = "0", callback: Callable = lambda x: None
+        self,
+        *,
+        topic: str,
+        message: str = "0",
+        callback: Callable = lambda x: None,
+        **kwargs
     ) -> None:
         logger.info('Publishing message: "%s" through topic: %s...' % (message, topic))
 
@@ -80,6 +85,10 @@ class MQTTClient:
             callback(err)
             raise MQTTException(err)
         logger.info("Success")
+
+    def publish_all(self, *, topics: List[str], **kwargs) -> None:
+        for topic in topics:
+            self.publish(topic=topic, **kwargs)
 
     def request_all_devices_data(self) -> None:
         """Publishes an empty message to topic "/broadcast_request_devices_state/".

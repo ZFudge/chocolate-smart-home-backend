@@ -20,7 +20,9 @@ def populated_test_db(empty_test_db):
     neo_pixel_client_2 = models.Client(mqtt_id=456)
 
     neo_pixel_name_1 = models.DeviceName(name="Test Neo Pixel Device One")
-    neo_pixel_name_2 = models.DeviceName(name="Test Neo Pixel Device Two", is_server_side_name=True)
+    neo_pixel_name_2 = models.DeviceName(
+        name="Test Neo Pixel Device Two", is_server_side_name=True
+    )
 
     device_type = models.DeviceType(name="neo_pixel")
 
