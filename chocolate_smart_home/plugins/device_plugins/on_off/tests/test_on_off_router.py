@@ -25,9 +25,9 @@ def test_get_on_off_devices(populated_test_db):
                     "id": 1,
                     "name": "on_off",
                 },
-                "space": {
+                "tag": {
                     "id": 1,
-                    "name": "Main Space",
+                    "name": "Main Tag",
                 },
                 "online": True,
                 "reboots": 0,
@@ -45,7 +45,7 @@ def test_get_on_off_devices(populated_test_db):
                     "id": 1,
                     "name": "on_off",
                 },
-                "space": None,
+                "tag": None,
                 "online": True,
                 "reboots": 0,
             },
@@ -74,9 +74,9 @@ def test_get_on_off_device(populated_test_db):
                 "id": 1,
                 "name": "on_off",
             },
-            "space": {
+            "tag": {
                 "id": 1,
-                "name": "Main Space",
+                "name": "Main Tag",
             },
             "online": True,
             "reboots": 0,

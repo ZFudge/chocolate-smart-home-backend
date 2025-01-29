@@ -20,8 +20,8 @@ class Device(Base, ModelStrFormatter):
     device_type_id = Column(Integer, ForeignKey("device_types.id"))
     device_type = relationship("DeviceType", back_populates="devices")
 
-    space_id = Column(Integer, ForeignKey("spaces.id"))
-    space = relationship("Space", back_populates="devices")
+    tag_id = Column(Integer, ForeignKey("tags.id"))
+    tag = relationship("Tag", back_populates="devices")
 
     def __str__(self):
         """Return ModelStrFormatter.__str__ result of both the Device object and
@@ -29,7 +29,7 @@ class Device(Base, ModelStrFormatter):
         attrs = [
             super().__str__(),
             str(self.device_type),
-            str(self.space) if self.space else "Space=None",
+            str(self.tag) if self.tag else "Tag=None",
         ]
         return "\n".join(attrs)
 

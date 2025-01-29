@@ -63,9 +63,9 @@ def test_get_neo_pixel_devices(populated_test_db):
                     "id": 1,
                     "name": "neo_pixel",
                 },
-                "space": {
+                "tag": {
                     "id": 1,
-                    "name": "Main Space",
+                    "name": "Main Tag",
                 },
                 "remote_name": "Test Neo Pixel Device - 1",
                 "online": True,
@@ -117,7 +117,7 @@ def test_get_neo_pixel_devices(populated_test_db):
                     "id": 1,
                     "name": "neo_pixel",
                 },
-                "space": None,
+                "tag": None,
                 "remote_name": "Test Neo Pixel Device - 2",
                 "online": True,
                 "reboots": 0,
@@ -186,9 +186,9 @@ def test_get_neo_pixel_device(populated_test_db):
                 "id": 1,
                 "name": "neo_pixel",
             },
-            "space": {
+            "tag": {
                 "id": 1,
-                "name": "Main Space",
+                "name": "Main Tag",
             },
         },
     }

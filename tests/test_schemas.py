@@ -12,12 +12,12 @@ def test_device_to_schema(populated_test_db):
         name="Test Device Name 1",
         remote_name="Remote Name 1 - 1",
         device_type=schemas.DeviceType(id=1, name="TEST_DEVICE_TYPE_NAME_1"),
-        space=schemas.Space(id=1, name="Main Space"),
+        tag=schemas.Tag(id=1, name="Main Tag"),
     )
     assert to_schema(device) == expected_schema
 
 
-def test_device_to_schema_empty_space(populated_test_db):
+def test_device_to_schema_empty_tag(populated_test_db):
     device = populated_test_db.query(models.Device).filter(models.Device.id == 2).one()
     expected_schema = schemas.Device(
         id=2,
@@ -27,7 +27,7 @@ def test_device_to_schema_empty_space(populated_test_db):
         mqtt_id=456,
         name="Test Device Name 2",
         device_type=schemas.DeviceType(id=2, name="TEST_DEVICE_TYPE_NAME_2"),
-        space=None,
+        tag=None,
     )
     assert to_schema(device) == expected_schema
 

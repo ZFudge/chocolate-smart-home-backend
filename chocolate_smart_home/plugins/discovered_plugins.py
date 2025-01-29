@@ -2,7 +2,7 @@ import importlib
 from typing import Dict
 
 import chocolate_smart_home.plugins.device_plugins
-from chocolate_smart_home.plugins import iter_namespace
+from chocolate_smart_home.plugins import iter_nametag
 from chocolate_smart_home.plugins.base_device_manager import (
     BaseDeviceManager as DefaultDeviceManager,
 )
@@ -25,7 +25,7 @@ def discover_and_import_device_plugin_modules():
            },
            ...
        }"""
-    for _finder, name, _ispkg in iter_namespace(
+    for _finder, name, _ispkg in iter_nametag(
         chocolate_smart_home.plugins.device_plugins
     ):
         device_manager_module_name = f"{name}.device_manager"

@@ -6,7 +6,7 @@ from .device import (
     DeviceUpdate,
 )
 from .device_type import DeviceType, DeviceTypeBase
-from .space import Space, SpaceBase, SpaceId
+from .tag import Tag, TagBase, TagId
 from .websocket_msg import WebsocketMessage
 from .utils import to_schema
 
@@ -18,9 +18,9 @@ __all__ = [
     "DeviceType",
     "DeviceTypeBase",
     "DeviceUpdate",
-    "Space",
-    "SpaceBase",
-    "SpaceId",
+    "Tag",
+    "TagBase",
+    "TagId",
     "to_schema",
     "WebsocketMessage",
 ]

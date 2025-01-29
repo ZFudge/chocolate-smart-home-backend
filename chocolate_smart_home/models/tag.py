@@ -5,10 +5,10 @@ from chocolate_smart_home.database import Base
 from .model_str_formatter import ModelStrFormatter
 
 
-class Space(Base, ModelStrFormatter):
-    __tablename__ = "spaces"
+class Tag(Base, ModelStrFormatter):
+    __tablename__ = "tags"
 
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
 
-    devices = relationship("Device", back_populates="space")
+    devices = relationship("Device", back_populates="tag")

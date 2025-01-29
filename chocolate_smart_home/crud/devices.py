@@ -50,25 +50,25 @@ def delete_device(device_id: int) -> None:
         raise
 
 
-def add_device_space(device_id: int, space_id: int) -> models.Device:
+def add_device_tag(device_id: int, tag_id: int) -> models.Device:
     logger.info(
-        'Adding Space with id of %s to Device with id of "%s"' % (space_id, device_id)
+        'Adding Tag with id of %s to Device with id of "%s"' % (tag_id, device_id)
     )
     db: Session = dependencies.db_session.get()
 
     try:
-        space = db.query(models.Space).filter(models.Space.id == space_id).one()
+        tag = db.query(models.Tag).filter(models.Tag.id == tag_id).one()
         device = db.query(models.Device).filter(models.Device.id == device_id).one()
     except NoResultFound as e:
-        msg = "Failed to add Space with id of %s to " "Device with id of %s - %s" % (
-            space_id,
+        msg = "Failed to add Tag with id of %s to " "Device with id of %s - %s" % (
+            tag_id,
             device_id,
             e.args[0],
         )
         logger.error(msg)
         raise NoResultFound(msg)
 
-    device.space = space
+    device.tag = tag
     db.add(device)
     db.commit()
     db.refresh(device)
@@ -76,23 +76,23 @@ def add_device_space(device_id: int, space_id: int) -> models.Device:
     return device
 
 
-def remove_device_space(device_id: int) -> models.Device:
+def remove_device_tag(device_id: int) -> models.Device:
     logger.info(
-        'Adding Space with id of %s to Device with id of "%s"' % (device_id, device_id)
+        'Adding Tag with id of %s to Device with id of "%s"' % (device_id, device_id)
     )
     db: Session = dependencies.db_session.get()
 
     try:
         device = db.query(models.Device).filter(models.Device.id == device_id).one()
     except NoResultFound as e:
-        msg = "Failed to remove Space from " "Device with id of %s - %s" % (
+        msg = "Failed to remove Tag from " "Device with id of %s - %s" % (
             device_id,
             e.args[0],
         )
         logger.error(msg)
         raise NoResultFound(msg)
 
-    device.space = None
+    device.tag = None
     db.add(device)
     db.commit()
     db.refresh(device)

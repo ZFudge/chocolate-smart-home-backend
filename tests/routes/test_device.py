@@ -34,9 +34,9 @@ def test_get_devices_data(populated_test_db):
                 "name": "TEST_DEVICE_TYPE_NAME_1",
                 "id": 1,
             },
-            "space": {
+            "tag": {
                 "id": 1,
-                "name": "Main Space",
+                "name": "Main Tag",
             },
         },
         {
@@ -44,7 +44,7 @@ def test_get_devices_data(populated_test_db):
             "mqtt_id": 456,
             "remote_name": "Remote Name 2 - 2",
             "name": "Test Device Name 2",
-            "space": None,
+            "tag": None,
             "online": False,
             "reboots": 0,
             "device_type": {
@@ -72,9 +72,9 @@ def test_get_device_data_by_id(populated_test_db):
             "id": 1,
             "name": "TEST_DEVICE_TYPE_NAME_1",
         },
-        "space": {
+        "tag": {
             "id": 1,
-            "name": "Main Space",
+            "name": "Main Tag",
         },
     }
 
@@ -106,10 +106,10 @@ def test_delete_device_fails_on_invalid_device_id(populated_test_db):
     }
 
 
-def test_add_device_space(populated_test_db):
+def test_add_device_tag(populated_test_db):
     device_id = 1
-    new_space_id = 2
-    resp = client.post(f"/device/space/{device_id}", json={"id": new_space_id})
+    new_tag_id = 2
+    resp = client.post(f"/device/tag/{device_id}", json={"id": new_tag_id})
     assert resp.status_code == 200
 
     expected_data = {
@@ -123,9 +123,9 @@ def test_add_device_space(populated_test_db):
             "id": 1,
             "name": "TEST_DEVICE_TYPE_NAME_1",
         },
-        "space": {
+        "tag": {
             "id": 2,
-            "name": "Other Space",
+            "name": "Other Tag",
         },
     }
 

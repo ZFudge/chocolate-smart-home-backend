@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 from chocolate_smart_home.schemas.device_type import DeviceType
-from chocolate_smart_home.schemas.space import Space
+from chocolate_smart_home.schemas.tag import Tag
 
 
 class DeviceId(BaseModel):
@@ -13,7 +13,7 @@ class DeviceBase(BaseModel):
     remote_name: str
     name: str
     device_type: DeviceType
-    space: Space | None
+    tag: Tag | None
     online: bool
     reboots: int
 

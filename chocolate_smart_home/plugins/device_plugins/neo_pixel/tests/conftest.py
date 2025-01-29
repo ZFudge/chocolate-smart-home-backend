@@ -18,7 +18,7 @@ def empty_test_db(empty_test_db):
 def populated_test_db(empty_test_db):
     device_type = models.DeviceType(name="neo_pixel")
 
-    space = models.Space(name="Main Space")
+    tag = models.Tag(name="Main Tag")
 
     device__id_1 = models.Device(
         online=True,
@@ -26,7 +26,7 @@ def populated_test_db(empty_test_db):
         mqtt_id=123,
         device_type=device_type,
         name="Test Neo Pixel Device One",
-        space=space,
+        tag=tag,
     )
     device__id_2 = models.Device(
         online=True,
@@ -116,7 +116,7 @@ def populated_test_db(empty_test_db):
     db = empty_test_db
 
     db.add(device_type)
-    db.add(space)
+    db.add(tag)
 
     db.add(device__id_1)
     db.add(device__id_2)

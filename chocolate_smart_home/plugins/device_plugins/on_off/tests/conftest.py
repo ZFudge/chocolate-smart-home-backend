@@ -18,7 +18,7 @@ def empty_test_db(empty_test_db):
 def populated_test_db(empty_test_db):
     device_type = models.DeviceType(name="on_off")
 
-    space = models.Space(name="Main Space")
+    tag = models.Tag(name="Main Tag")
 
     device__id_1 = models.Device(
         mqtt_id=123,
@@ -26,7 +26,7 @@ def populated_test_db(empty_test_db):
         online=True,
         remote_name="Test On Device - 1",
         device_type=device_type,
-        space=space,
+        tag=tag,
     )
     device__id_2 = models.Device(
         mqtt_id=456,
@@ -42,7 +42,7 @@ def populated_test_db(empty_test_db):
     db = empty_test_db
 
     db.add(device_type)
-    db.add(space)
+    db.add(tag)
 
     db.add(device__id_1)
     db.add(device__id_2)

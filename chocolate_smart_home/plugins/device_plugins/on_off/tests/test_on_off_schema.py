@@ -19,13 +19,13 @@ def test_to_on_off_schema(populated_test_db):
             mqtt_id=123,
             name="Test On Device",
             device_type=schemas.DeviceType(id=1, name="on_off"),
-            space=schemas.Space(id=1, name="Main Space"),
+            tag=schemas.Tag(id=1, name="Main Tag"),
         ),
     )
     assert utils.to_on_off_schema(device) == expected_schema
 
 
-def test_to_on_off_schema_no_space(populated_test_db):
+def test_to_on_off_schema_no_tag(populated_test_db):
     device = populated_test_db.query(model.OnOff).filter(model.OnOff.id == 2).one()
     expected_schema = on_off_schemas.OnOffDevice(
         id=2,
@@ -38,7 +38,7 @@ def test_to_on_off_schema_no_space(populated_test_db):
             mqtt_id=456,
             name="Test Off Device",
             device_type=schemas.DeviceType(id=1, name="on_off"),
-            space=None,
+            tag=None,
         ),
     )
     assert utils.to_on_off_schema(device) == expected_schema

@@ -44,7 +44,7 @@ def empty_test_db():
 
     db_session.get().query(models.Device).delete()
     db_session.get().query(models.DeviceType).delete()
-    db_session.get().query(models.Space).delete()
+    db_session.get().query(models.Tag).delete()
     db_session.get().commit()
 
     Base.metadata.drop_all(bind=engine)
@@ -57,15 +57,15 @@ def populated_test_db(empty_test_db):
     type_1 = models.DeviceType(name="TEST_DEVICE_TYPE_NAME_1")
     type_2 = models.DeviceType(name="TEST_DEVICE_TYPE_NAME_2")
 
-    space_1 = models.Space(name="Main Space")
-    space_2 = models.Space(name="Other Space")
+    tag_1 = models.Tag(name="Main Tag")
+    tag_2 = models.Tag(name="Other Tag")
 
     device_1 = models.Device(
         mqtt_id=123,
         remote_name="Remote Name 1 - 1",
         name="Test Device Name 1",
         device_type=type_1,
-        space=space_1,
+        tag=tag_1,
         online=True,
     )
     device_2 = models.Device(
@@ -78,8 +78,8 @@ def populated_test_db(empty_test_db):
 
     test_db.add(type_1)
     test_db.add(type_2)
-    test_db.add(space_1)
-    test_db.add(space_2)
+    test_db.add(tag_1)
+    test_db.add(tag_2)
     test_db.add(device_1)
     test_db.add(device_2)
 
