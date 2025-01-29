@@ -19,10 +19,7 @@ def get_spaces() -> List[models.Space]:
 
 def get_space_by_id(space_id: int) -> models.Space:
     return (
-        db_session.get()
-        .query(models.Space)
-        .filter(models.Space.id == space_id)
-        .one()
+        db_session.get().query(models.Space).filter(models.Space.id == space_id).one()
     )
 
 
@@ -59,8 +56,7 @@ def update_space(space_id: int, space_name: str) -> models.Space:
         space = db.query(models.Space).filter(models.Space.id == space_id).one()
     except NoResultFound:
         msg = (
-            f"Space update failed. No Space object "
-            f"with an id of {space_id} found."
+            f"Space update failed. No Space object " f"with an id of {space_id} found."
         )
         logger.error(msg)
         raise NoResultFound(msg)

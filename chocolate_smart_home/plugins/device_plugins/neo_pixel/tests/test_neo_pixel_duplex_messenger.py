@@ -3,7 +3,9 @@ from paho.mqtt.client import MQTTMessage
 
 from chocolate_smart_home import schemas
 from chocolate_smart_home.mqtt.handler import MQTTMessageHandler
-from chocolate_smart_home.plugins.device_plugins.neo_pixel.duplex_messenger import NeoPixelDuplexMessenger
+from chocolate_smart_home.plugins.device_plugins.neo_pixel.duplex_messenger import (
+    NeoPixelDuplexMessenger,
+)
 import chocolate_smart_home.plugins.device_plugins.neo_pixel.schemas as np_schemas
 
 
@@ -200,17 +202,78 @@ def test_compose_msg_brightness():
 
 
 def test_compose_msg_palette():
-    outgoing_palette = [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8, 8]
+    outgoing_palette = [
+        0,
+        0,
+        0,
+        1,
+        1,
+        1,
+        2,
+        2,
+        2,
+        3,
+        3,
+        3,
+        4,
+        4,
+        4,
+        5,
+        5,
+        5,
+        6,
+        6,
+        6,
+        7,
+        7,
+        7,
+        8,
+        8,
+        8,
+    ]
     outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
         np_schemas.NeoPixelOptions(palette=outgoing_palette)
     )
-    assert outgoing_msg == "palette=0,0,0,1,1,1,2,2,2,3,3,3,4,4,4,5,5,5,6,6,6,7,7,7,8,8,8;"
+    assert (
+        outgoing_msg == "palette=0,0,0,1,1,1,2,2,2,3,3,3,4,4,4,5,5,5,6,6,6,7,7,7,8,8,8;"
+    )
 
-    outgoing_palette = [123, 234, 56, 78, 90, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 12, 34, 56, 78, 9, 100, 200, 50, 150, 250, 0, 255]
+    outgoing_palette = [
+        123,
+        234,
+        56,
+        78,
+        90,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        0,
+        12,
+        34,
+        56,
+        78,
+        9,
+        100,
+        200,
+        50,
+        150,
+        250,
+        0,
+        255,
+    ]
     outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
         np_schemas.NeoPixelOptions(palette=outgoing_palette)
     )
-    assert outgoing_msg== "palette=123,234,56,78,90,1,2,3,4,5,6,7,8,9,0,12,34,56,78,9,100,200,50,150,250,0,255;"
+    assert (
+        outgoing_msg
+        == "palette=123,234,56,78,90,1,2,3,4,5,6,7,8,9,0,12,34,56,78,9,100,200,50,150,250,0,255;"
+    )
 
 
 def test_compose_msg_pir_armed():
@@ -250,7 +313,35 @@ def test_serilize_msg():
         transform=True,
         ms=5,
         brightness=255,
-        palette=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26],
+        palette=[
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+        ],
         pir=np_schemas.PIR(armed=True, timeout_seconds=172),
         device=device,
     )

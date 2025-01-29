@@ -3,12 +3,7 @@ from chocolate_smart_home.schemas.utils import to_schema
 
 
 def test_device_to_schema(populated_test_db):
-    device = (
-        populated_test_db
-        .query(models.Device)
-        .filter(models.Device.id == 1)
-        .one()
-    )
+    device = populated_test_db.query(models.Device).filter(models.Device.id == 1).one()
     expected_schema = schemas.Device(
         id=1,
         online=True,
@@ -23,12 +18,7 @@ def test_device_to_schema(populated_test_db):
 
 
 def test_device_to_schema_empty_space(populated_test_db):
-    device = (
-        populated_test_db
-        .query(models.Device)
-        .filter(models.Device.id == 2)
-        .one()
-    )
+    device = populated_test_db.query(models.Device).filter(models.Device.id == 2).one()
     expected_schema = schemas.Device(
         id=2,
         online=False,

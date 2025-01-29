@@ -65,7 +65,7 @@ def test_get_device_data_by_id(populated_test_db):
         "id": 1,
         "mqtt_id": 123,
         "remote_name": "Remote Name 1 - 1",
-        'name': 'Test Device Name 1',
+        "name": "Test Device Name 1",
         "online": True,
         "reboots": 0,
         "device_type": {

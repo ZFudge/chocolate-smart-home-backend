@@ -7,12 +7,7 @@ from chocolate_smart_home.plugins.device_plugins.on_off import (
 
 
 def test_to_on_off_schema(populated_test_db):
-    device = (
-        populated_test_db
-        .query(model.OnOff)
-        .filter(model.OnOff.id == 1)
-        .one()
-    )
+    device = populated_test_db.query(model.OnOff).filter(model.OnOff.id == 1).one()
     expected_schema = on_off_schemas.OnOffDevice(
         id=1,
         on=True,
@@ -31,12 +26,7 @@ def test_to_on_off_schema(populated_test_db):
 
 
 def test_to_on_off_schema_no_space(populated_test_db):
-    device = (
-        populated_test_db
-        .query(model.OnOff)
-        .filter(model.OnOff.id == 2)
-        .one()
-    )
+    device = populated_test_db.query(model.OnOff).filter(model.OnOff.id == 2).one()
     expected_schema = on_off_schemas.OnOffDevice(
         id=2,
         on=False,

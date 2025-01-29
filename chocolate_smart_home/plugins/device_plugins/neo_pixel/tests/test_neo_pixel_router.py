@@ -3,7 +3,9 @@ from unittest.mock import call, patch
 from fastapi.testclient import TestClient
 
 from chocolate_smart_home.main import app
-from chocolate_smart_home.plugins.device_plugins.neo_pixel.schemas import NeoPixelOptions
+from chocolate_smart_home.plugins.device_plugins.neo_pixel.schemas import (
+    NeoPixelOptions,
+)
 
 client = TestClient(app)
 
@@ -20,7 +22,35 @@ def test_get_neo_pixel_devices(populated_test_db):
             "transform": True,
             "ms": 5,
             "brightness": 255,
-            "palette": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26],
+            "palette": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+            ],
             "pir": {
                 "armed": True,
                 "timeout_seconds": 172,
@@ -49,7 +79,35 @@ def test_get_neo_pixel_devices(populated_test_db):
             "transform": False,
             "ms": 55,
             "brightness": 123,
-            "palette": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26],
+            "palette": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+            ],
             "pir": None,
             "device": {
                 "id": 2,
@@ -84,7 +142,35 @@ def test_get_neo_pixel_device(populated_test_db):
         "transform": True,
         "ms": 5,
         "brightness": 255,
-        "palette": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26],
+        "palette": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+        ],
         "pir": {
             "armed": True,
             "timeout_seconds": 172,
@@ -92,7 +178,7 @@ def test_get_neo_pixel_device(populated_test_db):
         "device": {
             "id": 1,
             "mqtt_id": 123,
-            'name': 'Test Neo Pixel Device One',
+            "name": "Test Neo Pixel Device One",
             "remote_name": "Test Neo Pixel Device - 1",
             "online": True,
             "reboots": 0,
@@ -144,9 +230,13 @@ def test_update_single_neo_pixel_device_publish(populated_test_db):
     post_data = dict(on=False, twinkle=True, transform=False, ms=77, brightness=44)
     expected_params = NeoPixelOptions(**post_data)
 
-    with patch("chocolate_smart_home.plugins.device_plugins.neo_pixel.router.publish_message") as publish_message:
+    with patch(
+        "chocolate_smart_home.plugins.device_plugins.neo_pixel.router.publish_message"
+    ) as publish_message:
         resp = client.post("/neo_pixel/1", json=post_data)
-        publish_message.assert_called_once_with(neo_pixel_device_id=1, data=expected_params)
+        publish_message.assert_called_once_with(
+            neo_pixel_device_id=1, data=expected_params
+        )
 
     assert resp.status_code == 204
 

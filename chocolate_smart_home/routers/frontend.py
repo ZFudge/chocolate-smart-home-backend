@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.exc import IntegrityError, NoResultFound
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from chocolate_smart_home import crud, dependencies, models, schemas
+from chocolate_smart_home import crud, dependencies, schemas
 
 
 router = APIRouter()
