@@ -17,8 +17,7 @@ def to_neo_pixel_schema(neo_pixel: NeoPixel) -> NeoPixelDevice:
     pir = None
     if neo_pixel.pir_armed is not None:
         pir = PIR(
-            armed=neo_pixel.pir_armed,
-            timeout_seconds=neo_pixel.pir_timeout_seconds
+            armed=neo_pixel.pir_armed, timeout_seconds=neo_pixel.pir_timeout_seconds
         )
 
     return NeoPixelDevice(

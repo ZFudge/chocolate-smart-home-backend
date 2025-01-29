@@ -29,7 +29,9 @@ class NeoPixelDeviceManager(BaseDeviceManager):
         )
         if incoming_neo_pixel.pir is not None:
             new_db_neo_pixel.pir_armed = incoming_neo_pixel.pir.armed
-            new_db_neo_pixel.pir_timeout_seconds = incoming_neo_pixel.pir.timeout_seconds
+            new_db_neo_pixel.pir_timeout_seconds = (
+                incoming_neo_pixel.pir.timeout_seconds
+            )
 
         db.add(new_db_neo_pixel)
 

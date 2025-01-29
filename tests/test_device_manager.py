@@ -84,14 +84,12 @@ def test_device_reboots(populated_test_db):
 def test_device_marked_online(populated_test_db):
     """Assert that .online is True after calling .update_device"""
     client: models.Client = (
-        populated_test_db
-        .query(models.Client)
+        populated_test_db.query(models.Client)
         .filter(models.Client.mqtt_id == 456)
         .one()
     )
     offline_device: models.Device = (
-        populated_test_db
-        .query(models.Device)
+        populated_test_db.query(models.Device)
         .filter(models.Device.client == client)
         .one()
     )

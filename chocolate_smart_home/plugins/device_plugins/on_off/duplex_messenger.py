@@ -10,15 +10,19 @@ from .schemas import OnOffDeviceReceived
 class OnOffDuplexMessenger(BaseDuplexMessenger):
     """Adapts data between app and MQTT."""
 
-    INCOMING_LOOKUP = MappingProxyType({
-        "0": False,
-        "1": True,
-    })
+    INCOMING_LOOKUP = MappingProxyType(
+        {
+            "0": False,
+            "1": True,
+        }
+    )
 
-    OUTGOING_LOOKUP = MappingProxyType({
-        False: "0",
-        True: "1",
-    })
+    OUTGOING_LOOKUP = MappingProxyType(
+        {
+            False: "0",
+            True: "1",
+        }
+    )
 
     def parse_msg(self, incoming_msg: str) -> Dict:
         """Parse incoming message from controller."""
@@ -26,8 +30,7 @@ class OnOffDuplexMessenger(BaseDuplexMessenger):
 
         on_off_value: str = next(msg_seq)
         on_off_device_data = OnOffDeviceReceived(
-            on=OnOffDuplexMessenger.INCOMING_LOOKUP[on_off_value],
-            device=device
+            on=OnOffDuplexMessenger.INCOMING_LOOKUP[on_off_value], device=device
         )
 
         return on_off_device_data

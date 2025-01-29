@@ -4,7 +4,7 @@ from chocolate_smart_home.plugins.base_duplex_messenger import (
     BaseDuplexMessenger,
     DefaultDuplexMessenger,
 )
-from chocolate_smart_home.schemas import DeviceReceived
+from chocolate_smart_home.schemas import DeviceReceived, WebsocketMessage
 
 
 def test_parse_msg():
@@ -76,3 +76,52 @@ def test_default_parse_msg_short_messages_raise_stop_iteration():
     expected_exc_text = "Not enough comma-separated values in message.payload. payload='1,device_type_name'."
     with pytest.raises(StopIteration, match=expected_exc_text):
         default_duplex_messenger.parse_msg(short_msg)
+
+
+def test_get_topics():
+    """Test that get_topics returns a list of topics when using any combination of the following keys of type int or list[int]:
+    - id
+    - ids
+    - mqtt_id
+    - mqtt_ids
+    """
+    device_template = {
+        "device_type_name": "TEST_DEVICE_TYPE_NAME",
+        "name": "Property Name",
+        "value": "Property Value",
+    }
+
+    device_data = WebsocketMessage(id=123, **device_template)
+    topics = BaseDuplexMessenger().get_topics(ws_msg=device_data)
+    assert list(topics) == ["/TEST_DEVICE_TYPE_NAME/123/"]
+
+    device_data = WebsocketMessage(ids=456, **device_template)
+    topics = BaseDuplexMessenger().get_topics(ws_msg=device_data)
+    assert list(topics) == ["/TEST_DEVICE_TYPE_NAME/456/"]
+
+    device_data = WebsocketMessage(mqtt_id=789, **device_template)
+    topics = BaseDuplexMessenger().get_topics(ws_msg=device_data)
+    assert list(topics) == ["/TEST_DEVICE_TYPE_NAME/789/"]
+
+    device_data = WebsocketMessage(mqtt_ids=123, **device_template)
+    topics = BaseDuplexMessenger().get_topics(ws_msg=device_data)
+    assert list(topics) == ["/TEST_DEVICE_TYPE_NAME/123/"]
+
+    device_data = WebsocketMessage(id=[456], **device_template)
+    topics = BaseDuplexMessenger().get_topics(ws_msg=device_data)
+    assert list(topics) == ["/TEST_DEVICE_TYPE_NAME/456/"]
+
+    device_data = WebsocketMessage(ids=[456], **device_template)
+    topics = BaseDuplexMessenger().get_topics(ws_msg=device_data)
+    assert list(topics) == ["/TEST_DEVICE_TYPE_NAME/456/"]
+
+    device_data = WebsocketMessage(mqtt_id=[456], **device_template)
+    topics = BaseDuplexMessenger().get_topics(ws_msg=device_data)
+    assert list(topics) == ["/TEST_DEVICE_TYPE_NAME/456/"]
+
+    device_data = WebsocketMessage(mqtt_ids=[456, 789], **device_template)
+    topics = BaseDuplexMessenger().get_topics(ws_msg=device_data)
+    assert list(topics) == [
+        "/TEST_DEVICE_TYPE_NAME/456/",
+        "/TEST_DEVICE_TYPE_NAME/789/",
+    ]

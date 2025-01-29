@@ -41,27 +41,13 @@ class BaseDuplexMessenger:
         pass
 
     @staticmethod
-    def get_topics(*, device_type_name: str, data: dict) -> Iterable[str]:
+    def get_topics(ws_msg: schemas.WebsocketMessage) -> Iterable[str]:
         """Accepts data from websocket and returns list of topics to broadcast this data to.
         Still returns a list of topics, even if the data contains only one id."""
-
-        if "ids" not in data and "id" not in data:
-            raise ValueError(
-                "Incoming data must contain 'ids' (iterable) or 'id' (int or str) key."
-            )
-
-        # Every plugin inherits the ability to broadcast data to multiple devices,
-        # but only those receiving a payload that implements the "ids" key can use it.
-        # Payloads intended for single devices use the "id" key.
-        if "id" in data:
-            ids = [data["id"]]
-        else:
-            ids = data["ids"]
-
         format_topic_by_device_id: Callable = topics.get_format_topic_by_device_id(
-            device_type_name
+            ws_msg.device_type_name
         )
-        return map(format_topic_by_device_id, ids)
+        return map(format_topic_by_device_id, ws_msg.get_mqtt_ids())
 
     @staticmethod
     def _compose_param(key: str, val: str) -> str:

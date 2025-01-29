@@ -51,7 +51,9 @@ def delete_device(device_id: int) -> None:
 
 
 def add_device_space(device_id: int, space_id: int) -> models.Device:
-    logger.info('Adding Space with id of %s to Device with id of "%s"' % (space_id, device_id))
+    logger.info(
+        'Adding Space with id of %s to Device with id of "%s"' % (space_id, device_id)
+    )
     db: Session = dependencies.db_session.get()
 
     try:
@@ -75,7 +77,9 @@ def add_device_space(device_id: int, space_id: int) -> models.Device:
 
 
 def remove_device_space(device_id: int) -> models.Device:
-    logger.info('Adding Space with id of %s to Device with id of "%s"' % (device_id, device_id))
+    logger.info(
+        'Adding Space with id of %s to Device with id of "%s"' % (device_id, device_id)
+    )
     db: Session = dependencies.db_session.get()
 
     try:
