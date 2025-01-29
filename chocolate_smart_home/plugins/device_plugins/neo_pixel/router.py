@@ -32,7 +32,9 @@ def get_devices() -> Tuple[NeoPixelDevice, ...]:
 @plugin_router.get("/{neo_pixel_device_id}")
 def get_device(neo_pixel_device_id: int) -> NeoPixelDevice:
     try:
-        neo_pixel_device: NeoPixel = get_neo_pixel_device_by_device_id(neo_pixel_device_id)
+        neo_pixel_device: NeoPixel = get_neo_pixel_device_by_device_id(
+            neo_pixel_device_id
+        )
     except SQLAlchemyError as e:
         (detail,) = e.args
         logger.error(detail)

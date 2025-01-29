@@ -13,7 +13,9 @@ def test_np_ws_msg__mqtt_publish():
 
     with patch("chocolate_smart_home.mqtt.client.MQTTClient.publish") as publish:
         handle_incoming_websocket_message(incoming_data_dict)
-        publish.assert_called_once_with(topic="/neo_pixel/1/", message="brightness=255;")
+        publish.assert_called_once_with(
+            topic="/neo_pixel/1/", message="brightness=255;"
+        )
 
 
 def test_np_ws_to__duplex_messenger__compose_msg():
@@ -24,12 +26,18 @@ def test_np_ws_to__duplex_messenger__compose_msg():
         "value": 255,
     }
 
-    with (patch("chocolate_smart_home.mqtt.client.MQTTClient.publish") as _,
-          patch("chocolate_smart_home.plugins.device_plugins.neo_pixel.duplex_messenger.NeoPixelDuplexMessenger.compose_msg") as compose_msg):
+    with (
+        patch("chocolate_smart_home.mqtt.client.MQTTClient.publish") as _,
+        patch(
+            "chocolate_smart_home.plugins.device_plugins.neo_pixel.duplex_messenger.NeoPixelDuplexMessenger.compose_msg"
+        ) as compose_msg,
+    ):
         handle_incoming_websocket_message(incoming_data_dict)
-        compose_msg.assert_called_once_with({
-            "brightness": 255,
-        })
+        compose_msg.assert_called_once_with(
+            {
+                "brightness": 255,
+            }
+        )
 
 
 def test_np_ws_msg__mqtt_publish__multiple_ids():
@@ -59,9 +67,15 @@ def test_np_ws_msg__duplex_messenger__compose_msg__multiple_ids():
         "value": True,
     }
 
-    with (patch("chocolate_smart_home.mqtt.client.MQTTClient.publish") as _,
-          patch("chocolate_smart_home.plugins.device_plugins.neo_pixel.duplex_messenger.NeoPixelDuplexMessenger.compose_msg") as compose_msg):
+    with (
+        patch("chocolate_smart_home.mqtt.client.MQTTClient.publish") as _,
+        patch(
+            "chocolate_smart_home.plugins.device_plugins.neo_pixel.duplex_messenger.NeoPixelDuplexMessenger.compose_msg"
+        ) as compose_msg,
+    ):
         handle_incoming_websocket_message(incoming_data_dict)
-        compose_msg.assert_called_once_with({
-            "twinkle": True,
-        })
+        compose_msg.assert_called_once_with(
+            {
+                "twinkle": True,
+            }
+        )

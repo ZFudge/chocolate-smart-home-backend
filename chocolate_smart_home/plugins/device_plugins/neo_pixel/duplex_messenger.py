@@ -11,10 +11,12 @@ import chocolate_smart_home.plugins.device_plugins.neo_pixel.utils as utils
 class NeoPixelDuplexMessenger(BaseDuplexMessenger):
     """Adapts data between app and MQTT."""
 
-    OUTGOING_LOOKUP = MappingProxyType({
-        False: "0",
-        True: "1",
-    })
+    OUTGOING_LOOKUP = MappingProxyType(
+        {
+            False: "0",
+            True: "1",
+        }
+    )
 
     def parse_msg(self, incoming_msg: str) -> np_schemas.NeoPixelDeviceReceived:
         """Parse incoming MQTT message from controller."""

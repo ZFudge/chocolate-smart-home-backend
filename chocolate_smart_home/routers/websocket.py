@@ -1,57 +1,64 @@
 import json
 import logging
-from typing import Iterable, List, TypedDict
+from typing import Iterable
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from pydantic import ValidationError
 
-from chocolate_smart_home.mqtt import mqtt_client_ctx
+from chocolate_smart_home.mqtt import get_mqtt_client
 from chocolate_smart_home.plugins.discovered_plugins import get_plugin_by_device_type
+from chocolate_smart_home.schemas.websocket_msg import WebsocketMessage
 from chocolate_smart_home.websocket.connection_manager import manager
+
+
+mqtt_client = get_mqtt_client()
 
 logger = logging.getLogger()
 
 ws_router = APIRouter()
 
 
-class WebSocketMessage(TypedDict):
-    device_type_name: str
-    mqtt_ids: List[int]
-    name: str
-    value: float | int | bool | List[str]
+def handle_incoming_websocket_message(incoming_ws_data: dict):
+    logger.info('Received incoming msg from websocket: "%s"' % (incoming_ws_data,))
+    # Validate that the incoming websocket message has the required fields for
+    # publishing via mqtt.
+    try:
+        ws_msg = WebsocketMessage(**incoming_ws_data)
+    except ValidationError as e:
+        logger.error("Invalid websocket message: %s" % e)
+        return
 
-
-def handle_incoming_websocket_message(incoming_ws_data: WebSocketMessage):
-    logger.info('received data from websocket: "%s"' % (incoming_ws_data,))
-
-    # device type name is required to access plugin
-    device_type_name = incoming_ws_data["device_type_name"]
-    plugin = get_plugin_by_device_type(device_type_name)
+    plugin = get_plugin_by_device_type(ws_msg.device_type_name)
 
     DuplexMessenger = plugin["DuplexMessenger"]
-    complete_topics: Iterable[str] = DuplexMessenger().get_topics(
-        device_type_name=device_type_name,
-        data=incoming_ws_data
-    )
+    try:
+        complete_topics: Iterable[str] = DuplexMessenger().get_topics(ws_msg)
+    except ValueError as e:
+        logger.error("Error getting topics: %s" % e)
+        return
 
+    if "DuplexMessenger" not in plugin:
+        logger.error("Plugin %s does not have a DuplexMessenger" % plugin)
+        return
     DuplexMessenger = plugin["DuplexMessenger"]
 
     msg_data = {
-        incoming_ws_data["name"]: incoming_ws_data["value"],
+        ws_msg.name: ws_msg.value,
     }
     outgoing_data = DuplexMessenger().compose_msg(msg_data)
 
-    for topic in complete_topics:
-        mqtt_client_ctx.get().publish(topic=topic, message=outgoing_data)
+    mqtt_client.publish_all(topics=complete_topics, message=outgoing_data)
 
 
 @ws_router.websocket_route("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    await manager.connect(websocket)
+    await manager.connect(websocket, mqtt_client)
 
     while True:
         try:
             incoming_data_str = await websocket.receive_text()
             incoming_ws_data = json.loads(incoming_data_str)
+            logger.info("incoming_ws_data %s" % incoming_ws_data)
         except WebSocketDisconnect:
             logger.info("websocket disconnected")
             manager.disconnect(websocket)

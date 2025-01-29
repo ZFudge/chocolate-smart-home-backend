@@ -7,6 +7,7 @@ from .device import (
 )
 from .device_type import DeviceType, DeviceTypeBase
 from .space import Space, SpaceBase, SpaceId
+from .websocket_msg import WebsocketMessage
 from .utils import to_schema
 
 __all__ = [
@@ -21,4 +22,5 @@ __all__ = [
     "SpaceBase",
     "SpaceId",
     "to_schema",
+    "WebsocketMessage",
 ]

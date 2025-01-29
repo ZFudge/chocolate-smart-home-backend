@@ -2,8 +2,12 @@ import pytest
 from paho.mqtt.client import MQTTMessage
 
 from chocolate_smart_home.mqtt.handler import MQTTMessageHandler
-from chocolate_smart_home.plugins.device_plugins.on_off.duplex_messenger import OnOffDuplexMessenger
-from chocolate_smart_home.plugins.device_plugins.on_off.schemas import OnOffDeviceReceived
+from chocolate_smart_home.plugins.device_plugins.on_off.duplex_messenger import (
+    OnOffDuplexMessenger,
+)
+from chocolate_smart_home.plugins.device_plugins.on_off.schemas import (
+    OnOffDeviceReceived,
+)
 from chocolate_smart_home.schemas.device import DeviceReceived
 
 
