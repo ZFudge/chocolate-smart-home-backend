@@ -21,8 +21,7 @@ class Device(Base, ModelStrFormatter):
     device_type_id = Column(Integer, ForeignKey("device_types.id"))
     device_type = relationship("DeviceType", back_populates="devices")
 
-    tags = relationship('Tag', secondary=DeviceTag.__table__, backref='devices')
-
+    tags = relationship("Tag", secondary=DeviceTag.__table__, backref="devices")
 
     def __str__(self):
         """Return ModelStrFormatter.__str__ result of both the Device object and

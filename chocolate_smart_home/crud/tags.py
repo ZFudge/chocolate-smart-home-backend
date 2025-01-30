@@ -18,9 +18,7 @@ def get_tags() -> List[models.Tag]:
 
 
 def get_tag_by_id(tag_id: int) -> models.Tag:
-    return (
-        db_session.get().query(models.Tag).filter(models.Tag.id == tag_id).one()
-    )
+    return db_session.get().query(models.Tag).filter(models.Tag.id == tag_id).one()
 
 
 def create_tag(new_tag: schemas.TagBase) -> models.Tag:
@@ -55,9 +53,7 @@ def update_tag(tag_id: int, tag_name: str) -> models.Tag:
     try:
         tag = db.query(models.Tag).filter(models.Tag.id == tag_id).one()
     except NoResultFound:
-        msg = (
-            f"Tag update failed. No Tag object " f"with an id of {tag_id} found."
-        )
+        msg = f"Tag update failed. No Tag object with an id of {tag_id} found."
         logger.error(msg)
         raise NoResultFound(msg)
     tag.name = tag_name

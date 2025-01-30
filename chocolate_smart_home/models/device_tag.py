@@ -4,7 +4,7 @@ from chocolate_smart_home.database import Base
 
 
 class DeviceTag(Base):
-    __tablename__ = 'devices_tags'
+    __tablename__ = "devices_tags"
     id = Column(Integer, primary_key=True, index=True)
-    device_id = Column(Integer, ForeignKey('devices.id'))
-    tag_id = Column(Integer, ForeignKey('tags.id'))
+    device_id = Column(Integer, ForeignKey("devices.id"))
+    tag_id = Column(Integer, ForeignKey("tags.id"))
