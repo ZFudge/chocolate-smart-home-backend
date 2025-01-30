@@ -88,7 +88,8 @@ def delete_tag(tag_id: int) -> None:
     logger.info("%s %s" % (tag, f"{devices_ids=}"))
 
     for device in tag.devices:
-        device.tag = None
+        new_tags = [t for t in device.tags if t.id != tag_id]
+        device.tags = new_tags
         db.add(device)
 
     db.delete(tag)

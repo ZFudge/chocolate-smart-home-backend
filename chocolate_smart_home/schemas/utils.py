@@ -1,6 +1,7 @@
 from typing import Any, List, Mapping, Tuple, Type
 
 import pydantic
+from sqlalchemy.orm import collections
 from sqlalchemy.orm.decl_api import DeclarativeMeta
 
 from chocolate_smart_home import models, schemas
@@ -18,8 +19,12 @@ def to_schema(model_obj: Type[DeclarativeMeta]) -> Mapping:
         value: Any = getattr(model_obj, name)
         # Any attribute value that is also a sqlalchemy model object should be
         # recursively converted to its corresponding schema.
-        if type(type(value)) is DeclarativeMeta:
+        if isinstance(type(value), DeclarativeMeta):
             value: Mapping = to_schema(value)
+        elif isinstance(value, collections.InstrumentedList):
+            value = map(to_schema, value)
         attr_name_value_pairs.append((name, value))
 
-    return schema_cls(**dict(attr_name_value_pairs))
+    schema_dict = dict(attr_name_value_pairs)
+
+    return schema_cls(**schema_dict)

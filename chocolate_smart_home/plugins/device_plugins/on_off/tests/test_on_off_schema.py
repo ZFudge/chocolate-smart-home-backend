@@ -19,7 +19,7 @@ def test_to_on_off_schema(populated_test_db):
             mqtt_id=123,
             name="Test On Device",
             device_type=schemas.DeviceType(id=1, name="on_off"),
-            tag=schemas.Tag(id=1, name="Main Tag"),
+            tags=[schemas.Tag(id=1, name="Main Tag")],
         ),
     )
     assert utils.to_on_off_schema(device) == expected_schema
@@ -38,7 +38,7 @@ def test_to_on_off_schema_no_tag(populated_test_db):
             mqtt_id=456,
             name="Test Off Device",
             device_type=schemas.DeviceType(id=1, name="on_off"),
-            tag=None,
+            tags=[],
         ),
     )
     assert utils.to_on_off_schema(device) == expected_schema

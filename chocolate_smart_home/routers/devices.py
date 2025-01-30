@@ -36,20 +36,20 @@ def delete_device(device_id: int):
         raise HTTPException(status_code=500, detail=detail)
 
 
-@device_router.post("/tag/{device_id}", response_model=schemas.Device)
-def add_device_tag(device_id: int, tag: schemas.TagId):
+@device_router.post("/tag/{device_id}/{tag_id}", response_model=schemas.Device)
+def add_device_tag(device_id: int, tag_id: int):
     try:
-        device = crud.add_device_tag(device_id, tag.id)
+        device = crud.add_device_tag(device_id, tag_id)
     except NoResultFound as e:
         (detail,) = e.args
         raise HTTPException(status_code=500, detail=detail)
     return schema_utils.to_schema(device)
 
 
-@device_router.delete("/tag/{device_id}", response_model=schemas.DeviceBase)
-def remove_device_tag(device_id: int):
+@device_router.delete("/tag/{device_id}/{tag_id}", response_model=schemas.DeviceBase)
+def remove_device_tag(device_id: int, tag_id: int):
     try:
-        updated_device = crud.remove_device_tag(device_id)
+        updated_device = crud.remove_device_tag(device_id, tag_id)
     except NoResultFound as e:
         (detail,) = e.args
         raise HTTPException(status_code=500, detail=detail)

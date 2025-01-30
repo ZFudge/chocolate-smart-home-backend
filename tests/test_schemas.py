@@ -2,7 +2,7 @@ from chocolate_smart_home import models, schemas
 from chocolate_smart_home.schemas.utils import to_schema
 
 
-def test_device_to_schema(populated_test_db):
+def test_device_to_schema_with_tags(populated_test_db):
     device = populated_test_db.query(models.Device).filter(models.Device.id == 1).one()
     expected_schema = schemas.Device(
         id=1,
@@ -12,8 +12,9 @@ def test_device_to_schema(populated_test_db):
         name="Test Device Name 1",
         remote_name="Remote Name 1 - 1",
         device_type=schemas.DeviceType(id=1, name="TEST_DEVICE_TYPE_NAME_1"),
-        tag=schemas.Tag(id=1, name="Main Tag"),
+        tags=[schemas.Tag(id=1, name="Main Tag")],
     )
+
     assert to_schema(device) == expected_schema
 
 
@@ -27,8 +28,9 @@ def test_device_to_schema_empty_tag(populated_test_db):
         mqtt_id=456,
         name="Test Device Name 2",
         device_type=schemas.DeviceType(id=2, name="TEST_DEVICE_TYPE_NAME_2"),
-        tag=None,
+        tags=None,
     )
+
     assert to_schema(device) == expected_schema
 
 

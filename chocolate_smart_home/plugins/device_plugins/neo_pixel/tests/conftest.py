@@ -26,7 +26,7 @@ def populated_test_db(empty_test_db):
         mqtt_id=123,
         device_type=device_type,
         name="Test Neo Pixel Device One",
-        tag=tag,
+        tags=[tag],
     )
     device__id_2 = models.Device(
         online=True,

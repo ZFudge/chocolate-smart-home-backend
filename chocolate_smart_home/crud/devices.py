@@ -68,7 +68,13 @@ def add_device_tag(device_id: int, tag_id: int) -> models.Device:
         logger.error(msg)
         raise NoResultFound(msg)
 
-    device.tag = tag
+    new_tags = device.tags
+    if new_tags is None:
+        new_tags = []
+    if tag not in new_tags:
+        new_tags.append(tag)
+    device.tags = new_tags
+
     db.add(device)
     db.commit()
     db.refresh(device)
@@ -76,14 +82,15 @@ def add_device_tag(device_id: int, tag_id: int) -> models.Device:
     return device
 
 
-def remove_device_tag(device_id: int) -> models.Device:
+def remove_device_tag(device_id: int, tag_id: int) -> models.Device:
     logger.info(
-        'Adding Tag with id of %s to Device with id of "%s"' % (device_id, device_id)
+        'Removing Tag with id of %s from Device with id of "%s"' % (tag_id, device_id)
     )
     db: Session = dependencies.db_session.get()
 
     try:
         device = db.query(models.Device).filter(models.Device.id == device_id).one()
+        tag = db.query(models.Tag).filter(models.Tag.id == tag_id).one()
     except NoResultFound as e:
         msg = "Failed to remove Tag from " "Device with id of %s - %s" % (
             device_id,
@@ -92,7 +99,12 @@ def remove_device_tag(device_id: int) -> models.Device:
         logger.error(msg)
         raise NoResultFound(msg)
 
-    device.tag = None
+    new_tags = device.tags
+    if new_tags is None:
+        new_tags = []
+    else:
+        new_tags.remove(tag)
+    device.tags = new_tags
     db.add(device)
     db.commit()
     db.refresh(device)

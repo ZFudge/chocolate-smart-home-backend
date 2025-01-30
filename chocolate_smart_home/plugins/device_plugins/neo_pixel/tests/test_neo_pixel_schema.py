@@ -58,7 +58,7 @@ def test_to_neo_pixel_schema(populated_test_db):
             mqtt_id=123,
             name="Test Neo Pixel Device One",
             device_type=schemas.DeviceType(id=1, name="neo_pixel"),
-            tag=schemas.Tag(id=1, name="Main Tag"),
+            tags=[schemas.Tag(id=1, name="Main Tag")],
         ),
     )
     assert utils.to_neo_pixel_schema(device) == expected_schema
@@ -111,7 +111,7 @@ def test_to_neo_pixel_schema_no_tag(populated_test_db):
             name="Test Neo Pixel Device Two",
             remote_name="Test Neo Pixel Device - 2",
             device_type=schemas.DeviceType(id=1, name="neo_pixel"),
-            tag=None,
+            tags=None,
             online=True,
             reboots=0,
         ),

@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship
 
 from chocolate_smart_home.database import Base
 from .model_str_formatter import ModelStrFormatter
+from .device_tag import DeviceTag
 
 
 class Device(Base, ModelStrFormatter):
@@ -20,8 +21,8 @@ class Device(Base, ModelStrFormatter):
     device_type_id = Column(Integer, ForeignKey("device_types.id"))
     device_type = relationship("DeviceType", back_populates="devices")
 
-    tag_id = Column(Integer, ForeignKey("tags.id"))
-    tag = relationship("Tag", back_populates="devices")
+    tags = relationship('Tag', secondary=DeviceTag.__table__, backref='devices')
+
 
     def __str__(self):
         """Return ModelStrFormatter.__str__ result of both the Device object and
@@ -29,7 +30,7 @@ class Device(Base, ModelStrFormatter):
         attrs = [
             super().__str__(),
             str(self.device_type),
-            str(self.tag) if self.tag else "Tag=None",
+            str(self.tags) if self.tags else "Tag=None",
         ]
         return "\n".join(attrs)
 

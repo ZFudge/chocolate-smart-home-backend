@@ -26,7 +26,7 @@ def populated_test_db(empty_test_db):
         online=True,
         remote_name="Test On Device - 1",
         device_type=device_type,
-        tag=tag,
+        tags=[tag],
     )
     device__id_2 = models.Device(
         mqtt_id=456,

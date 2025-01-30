@@ -42,6 +42,7 @@ def empty_test_db():
 
     yield db_session.get()
 
+    db_session.get().query(models.DeviceTag).delete()
     db_session.get().query(models.Device).delete()
     db_session.get().query(models.DeviceType).delete()
     db_session.get().query(models.Tag).delete()
@@ -65,7 +66,7 @@ def populated_test_db(empty_test_db):
         remote_name="Remote Name 1 - 1",
         name="Test Device Name 1",
         device_type=type_1,
-        tag=tag_1,
+        tags=[tag_1],
         online=True,
     )
     device_2 = models.Device(

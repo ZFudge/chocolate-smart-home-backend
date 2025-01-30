@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+from typing import List
+from pydantic import BaseModel, field_validator
 
 from chocolate_smart_home.schemas.device_type import DeviceType
 from chocolate_smart_home.schemas.tag import Tag
@@ -13,9 +14,16 @@ class DeviceBase(BaseModel):
     remote_name: str
     name: str
     device_type: DeviceType
-    tag: Tag | None
+    tags: List[Tag] | None
     online: bool
     reboots: int
+
+    @field_validator("tags", mode="before")
+    @classmethod
+    def none_to_empty(cls, v: object) -> object:
+        if v is None:
+            return []
+        return v
 
 
 class Device(DeviceId, DeviceBase):
