@@ -1,6 +1,6 @@
-from chocolate_smart_home import models
-from chocolate_smart_home.plugins.base_device_manager import BaseDeviceManager
-from chocolate_smart_home.schemas import DeviceReceived
+from src import models
+from src.plugins.base_device_manager import BaseDeviceManager
+from src.schemas import DeviceReceived
 
 
 def test_create_device(empty_test_db):

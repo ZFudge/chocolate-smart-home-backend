@@ -1,10 +1,10 @@
 import pytest
 
-from chocolate_smart_home.plugins.base_duplex_messenger import (
+from src.plugins.base_duplex_messenger import (
     BaseDuplexMessenger,
     DefaultDuplexMessenger,
 )
-from chocolate_smart_home.schemas import DeviceReceived, WebsocketMessage
+from src.schemas import DeviceReceived, WebsocketMessage
 
 
 def test_parse_msg():

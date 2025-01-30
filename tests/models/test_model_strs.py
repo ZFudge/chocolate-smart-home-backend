@@ -1,4 +1,4 @@
-from chocolate_smart_home import models
+from src import models
 
 
 def test_device_model_str(populated_test_db):

@@ -4,7 +4,7 @@ import pytest
 from sqlalchemy.exc import NoResultFound
 from paho.mqtt.client import MQTTMessage
 
-import chocolate_smart_home.mqtt.handler as mqtt_handler
+import src.mqtt.handler as mqtt_handler
 
 
 def test_device_data_received_results(empty_test_db):
@@ -23,8 +23,8 @@ def test_plugin_method_calls(empty_test_db):
     msg = MQTTMessage(b"test_topic")
     msg.payload = b"1,UNKNOWN_DEVICE_TYPE,Remote Name - uid"
 
-    with (patch("chocolate_smart_home.mqtt.handler.get_plugin_by_device_type") as get_plugin,
-          patch("chocolate_smart_home.mqtt.handler.get_device_by_mqtt_id", side_effect=NoResultFound) as get_device):
+    with (patch("src.mqtt.handler.get_plugin_by_device_type") as get_plugin,
+          patch("src.mqtt.handler.get_device_by_mqtt_id", side_effect=NoResultFound) as get_device):
         mqtt_handler.MQTTMessageHandler().device_data_received(0, None, msg)
 
         get_plugin.assert_called_once_with("UNKNOWN_DEVICE_TYPE")
@@ -63,8 +63,8 @@ def test_empty_payload():
     msg = MQTTMessage(b"test_topic")
     msg.payload = None
 
-    with (patch("chocolate_smart_home.mqtt.handler.get_plugin_by_device_type") as get_plugin,
-          patch("chocolate_smart_home.mqtt.handler.get_device_by_mqtt_id", side_effect=NoResultFound) as get_device):
+    with (patch("src.mqtt.handler.get_plugin_by_device_type") as get_plugin,
+          patch("src.mqtt.handler.get_device_by_mqtt_id", side_effect=NoResultFound) as get_device):
         mqtt_handler.MQTTMessageHandler().device_data_received(0, None, msg)
         get_plugin.assert_not_called()
         get_device.assert_not_called()

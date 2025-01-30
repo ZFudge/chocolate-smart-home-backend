@@ -12,7 +12,7 @@ ENV PYTHONPATH=$PYTHONPATH:/chocolate-smart-home-backend/
 EXPOSE 8000
 
 CMD [ \
-    "pipenv", "run", "uvicorn", "chocolate_smart_home.main:app", \
+    "pipenv", "run", "uvicorn", "src.main:app", \
     "--host", "0.0.0.0", \
     "--reload", \
 	"--log-level", "debug", \
