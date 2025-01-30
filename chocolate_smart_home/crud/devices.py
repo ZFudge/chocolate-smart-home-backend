@@ -24,9 +24,9 @@ def get_device_by_device_id(device_id: int) -> models.Device:
     )
 
 
-def get_device_by_mqtt_client_id(mqtt_id: int) -> models.Device:
+def get_device_by_mqtt_id(mqtt_id: int) -> models.Device:
     db: Session = dependencies.db_session.get()
-    return db.query(models.Client).filter(models.Client.mqtt_id == mqtt_id).one().device
+    return db.query(models.Device).filter(models.Device.mqtt_id == mqtt_id).one()
 
 
 def delete_device(device_id: int) -> None:
@@ -50,25 +50,31 @@ def delete_device(device_id: int) -> None:
         raise
 
 
-def add_device_space(device_id: int, space_id: int) -> models.Device:
+def add_device_tag(device_id: int, tag_id: int) -> models.Device:
     logger.info(
-        'Adding Space with id of %s to Device with id of "%s"' % (space_id, device_id)
+        'Adding Tag with id of %s to Device with id of "%s"' % (tag_id, device_id)
     )
     db: Session = dependencies.db_session.get()
 
     try:
-        space = db.query(models.Space).filter(models.Space.id == space_id).one()
+        tag = db.query(models.Tag).filter(models.Tag.id == tag_id).one()
         device = db.query(models.Device).filter(models.Device.id == device_id).one()
     except NoResultFound as e:
-        msg = "Failed to add Space with id of %s to " "Device with id of %s - %s" % (
-            space_id,
+        msg = "Failed to add Tag with id of %s to " "Device with id of %s - %s" % (
+            tag_id,
             device_id,
             e.args[0],
         )
         logger.error(msg)
         raise NoResultFound(msg)
 
-    device.space = space
+    new_tags = device.tags
+    if new_tags is None:
+        new_tags = []
+    if tag not in new_tags:
+        new_tags.append(tag)
+    device.tags = new_tags
+
     db.add(device)
     db.commit()
     db.refresh(device)
@@ -76,23 +82,29 @@ def add_device_space(device_id: int, space_id: int) -> models.Device:
     return device
 
 
-def remove_device_space(device_id: int) -> models.Device:
+def remove_device_tag(device_id: int, tag_id: int) -> models.Device:
     logger.info(
-        'Adding Space with id of %s to Device with id of "%s"' % (device_id, device_id)
+        'Removing Tag with id of %s from Device with id of "%s"' % (tag_id, device_id)
     )
     db: Session = dependencies.db_session.get()
 
     try:
         device = db.query(models.Device).filter(models.Device.id == device_id).one()
+        tag = db.query(models.Tag).filter(models.Tag.id == tag_id).one()
     except NoResultFound as e:
-        msg = "Failed to remove Space from " "Device with id of %s - %s" % (
+        msg = "Failed to remove Tag from " "Device with id of %s - %s" % (
             device_id,
             e.args[0],
         )
         logger.error(msg)
         raise NoResultFound(msg)
 
-    device.space = None
+    new_tags = device.tags
+    if new_tags is None:
+        new_tags = []
+    else:
+        new_tags.remove(tag)
+    device.tags = new_tags
     db.add(device)
     db.commit()
     db.refresh(device)

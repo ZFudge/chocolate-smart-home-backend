@@ -12,11 +12,11 @@ def test_create_device(empty_test_db):
     )
     new_device = BaseDeviceManager().create_device(device_data)
     assert new_device.id == 1
+    assert new_device.mqtt_id == 111
     assert new_device.online is True
+    assert new_device.name == "Remote Name"
     assert new_device.remote_name == "Remote Name - 2"
-    assert new_device.client.mqtt_id == 111
     assert new_device.device_type.name == "test_device_type"
-    assert new_device.device_name.name == "Remote Name"
 
     db_device = db.query(models.Device).filter(models.Device.id == new_device.id).one()
     assert db_device == new_device
@@ -70,7 +70,7 @@ def test_device_reboots(populated_test_db):
         device: models.Device = device_manager.update_device(device_data)
         assert device.reboots == 4
 
-    remote_name = "Remote Name 1 - 1 - 567"
+    remote_name = "Test Name 1 - 1 - 567"
     for _ in range(3):
         device_data = DeviceReceived(
             mqtt_id=orig_device_data.mqtt_id,
@@ -83,14 +83,9 @@ def test_device_reboots(populated_test_db):
 
 def test_device_marked_online(populated_test_db):
     """Assert that .online is True after calling .update_device"""
-    client: models.Client = (
-        populated_test_db.query(models.Client)
-        .filter(models.Client.mqtt_id == 456)
-        .one()
-    )
     offline_device: models.Device = (
         populated_test_db.query(models.Device)
-        .filter(models.Device.client == client)
+        .filter(models.Device.mqtt_id == 456)
         .one()
     )
     assert offline_device.online is False
@@ -98,7 +93,7 @@ def test_device_marked_online(populated_test_db):
     device_data = DeviceReceived(
         mqtt_id=456,
         device_type_name="TEST_DEVICE_TYPE_NAME_2",
-        remote_name="Remote Name 2 - 2",
+        remote_name="Test Name 2 - 2",
     )
     updated_device = BaseDeviceManager().update_device(device_data)
     assert updated_device is offline_device

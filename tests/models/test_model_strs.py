@@ -3,33 +3,23 @@ from chocolate_smart_home import models
 
 def test_device_model_str(populated_test_db):
     device_1 = (
-        populated_test_db
-        .query(models.Device)
-        .filter(models.Device.id == 1)
-        .one()
+        populated_test_db.query(models.Device).filter(models.Device.id == 1).one()
     )
     expected_str_1 = (
-        "Device(id=1, remote_name=Remote Name 1 - 1, online=True, reboots=0, client_id=1, device_name_id=1, device_type_id=1, space_id=1)\n"
-        "DeviceName(id=1, name=Test Device Name 1, is_server_side_name=False)\n"
-        "Client(id=1, mqtt_id=123)\n"
+        "Device(id=1, mqtt_id=123, online=True, reboots=0, remote_name=Remote Name 1 - 1, name=Test Device Name 1, device_type_id=1)\n"
         "DeviceType(id=1, name=TEST_DEVICE_TYPE_NAME_1)\n"
-        "Space(id=1, name=Main Space)"
+        "[Tag(id=1, name=Main Tag)]"
     )
     assert str(device_1) == expected_str_1
     assert repr(device_1) == expected_str_1
 
     device_2 = (
-        populated_test_db
-        .query(models.Device)
-        .filter(models.Device.id == 2)
-        .one()
+        populated_test_db.query(models.Device).filter(models.Device.id == 2).one()
     )
     expected_str_2 = (
-        "Device(id=2, remote_name=Remote Name 2 - 2, online=False, reboots=0, client_id=2, device_name_id=2, device_type_id=2, space_id=None)\n"
-        "DeviceName(id=2, name=Test Device Name 2, is_server_side_name=True)\n"
-        "Client(id=2, mqtt_id=456)\n"
+        "Device(id=2, mqtt_id=456, online=False, reboots=0, remote_name=Remote Name 2 - 2, name=Test Device Name 2, device_type_id=2)\n"
         "DeviceType(id=2, name=TEST_DEVICE_TYPE_NAME_2)\n"
-        "Space=None"
+        "Tag=None"
     )
     assert str(device_2) == expected_str_2
     assert repr(device_2) == expected_str_2
@@ -37,8 +27,7 @@ def test_device_model_str(populated_test_db):
 
 def test_device_type_model_str(populated_test_db):
     device_type_1 = (
-        populated_test_db
-        .query(models.DeviceType)
+        populated_test_db.query(models.DeviceType)
         .filter(models.DeviceType.id == 1)
         .one()
     )
@@ -47,8 +36,7 @@ def test_device_type_model_str(populated_test_db):
     assert repr(device_type_1) == expected_str_1
 
     device_type_2 = (
-        populated_test_db
-        .query(models.DeviceType)
+        populated_test_db.query(models.DeviceType)
         .filter(models.DeviceType.id == 2)
         .one()
     )
@@ -57,71 +45,13 @@ def test_device_type_model_str(populated_test_db):
     assert repr(device_type_2) == expected_str_2
 
 
-def test_device_name_model_str(populated_test_db):
-    device_name_1 = (
-        populated_test_db
-        .query(models.DeviceName)
-        .filter(models.DeviceName.id == 1)
-        .one()
-    )
-    expected_str_1 = (
-        "DeviceName(id=1, name=Test Device Name 1, is_server_side_name=False)"
-    )
-    assert str(device_name_1) == expected_str_1
-    assert repr(device_name_1) == expected_str_1
+def test_tag_model_str(populated_test_db):
+    tag_1 = populated_test_db.query(models.Tag).filter(models.Tag.id == 1).one()
+    expected_str_1 = "Tag(id=1, name=Main Tag)"
+    assert str(tag_1) == expected_str_1
+    assert repr(tag_1) == expected_str_1
 
-    device_name_2 = (
-        populated_test_db
-        .query(models.DeviceName)
-        .filter(models.DeviceName.id == 2)
-        .one()
-    )
-    expected_str_2 = (
-        "DeviceName(id=2, name=Test Device Name 2, is_server_side_name=True)"
-    )
-    assert str(device_name_2) == expected_str_2
-    assert repr(device_name_2) == expected_str_2
-
-
-def test_client_model_str(populated_test_db):
-    client_1 = (
-        populated_test_db
-        .query(models.Client)
-        .filter(models.Client.id == 1)
-        .one()
-    )
-    expected_str_1 = "Client(id=1, mqtt_id=123)"
-    assert str(client_1) == expected_str_1
-    assert repr(client_1) == expected_str_1
-
-    client_2 = (
-        populated_test_db
-        .query(models.Client)
-        .filter(models.Client.id == 2)
-        .one()
-    )
-    expected_str_2 = "Client(id=2, mqtt_id=456)"
-    assert str(client_2) == expected_str_2
-    assert repr(client_2) == expected_str_2
-
-
-def test_space_model_str(populated_test_db):
-    space_1 = (
-        populated_test_db
-        .query(models.Space)
-        .filter(models.Space.id == 1)
-        .one()
-    )
-    expected_str_1 = "Space(id=1, name=Main Space)"
-    assert str(space_1) == expected_str_1
-    assert repr(space_1) == expected_str_1
-
-    space_2 = (
-        populated_test_db
-        .query(models.Space)
-        .filter(models.Space.id == 2)
-        .one()
-    )
-    expected_str_2 = "Space(id=2, name=Other Space)"
-    assert str(space_2) == expected_str_2
-    assert repr(space_2) == expected_str_2
+    tag_2 = populated_test_db.query(models.Tag).filter(models.Tag.id == 2).one()
+    expected_str_2 = "Tag(id=2, name=Other Tag)"
+    assert str(tag_2) == expected_str_2
+    assert repr(tag_2) == expected_str_2

@@ -10,12 +10,18 @@ def test_on_off_ws_to_duplex_messenger__compose_msg():
         "name": "on",
         "value": False,
     }
-    with (patch("chocolate_smart_home.mqtt.client.MQTTClient.publish") as _,
-          patch("chocolate_smart_home.plugins.device_plugins.on_off.duplex_messenger.OnOffDuplexMessenger.compose_msg") as compose_msg): 
+    with (
+        patch("chocolate_smart_home.mqtt.client.MQTTClient.publish") as _,
+        patch(
+            "chocolate_smart_home.plugins.device_plugins.on_off.duplex_messenger.OnOffDuplexMessenger.compose_msg"
+        ) as compose_msg,
+    ):
         handle_incoming_websocket_message(incoming_data_dict)
-        compose_msg.assert_called_once_with({
-            "on": False, 
-        })
+        compose_msg.assert_called_once_with(
+            {
+                "on": False,
+            }
+        )
 
 
 def test_on_off_ws_msg_publish_through_mqtt():

@@ -12,7 +12,7 @@ class NeoPixelId(BaseModel):
 class PaletteValidator:
     @field_validator("palette")
     @classmethod
-    def palette_must_contain_space(
+    def palette_must_contain_tag(
         cls, v: Tuple[*([int] * 27)]
     ) -> Tuple[*([int] * 27)]:
         if len(v) != 27:
@@ -55,7 +55,7 @@ class NeoPixelOptions(BaseModel, PaletteValidator):
 
 
 class NeoPixelDevices(BaseModel):
-    ids: List[int]
+    mqtt_ids: List[int]
     data: NeoPixelOptions
 
 

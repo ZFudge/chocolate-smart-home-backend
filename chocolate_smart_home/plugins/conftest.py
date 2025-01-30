@@ -42,8 +42,10 @@ def empty_test_db():
 
     yield db_session.get()
 
+    db_session.get().query(models.DeviceTag).delete()
     db_session.get().query(models.Device).delete()
     db_session.get().query(models.DeviceType).delete()
+    db_session.get().query(models.Tag).delete()
     db_session.get().commit()
 
     Base.metadata.drop_all(bind=engine)

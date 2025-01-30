@@ -6,7 +6,7 @@ from chocolate_smart_home.routers.websocket import handle_incoming_websocket_mes
 def test_np_ws_msg__mqtt_publish():
     incoming_data_dict = {
         "device_type_name": "neo_pixel",
-        "id": 1,
+        "mqtt_id": 1,
         "name": "brightness",
         "value": 255,
     }
@@ -21,7 +21,7 @@ def test_np_ws_msg__mqtt_publish():
 def test_np_ws_to__duplex_messenger__compose_msg():
     incoming_data_dict = {
         "device_type_name": "neo_pixel",
-        "id": 1,
+        "mqtt_id": 1,
         "name": "brightness",
         "value": 255,
     }
@@ -43,7 +43,7 @@ def test_np_ws_to__duplex_messenger__compose_msg():
 def test_np_ws_msg__mqtt_publish__multiple_ids():
     incoming_data_dict = {
         "device_type_name": "neo_pixel",
-        "ids": [1, 2, 3],
+        "mqtt_ids": [1, 2, 3],
         "name": "twinkle",
         "value": False,
     }
@@ -62,7 +62,7 @@ def test_np_ws_msg__mqtt_publish__multiple_ids():
 def test_np_ws_msg__duplex_messenger__compose_msg__multiple_ids():
     incoming_data_dict = {
         "device_type_name": "neo_pixel",
-        "ids": [1, 2, 3],
+        "mqtt_ids": [1, 2, 3],
         "name": "twinkle",
         "value": True,
     }

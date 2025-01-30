@@ -25,46 +25,34 @@ def test_get_devices_data(populated_test_db):
     expected_resp_json = [
         {
             "id": 1,
-            "client": {
-                "id": 1,
-                "mqtt_id": 123,
-            },
-            "device_name": {
-                "id": 1,
-                "name": "Test Device Name 1",
-                "is_server_side_name": False,
-            },
-            "device_type": {
-                "id": 1,
-                "name": "TEST_DEVICE_TYPE_NAME_1",
-            },
-            "space": {
-                "id": 1,
-                "name": "Main Space",
-            },
+            "mqtt_id": 123,
             "remote_name": "Remote Name 1 - 1",
+            "name": "Test Device Name 1",
             "online": True,
             "reboots": 0,
+            "device_type": {
+                "name": "TEST_DEVICE_TYPE_NAME_1",
+                "id": 1,
+            },
+            "tags": [
+                {
+                    "id": 1,
+                    "name": "Main Tag",
+                },
+            ],
         },
         {
             "id": 2,
-            "client": {
-                "id": 2,
-                "mqtt_id": 456,
-            },
-            "device_name": {
-                "id": 2,
-                "name": "Test Device Name 2",
-                "is_server_side_name": True,
-            },
+            "mqtt_id": 456,
+            "remote_name": "Remote Name 2 - 2",
+            "name": "Test Device Name 2",
+            "tags": [],
+            "online": False,
+            "reboots": 0,
             "device_type": {
                 "name": "TEST_DEVICE_TYPE_NAME_2",
                 "id": 2,
             },
-            "space": None,
-            "remote_name": "Remote Name 2 - 2",
-            "online": False,
-            "reboots": 0,
         },
     ]
 
@@ -77,26 +65,21 @@ def test_get_device_data_by_id(populated_test_db):
 
     expected_resp_json = {
         "id": 1,
-        "client": {
-            "id": 1,
-            "mqtt_id": 123,
-        },
+        "mqtt_id": 123,
+        "remote_name": "Remote Name 1 - 1",
+        "name": "Test Device Name 1",
+        "online": True,
+        "reboots": 0,
         "device_type": {
             "id": 1,
             "name": "TEST_DEVICE_TYPE_NAME_1",
         },
-        "device_name": {
-            "id": 1,
-            "name": "Test Device Name 1",
-            "is_server_side_name": False,
-        },
-        "space": {
-            "id": 1,
-            "name": "Main Space",
-        },
-        "remote_name": "Remote Name 1 - 1",
-        "online": True,
-        "reboots": 0,
+        "tags": [
+            {
+                "id": 1,
+                "name": "Main Tag",
+            },
+        ],
     }
 
     assert resp.json() == expected_resp_json
@@ -127,34 +110,33 @@ def test_delete_device_fails_on_invalid_device_id(populated_test_db):
     }
 
 
-def test_add_device_space(populated_test_db):
+def test_add_device_tag(populated_test_db):
     device_id = 1
-    new_space_id = 2
-    resp = client.post(f"/device/space/{device_id}", json={"id": new_space_id})
+    new_tag_id = 2
+    resp = client.post(f"/device/tag/{device_id}/{new_tag_id}")
     assert resp.status_code == 200
 
     expected_data = {
         "id": 1,
-        "client": {
-            "id": 1,
-            "mqtt_id": 123,
-        },
-        "device_name": {
-            "id": 1,
-            "is_server_side_name": False,
-            "name": "Test Device Name 1",
-        },
+        "mqtt_id": 123,
+        "remote_name": "Remote Name 1 - 1",
+        "name": "Test Device Name 1",
+        "online": True,
+        "reboots": 0,
         "device_type": {
             "id": 1,
             "name": "TEST_DEVICE_TYPE_NAME_1",
         },
-        "space": {
-            "id": 2,
-            "name": "Other Space",
-        },
-        "online": True,
-        "reboots": 0,
-        "remote_name": "Remote Name 1 - 1",
+        "tags": [
+            {
+                "id": 1,
+                "name": "Main Tag",
+            },
+            {
+                "id": 2,
+                "name": "Other Tag",
+            },
+        ],
     }
 
     assert resp.json() == expected_data

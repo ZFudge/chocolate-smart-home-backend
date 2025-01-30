@@ -23,7 +23,7 @@ def test_device_manager_create(empty_test_db):
     assert on_off_device.id == 1
     assert on_off_device.on is True
     assert on_off_device.device.remote_name == "On Off Device - 1"
-    assert on_off_device.device.client.mqtt_id == 123
+    assert on_off_device.device.mqtt_id == 123
     assert on_off_device.device.device_type.name == "on_off"
 
 
@@ -41,7 +41,7 @@ def test_device_manager_update(populated_test_db):
     assert on_off_device.id == 1
     assert on_off_device.on is True
     assert on_off_device.device.remote_name == "On Off Device - 1"
-    assert on_off_device.device.client.mqtt_id == 123
+    assert on_off_device.device.mqtt_id == 123
     assert on_off_device.device.device_type.name == "on_off"
 
 

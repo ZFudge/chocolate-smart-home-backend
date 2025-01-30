@@ -1,7 +1,7 @@
 import pkgutil
 
 
-def iter_namespace(ns_pkg):
+def iter_nametag(ns_pkg):
     # Specifying the second argument (prefix) to iter_modules makes the
     # returned name an absolute name instead of a relative one. This allows
     # import_module to work without having to do additional modification to
