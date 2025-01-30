@@ -4,7 +4,7 @@ import pytest
 from paho.mqtt import MQTTException
 from paho.mqtt.client import MQTT_ERR_SUCCESS
 
-from chocolate_smart_home.mqtt.client import MQTTClient
+from src.mqtt.client import MQTTClient
 
 
 @pytest.fixture

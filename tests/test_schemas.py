@@ -1,5 +1,5 @@
-from chocolate_smart_home import models, schemas
-from chocolate_smart_home.schemas.utils import to_schema
+from src import models, schemas
+from src.schemas.utils import to_schema
 
 
 def test_device_to_schema_with_tags(populated_test_db):
