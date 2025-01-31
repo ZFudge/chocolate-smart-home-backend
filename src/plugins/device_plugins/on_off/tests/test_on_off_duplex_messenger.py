@@ -1,4 +1,4 @@
-import pytest
+import logging
 from paho.mqtt.client import MQTTMessage
 
 from src.mqtt.handler import MQTTMessageHandler
@@ -9,6 +9,9 @@ from src.plugins.device_plugins.on_off.schemas import (
     OnOffDeviceReceived,
 )
 from src.schemas.device import DeviceReceived
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 def test_turn_off_message(populated_test_db):
@@ -59,14 +62,19 @@ def test_turn_on_message(populated_test_db):
     assert on_off_device.on is True
 
 
-def test_message_handler_fails_on_missing_values(populated_test_db):
+def test_message_handler_fails_on_missing_values(populated_test_db, caplog):
     """Assert failure when message payload has too few comma-separated values
     for the plugin message handler's .parse_msg method."""
     message = MQTTMessage(b"test_topic")
-    message.payload = b"111,on_off,Remote Name40 - uid"
+    message.payload = b"111,on_off,Remote Name 40 - uid"
 
-    with pytest.raises(StopIteration):
-        MQTTMessageHandler().device_data_received(0, None, message)
+    caplog.set_level(logging.INFO)
+    MQTTMessageHandler().device_data_received(0, None, message)
+
+    expected_exc_text = (
+        "Not enough comma-separated values in message.payload. payload='111,on_off,Remote Name 40 - uid'."
+    )
+    assert expected_exc_text in caplog.text
 
 
 def test_on_off_serialize():

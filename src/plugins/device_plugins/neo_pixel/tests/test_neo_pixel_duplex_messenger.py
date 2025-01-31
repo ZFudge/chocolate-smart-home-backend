@@ -1,4 +1,4 @@
-import pytest
+import logging
 from paho.mqtt.client import MQTTMessage
 
 from src import schemas
@@ -7,6 +7,9 @@ from src.plugins.device_plugins.neo_pixel.duplex_messenger import (
     NeoPixelDuplexMessenger,
 )
 import src.plugins.device_plugins.neo_pixel.schemas as np_schemas
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 def test_incoming_msg_device(populated_test_db):
@@ -27,13 +30,19 @@ def test_incoming_msg_device(populated_test_db):
     assert device.name == "New Remote Name"
 
 
-def test_message_handler_fails_on_missing_values(populated_test_db):
+def test_message_handler_fails_on_missing_values(populated_test_db, caplog):
     """Assert failure when message payload has too few comma-separated values for the plugin message handler's .parse_msg method."""
     message = MQTTMessage(b"test_topic")
-    message.payload = b"111,neo_pixel,Remote Name40 - uid,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
+    message.payload = b"111,neo_pixel,Remote Name 40 - uid,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
 
-    with pytest.raises(StopIteration):
-        MQTTMessageHandler().device_data_received(0, None, message)
+    caplog.set_level(logging.INFO)
+
+    MQTTMessageHandler().device_data_received(0, None, message)
+
+    expected_exc_text = (
+        "Controller palette message must be 27 comma-separated byte strings long, but iteration interrupted early:"
+    )
+    assert expected_exc_text in caplog.text
 
 
 def test_incoming_msg_on(populated_test_db):
@@ -203,69 +212,42 @@ def test_compose_msg_brightness():
 
 def test_compose_msg_palette():
     outgoing_palette = [
-        0,
-        0,
-        0,
-        1,
-        1,
-        1,
-        2,
-        2,
-        2,
-        3,
-        3,
-        3,
-        4,
-        4,
-        4,
-        5,
-        5,
-        5,
-        6,
-        6,
-        6,
-        7,
-        7,
-        7,
-        8,
-        8,
-        8,
+        "#000000",
+        "#FF0000",
+        "#00FF00",
+        "#0000FF",
+        "#FFFF00",
+        "#FF00FF",
+        "#00FFFF",
+        "#FFFFFF",
+        "#123456",
     ]
     outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
         np_schemas.NeoPixelOptions(palette=outgoing_palette)
     )
     assert (
-        outgoing_msg == "palette=0,0,0,1,1,1,2,2,2,3,3,3,4,4,4,5,5,5,6,6,6,7,7,7,8,8,8;"
+        outgoing_msg == "palette="
+        "0,0,0,"
+        "255,0,0,"
+        "0,255,0,"
+        "0,0,255,"
+        "255,255,0,"
+        "255,0,255,"
+        "0,255,255,"
+        "255,255,255,"
+        "18,52,86;"
     )
 
     outgoing_palette = [
-        123,
-        234,
-        56,
-        78,
-        90,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        0,
-        12,
-        34,
-        56,
-        78,
-        9,
-        100,
-        200,
-        50,
-        150,
-        250,
-        0,
-        255,
+        "#7bea38",
+        "#4e5a01",
+        "#020304",
+        "#050607",
+        "#080900",
+        "#0c2238",
+        "#4e0964",
+        "#c83296",
+        "#fa00ff",
     ]
     outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
         np_schemas.NeoPixelOptions(palette=outgoing_palette)
@@ -314,33 +296,15 @@ def test_serilize_msg():
         ms=5,
         brightness=255,
         palette=[
-            0,
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            7,
-            8,
-            9,
-            10,
-            11,
-            12,
-            13,
-            14,
-            15,
-            16,
-            17,
-            18,
-            19,
-            20,
-            21,
-            22,
-            23,
-            24,
-            25,
-            26,
+            "#000102",
+            "#030405",
+            "#060708",
+            "#090a0b",
+            "#0c0d0e",
+            "#0f1011",
+            "#121314",
+            "#151617",
+            "#18191a",
         ],
         pir=np_schemas.PIR(armed=True, timeout_seconds=172),
         device=device,

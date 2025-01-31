@@ -3,6 +3,7 @@ import logging
 from typing import Callable, Dict
 
 from paho.mqtt.client import Client, MQTTMessage
+from pydantic import ValidationError
 from sqlalchemy.exc import NoResultFound
 
 from src.crud import get_device_by_mqtt_id
@@ -39,8 +40,12 @@ class MQTTMessageHandler:
         try:
             msg_data: Dict = DuplexMessenger().parse_msg(payload)
             logger.debug("msg_data %s" % msg_data)
-        except StopIteration:
-            raise
+        except StopIteration as e:
+            logger.error(e)
+            return
+        except ValidationError as e:
+            logger.error(e)
+            return
 
         # Broadcast message data through websocket, to all connected clients
         async def broadcast_to_fe_clients():

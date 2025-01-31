@@ -25,9 +25,7 @@ def discover_and_import_device_plugin_modules():
            },
            ...
        }"""
-    for _finder, name, _ispkg in iter_nametag(
-        src.plugins.device_plugins
-    ):
+    for _finder, name, _ispkg in iter_nametag(src.plugins.device_plugins):
         device_manager_module_name = f"{name}.device_manager"
         duplex_messenger_module_name = f"{name}.duplex_messenger"
         router_module_name = f"{name}.router"

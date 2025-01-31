@@ -33,7 +33,8 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
         ms = int(next(msg_seq))
         brightness = int(next(msg_seq))
         pir_timeout_seconds = int(next(msg_seq))
-        palette = tuple(map(int, [next(msg_seq) for _ in range(27)]))
+
+        palette = utils.received_controller_palette_value_to_hex_str_tuple(msg_seq)
 
         try:
             pir = None
@@ -61,7 +62,6 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
         """Serialize neo pixel data for broadcast through webocket."""
         np_dict = data.model_dump()
 
-        np_dict["palette"] = utils.byte_list_to_hex_tuple(np_dict["palette"])
         # TODO: check online status
         np_dict["online"] = True
 
@@ -95,8 +95,10 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
         msg += _add_key_value("pir_timeout_seconds", preferred_key="pir_timeout")
 
         if data.get("palette") is not None:
-            palette_str = ",".join(map(str, data["palette"]))
-            msg += "palette={};".format(palette_str)
+            # Palette is a list of 9 hex strings. Convert to a commas-separated list of 27 bytes
+            # and embed in outgoing controller message
+            palette_27_byte_str = utils.convert_9_hex_to_27_byte_str(data["palette"])
+            msg += "palette={};".format(palette_27_byte_str)
 
         return msg
 
