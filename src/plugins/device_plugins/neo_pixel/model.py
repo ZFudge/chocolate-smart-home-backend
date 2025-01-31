@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
 
@@ -21,7 +21,7 @@ class NeoPixel(Base, PluginModelStrFormatter):
     ms = Column(Integer)
     brightness = Column(Integer)
 
-    palette = Column(ARRAY(Integer))
+    palette = Column(ARRAY(String))
 
     pir_armed = Column(Boolean, nullable=True)
     pir_timeout_seconds = Column(Integer, nullable=True)

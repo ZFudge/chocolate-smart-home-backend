@@ -1,10 +1,13 @@
+import logging
 from unittest.mock import call, patch
 
-import pytest
 from sqlalchemy.exc import NoResultFound
 from paho.mqtt.client import MQTTMessage
 
 import src.mqtt.handler as mqtt_handler
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 def test_device_data_received_results(empty_test_db):
@@ -70,12 +73,14 @@ def test_empty_payload():
         get_device.assert_not_called()
 
 
-def test_too_short_msg_raises_stop_iteration(empty_test_db):
+def test_too_short_msg(empty_test_db, caplog):
+    """Test that a message with too few comma-separated values logs an error and tolerates a StopIteration exception."""
     msg = MQTTMessage(b"test_topic")
     msg.payload = b"1,DEVICE_TYPE"
     expected_exc_text = (
         "Not enough comma-separated values in message.payload. payload='1,DEVICE_TYPE'."
     )
 
-    with pytest.raises(StopIteration, match=expected_exc_text):
-        mqtt_handler.MQTTMessageHandler().device_data_received(0, None, msg)
+    caplog.set_level(logging.INFO)
+    mqtt_handler.MQTTMessageHandler().device_data_received(0, None, msg)
+    assert expected_exc_text in caplog.text

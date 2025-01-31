@@ -1,10 +1,14 @@
 from types import MappingProxyType
 from typing import Dict
+import logging
 
 from src.plugins.base_duplex_messenger import (
     BaseDuplexMessenger,
 )
 from .schemas import OnOffDeviceReceived
+
+
+logger = logging.getLogger(__name__)
 
 
 class OnOffDuplexMessenger(BaseDuplexMessenger):
@@ -28,12 +32,21 @@ class OnOffDuplexMessenger(BaseDuplexMessenger):
         """Parse incoming message from controller."""
         device, msg_seq = super().parse_msg(incoming_msg)
 
-        on_off_value: str = next(msg_seq)
-        on_off_device_data = OnOffDeviceReceived(
+        try:    
+            on_off_value: str = next(msg_seq)
+        except StopIteration:
+            logger.error(
+                "Not enough comma-separated values in message.payload. payload='%s'."
+                % incoming_msg
+            )
+            logger.info("Returning default on=False for device %s", device)
+            return OnOffDeviceReceived(
+                on=False, device=device
+            )
+
+        return OnOffDeviceReceived(
             on=OnOffDuplexMessenger.INCOMING_LOOKUP[on_off_value], device=device
         )
-
-        return on_off_device_data
 
     def compose_msg(self, on: bool | dict) -> str:
         """Compose outgoing message to be published to controller."""

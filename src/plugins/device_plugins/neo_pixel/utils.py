@@ -1,14 +1,16 @@
 from collections import namedtuple
-from math import ceil
-from typing import List
+from logging import getLogger
+from typing import Iterator, List
+
 
 from src.schemas.utils import to_schema
 from .model import NeoPixel
 from .schemas import NeoPixelDevice, PIR
 
+logger = getLogger(__name__)
 
-PaletteHexTuple = namedtuple(
-    "PaletteHexTuple",
+PaletteHexNamedTuple = namedtuple(
+    "PaletteHexNamedTuple",
     ["hex1", "hex2", "hex3", "hex4", "hex5", "hex6", "hex7", "hex8", "hex9"],
 )
 
@@ -33,10 +35,57 @@ def to_neo_pixel_schema(neo_pixel: NeoPixel) -> NeoPixelDevice:
     )
 
 
-def byte_list_to_hex_tuple(palette: List[str]) -> PaletteHexTuple:
-    """Convert a flat list of RGB values to a list of hex strings."""
-    # Break palette into chunks of 3 RGB values each
-    mod_palette = [palette[x * 3 : x * 3 + 3] for x in range(ceil(len(palette) / 3))]
-    # Convert each list chunk to a single hex string
-    mod_palette = ["#" + "".join(map(lambda n: f"{n:02x}", x)) for x in mod_palette]
-    return PaletteHexTuple(*mod_palette)
+PaletteByteNamedTuple = namedtuple(
+    "PaletteByteNamedTuple",
+    list(map(lambda x: f"byte{x+1}", range(27))),
+)
+
+
+def hex_to_byte(x: str) -> int:
+    """Convert a hex string to a byte."""
+    return int(x, 16)
+
+
+def hex_list_to_byte_tuple(palette: List[str]) -> PaletteByteNamedTuple:
+    """Convert a list of 9 hex strings to a tuple of 27 bytes."""
+    palette_bytes = []
+    for hex_str in palette:
+        hex_bytes = [hex_str[1 + i * 2 : 3 + i * 2] for i in range(3)]
+        palette_bytes.extend(map(hex_to_byte, hex_bytes))
+    return PaletteByteNamedTuple(*palette_bytes)
+
+
+def convert_9_hex_to_27_byte_str(palette: List[str]) -> str:
+    """Convert a list of 9 hex strings to a comma separated string of 27 bytes."""
+    palette_bytes: PaletteByteNamedTuple = hex_list_to_byte_tuple(palette)
+    return ",".join(map(str, palette_bytes))
+
+
+def received_controller_palette_value_to_hex_str_tuple(
+    msg_seq: Iterator[str],
+) -> PaletteHexNamedTuple:
+    """Convert iterator of 27 byte strings to named tuple of 9 hex strings."""
+    try:
+        complete_hex_strs = []
+        current_hex = "#"
+        for _ in range(27):
+            byte_str = next(msg_seq)
+            hex_str = f"{int(byte_str):x}".zfill(2)
+            current_hex += hex_str
+            if len(current_hex) == 7:
+                complete_hex_strs.append(current_hex)
+                current_hex = "#"
+        return PaletteHexNamedTuple(*complete_hex_strs)
+    except StopIteration as e:
+        logger.error(e)
+        logger.error(
+            "Controller palette message must be 27 comma-separated byte strings long, "
+            "but iteration interrupted early: type(msg_seq)=%s, complete_hex_strs=%s, current_hex=%s"
+            % (type(msg_seq), complete_hex_strs, current_hex)
+        )
+        logger.info("Returning default empty palette")
+        return PaletteHexNamedTuple(*[""] * 9)
+    except ValueError as e:
+        logger.error(e)
+        logger.info("Returning default empty palette")
+        return PaletteHexNamedTuple(*[""] * 9)
