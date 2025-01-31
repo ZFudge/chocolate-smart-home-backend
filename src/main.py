@@ -10,9 +10,9 @@ from src.routers import APP_ROUTERS
 
 app = FastAPI()
 
-client = get_mqtt_client()
-if client is not None:
-    client.connect()
+mqtt_client = get_mqtt_client()
+if mqtt_client is not None:
+    mqtt_client.connect()
 
 # Plugin modules import the MQTT client context, and the MQTT message handler
 # imports plugins, so plugin module imports are deferred until after the MQTT
