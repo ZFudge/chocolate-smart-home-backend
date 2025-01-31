@@ -29,6 +29,7 @@ help:
 	@echo "  clean                        Stop the app"
 	@echo "  test                         Run tests in $(APP_CONTAINER_NAME) container using pipenv and pytest"
 	@echo "  mqtt                         Run mqtt container"
+	@echo "  broadcast                    Broadcast request for all device states"
 	@echo "  network                      Create $(NETWORK_NAME) network"
 	@echo "  attach                       Attach session to $(APP_CONTAINER_NAME) output"
 	@echo "  cleanmqtt                    Remove mqtt container from docker network and delete container"
@@ -90,3 +91,6 @@ test:
 	@docker exec -it $(APP_CONTAINER_NAME) sh -c 'pipenv run pytest'
 
 testing: test
+
+broadcast:
+	@curl --head http://localhost:8000/device/broadcast_request_devices_state/
