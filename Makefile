@@ -94,3 +94,11 @@ testing: test
 
 broadcast:
 	@curl --head http://localhost:8000/device/broadcast_request_devices_state/
+
+virtual_client:
+	@docker run -it \
+		--network=$(NETWORK_NAME) \
+		--name=vcs \
+		-v $(shell pwd)/backend/:/chocolate-smart-home-backend \
+		chocolate-smart-home-backend:latest \
+		sh -c "pipenv run uvicorn src.virtual_client:virtual_clients --port=8001 --reload --log-config logs.ini"

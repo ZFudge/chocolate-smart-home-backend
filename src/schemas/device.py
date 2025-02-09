@@ -39,7 +39,12 @@ class DeviceReceived(BaseModel):
     mqtt_id: int
     device_type_name: str
     remote_name: str
+    name: str | None = None
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if "name" not in kwargs:
+            self.name = kwargs.get("remote_name")
 
 __all__ = [
     "DeviceBase",

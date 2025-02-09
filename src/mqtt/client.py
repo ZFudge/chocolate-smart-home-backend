@@ -1,7 +1,7 @@
 import logging
 import os
-from typing import Callable, List
 import threading
+from typing import Callable, List
 
 from paho.mqtt import MQTTException, client as mqtt
 
@@ -31,7 +31,9 @@ class MQTTClient:
         *,
         host: str = DEFAULT_MQTT_HOST,
         port: int = DEFAULT_MQTT_PORT,
-        client_id_prefix: str = ""
+        client_id_prefix: str = "",
+        subscription_topics: List[str] = (topics.RECEIVE_DEVICE_DATA,),
+        message_handler: Callable = MQTTMessageHandler().device_data_received,
     ):
         with self._lock:
             if self._initialized:
@@ -44,21 +46,28 @@ class MQTTClient:
                 "Initializing MQTT client with client_id %s, host %s, and port %s"
                 % (client_id, host, port)
             )
+            self.subscription_topics = subscription_topics
+            self.message_handler = message_handler
             self._client = mqtt.Client(
                 mqtt.CallbackAPIVersion.VERSION2, client_id=client_id
             )
             self._host = host
             self._port = port
             self._initialized = True
+    
+    def subscribe_all(self, *, topics: List[str], handler: Callable) -> None:
+        for topic_for_sub in self.subscription_topics:
+            self._client.subscribe(topic_for_sub)
+            self._client.message_callback_add(topic_for_sub, self.message_handler)
 
     def connect(self):
         logger.info("Connecting MQTT client to %s:%s" % (self._host, self._port))
+        if self._client.is_connected():
+            logger.info("MQTT client is already connected")
+            return
         self._client.connect(self._host, self._port, 60)
         self._client.loop_start()
-        self._client.subscribe(topics.RECEIVE_DEVICE_DATA)
-        self._client.message_callback_add(
-            topics.RECEIVE_DEVICE_DATA, MQTTMessageHandler().device_data_received
-        )
+        self.subscribe_all(topics=self.subscription_topics, handler=self.message_handler)
 
     def disconnect(self):
         logger.info("Disconnecting MQTT client from %s:%s" % (self._host, self._port))
@@ -89,6 +98,11 @@ class MQTTClient:
     def publish_all(self, *, topics: List[str], **kwargs) -> None:
         for topic in topics:
             self.publish(topic=topic, **kwargs)
+
+    def subscribe(self, *, topic: str, handler: Callable) -> None:
+        logger.info('Subscribing to topic: %s' % topic)
+        self._client.subscribe(topic)
+        self._client.message_callback_add(topic, handler)
 
     def request_all_devices_data(self) -> None:
         """Publishes an empty message to topic "/broadcast_request_devices_state/".

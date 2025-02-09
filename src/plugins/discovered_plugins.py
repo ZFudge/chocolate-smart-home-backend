@@ -21,7 +21,6 @@ def discover_and_import_device_plugin_modules():
            "plugin_name": {
                "DuplexMessenger": DuplexMessenger,
                "DeviceManager": DeviceManager,
-               "router": plugin_router,
            },
            ...
        }"""
@@ -36,14 +35,15 @@ def discover_and_import_device_plugin_modules():
 
         DeviceManager = device_manager_module.DeviceManager
         DuplexMessenger = duplex_messenger_module.DuplexMessenger
+
         plugin_router = router_module.plugin_router
+        PLUGIN_ROUTERS.append(plugin_router)
 
         plugin_name = name.split(".").pop()
         DISCOVERED_PLUGINS[plugin_name] = {
             "DuplexMessenger": DuplexMessenger,
             "DeviceManager": DeviceManager,
         }
-        PLUGIN_ROUTERS.append(plugin_router)
 
 
 DEFAULT_PLUGIN = {
