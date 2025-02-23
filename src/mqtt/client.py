@@ -1,6 +1,8 @@
 import logging
 import os
+import socket
 import threading
+import time
 from typing import Callable, List
 
 from paho.mqtt import MQTTException, client as mqtt
@@ -65,9 +67,20 @@ class MQTTClient:
         if self._client.is_connected():
             logger.info("MQTT client is already connected")
             return
-        self._client.connect(self._host, self._port, 60)
+
+        try:
+            self._client.connect(self._host, self._port, 60)
+        except socket.gaierror as e:
+            logger.error("Failed to connect to the MQTT broker: %s" % e)
+            # Wait 15 seconds before retrying connection to the mqtt broker
+            time.sleep(15)
+            return
+
         self._client.loop_start()
         self.subscribe_all(topics=self.subscription_topics, handler=self.message_handler)
+
+    def is_connected(self):
+        return self._client.is_connected()
 
     def disconnect(self):
         logger.info("Disconnecting MQTT client from %s:%s" % (self._host, self._port))
@@ -82,6 +95,9 @@ class MQTTClient:
         **kwargs
     ) -> None:
         logger.info('Publishing message: "%s" through topic: %s...' % (message, topic))
+        if not self._client.is_connected():
+            logger.error("MQTT client is not connected to the MQTT broker")
+            return
 
         (rc_update, message_id_update) = self._client.publish(topic, message)
         if rc_update != mqtt.MQTT_ERR_SUCCESS:
