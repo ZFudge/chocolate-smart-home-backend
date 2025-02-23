@@ -27,9 +27,13 @@ class MQTTMessageHandler:
             return
 
         payload: str = message.payload.decode()
-        logger.info('Message received: "%s"' % payload)
+        logger.info('Message received from "%s": "%s"' % (message.topic, payload))
 
-        mqtt_id, device_type_name = payload.split(",")[:2]
+        try:
+            mqtt_id, device_type_name = payload.split(",")[:2]
+        except ValueError:
+            logger.error("Invalid payload: %s" % payload)
+            return
 
         plugin: Dict = get_plugin_by_device_type(device_type_name)
 

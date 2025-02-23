@@ -1,9 +1,13 @@
 from typing import Callable, List
 
 
+# Incoming data from controllers
 RECEIVE_DEVICE_DATA = "/receive_device_state/"
+# Outgoing request for data, to controllers
 REQUEST_DEVICE_DATA_ALL = "/broadcast_request_devices_state/"
+# Outgoing request for data, to controller by device id
 REQUEST_DEVICE_DATA_TEMPLATE = "/request_device_state/{device_id}/"
+# Outgoing data to controllers
 SEND_DEVICE_DATA_TEMPLATE = "/{device_type}/{{device_id}}/"
 
 

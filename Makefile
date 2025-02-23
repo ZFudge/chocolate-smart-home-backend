@@ -29,10 +29,12 @@ help:
 	@echo "  clean                        Stop the app"
 	@echo "  test                         Run tests in $(APP_CONTAINER_NAME) container using pipenv and pytest"
 	@echo "  mqtt                         Run mqtt container"
+	@echo "  startmqtt                    Start mqtt container"
+	@echo "  mqttlogs                     Tail the mqtt logs"
+	@echo "  cleanmqtt                    Stop and remove mqtt container"
 	@echo "  broadcast                    Broadcast request for all device states"
 	@echo "  network                      Create $(NETWORK_NAME) network"
 	@echo "  attach                       Attach session to $(APP_CONTAINER_NAME) output"
-	@echo "  cleanmqtt                    Remove mqtt container from docker network and delete container"
 	@echo "  cleannetwork                 Remove $(NETWORK_NAME) network"
 	@echo ""
 
@@ -47,13 +49,18 @@ cleannetwork: cleanmqtt
 	@docker network rm $(NETWORK_NAME) \
 		2> ${TRASH_PATH}
 
+# mqtt
 mqtt: network
 	@docker run -it -d \
 		--name=mqtt \
 		--network=$(NETWORK_NAME) \
 		-p 1883:1883 -p 9001:9001 \
 		-v $(MQTT_VOLUME_PATH) \
-		$(MQTT_IMAGE)
+		$(MQTT_IMAGE) \
+			2> ${TRASH_PATH} || true
+
+startmqtt: mqtt
+	@docker start mqtt 2> ${TRASH_PATH} || true
 
 mqttlogs:
 	@docker exec -it mqtt /bin/sh -c 'tail -50 -f /mosquitto/log/mosquitto.log'
@@ -61,6 +68,7 @@ mqttlogs:
 cleanmqtt:
 	@docker stop mqtt 2> ${TRASH_PATH} || true
 	@docker rm mqtt 2> ${TRASH_PATH} || true
+# end mqtt
 
 up:
 	@docker-compose up -d
@@ -94,3 +102,11 @@ testing: test
 
 broadcast:
 	@curl --head http://localhost:8000/device/broadcast_request_devices_state/
+
+virtual_client:
+	@docker run -it \
+		--network=$(NETWORK_NAME) \
+		--name=vcs \
+		-v $(shell pwd)/backend/:/chocolate-smart-home-backend \
+		chocolate-smart-home-backend:latest \
+		sh -c "pipenv run uvicorn src.virtual_client:virtual_clients --port=8001 --reload --log-config logs.ini"
