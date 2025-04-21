@@ -13,8 +13,8 @@ import src.plugins.device_plugins
 logger = logging.getLogger(__name__)
 
 
-def get_echo_handler(*, mqtt_client: MQTTClient, virtual_clients: Dict, translate_vc_dict_to_mqtt_msg: Callable) -> Callable:
-    def echo_handler(_client, _userdata, message):
+def get_data_received_handler(*, mqtt_client: MQTTClient, virtual_clients: Dict, translate_vc_dict_to_mqtt_msg: Callable) -> Callable:
+    def data_received_handler(_client, _userdata, message):
         logger.info(f"Received message: {message.topic} {message.payload.decode()}")
         sleep(1)
 
@@ -67,7 +67,7 @@ def get_echo_handler(*, mqtt_client: MQTTClient, virtual_clients: Dict, translat
         except Exception as e:
             logger.error(f"Error publishing message: {e}")
 
-    return echo_handler
+    return data_received_handler
 
 def discover_virtual_clients(client: MQTTClient) -> List[str]:
     """Discover all virtual clients in the system."""
@@ -93,7 +93,7 @@ def discover_virtual_clients(client: MQTTClient) -> List[str]:
 
         format_topic_by_device_id = get_format_topic_by_device_id(short_name)
 
-        echo_handler = get_echo_handler(
+        data_received_handler = get_data_received_handler(
             mqtt_client=client,
             virtual_clients=virtual_clients,
             translate_vc_dict_to_mqtt_msg=translate_vc_dict_to_mqtt_msg
@@ -107,7 +107,7 @@ def discover_virtual_clients(client: MQTTClient) -> List[str]:
             topic = format_topic_by_device_id(seed["mqtt_id"])
             logger.info(topic)
 
-            client.subscribe(topic=topic, handler=echo_handler)
+            client.subscribe(topic=topic, handler=data_received_handler)
             mqtt_id += 1
 
     def publish_states(_client, userdata, message):

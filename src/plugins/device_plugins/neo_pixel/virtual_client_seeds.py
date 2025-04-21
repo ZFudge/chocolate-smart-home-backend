@@ -90,6 +90,10 @@ def translate_vc_dict_to_mqtt_msg(seed: dict) -> str:
         int(seed["pir_armed"])                          << 5
     )
 
+    palette = seed["palette"]
+    if len(palette) == 9:
+        palette = convert_9_hex_to_27_byte_str(palette)
+
     msg_values = [
         # Add configs
         seed["mqtt_id"],
@@ -100,7 +104,7 @@ def translate_vc_dict_to_mqtt_msg(seed: dict) -> str:
         seed["ms"],
         seed["brightness"],
         seed["pir_timeout"],
-        convert_9_hex_to_27_byte_str(seed["palette"]),
+        palette,
     ]
 
     msg_values = map(str, msg_values)
