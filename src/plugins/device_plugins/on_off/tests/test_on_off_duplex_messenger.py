@@ -84,6 +84,7 @@ def test_on_off_serialize():
     expected_serialized_data_dict = {
         "on": True,
         "mqtt_id": 123,
+        "name": "Remote Name - uid",
         "device_type_name": "on_off",
         "remote_name": "Remote Name - uid",
     }

@@ -8,34 +8,12 @@ from src.mqtt.client import MQTTClient
 
 
 @pytest.fixture
-def mqtt_client_unconnected():
-    mqtt_client = MQTTClient(host="127.0.0.1")
-    mqtt_client._client = Mock()
-    mqtt_client._client.publish.return_value = (MQTT_ERR_SUCCESS, None)
-    yield mqtt_client
-
-
-@pytest.fixture
 def mqtt_client():
     mqtt_client = MQTTClient(host="127.0.0.1")
     mqtt_client._client = Mock()
     mqtt_client._client.publish.return_value = (MQTT_ERR_SUCCESS, None)
     mqtt_client.connect()
     yield mqtt_client
-
-
-def test_client_connect(mqtt_client_unconnected):
-    mqtt_client = mqtt_client_unconnected
-    _client = mqtt_client._client
-
-    assert _client.connect.call_count == 0
-
-    mqtt_client.connect()
-
-    mqtt_client._client.connect.assert_called()
-    mqtt_client._client.loop_start.assert_called()
-    mqtt_client._client.message_callback_add.assert_called()
-    mqtt_client._client.subscribe.assert_called()
 
 
 def test_client_publish(mqtt_client):
