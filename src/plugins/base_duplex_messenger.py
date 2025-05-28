@@ -36,7 +36,7 @@ class BaseDuplexMessenger:
         return data.model_dump()
 
     @staticmethod
-    def compose_msg():
+    def compose_msg(*args, **kwargs):
         """Implemented at the plugin level"""
         pass
 
