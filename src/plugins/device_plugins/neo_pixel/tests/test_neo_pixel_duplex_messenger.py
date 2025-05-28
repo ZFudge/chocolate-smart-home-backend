@@ -314,6 +314,7 @@ def test_serilize_msg():
         "mqtt_id": 123,
         "device_type_name": "neo_pixel",
         "remote_name": "Remote Name - 1",
+        "name": "Remote Name - 1",
         "on": True,
         "twinkle": True,
         "transform": True,

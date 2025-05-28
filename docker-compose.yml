@@ -31,12 +31,12 @@ services:
         source: ./logs
         target: /var/logs/csm
     depends_on:
-      csm-postgres-db:
+      csm-postgres-db-dev:
         condition: service_healthy
-  csm-postgres-db:
+  csm-postgres-db-dev:
     << : *common-attrs
     image: postgres:12.18-bullseye
-    container_name: csm-postgres-db
+    container_name: csm-postgres-db-dev
     ports:
       - 15432:5432
     volumes:

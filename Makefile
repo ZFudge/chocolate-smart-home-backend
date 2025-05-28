@@ -3,20 +3,20 @@ include $(shell pwd)/.env
 TRASH_PATH := /tmp/null
 NETWORK_NAME := csm-network
 
-APP_IMAGE := csm-backend
 APP_CONTAINER_NAME := csm-backend
+APP_IMAGE := csm-backend
 CSM_IMAGE_NAME := csm-backend
 
 MQTT_IMAGE := eclipse-mosquitto:2.0.20
 MQTT_VOLUME_PATH := $(shell pwd)/mosquitto.conf:/mosquitto/config/mosquitto.conf
 
+POSTGRES_CONTAINER_NAME := csm-postgres-db-dev
 POSTGRES_IMAGE := postgres:12.18-bullseye
 POSTGRES_VOLUME_NAME := csm-postgres-vol
-POSTGRES_CONTAINER_NAME := csm-postgres-db
 
 TEST_DB_NAME := testdb
-TEST_DB_USER := testuser
 TEST_DB_PW := testpw
+TEST_DB_USER := testuser
 
 
 help:
@@ -70,15 +70,15 @@ cleanmqtt:
 up:
 	@docker-compose up -d
 
-testdb:
+_testuser:
 	@docker exec -it $(POSTGRES_CONTAINER_NAME) /bin/bash -c \
-		"psql -c 'CREATE DATABASE testdb OWNER testuser;' csm"
+		"psql -c \"CREATE USER testuser WITH ENCRYPTED PASSWORD 'testpw';\" csm" || true
 
-testuser:
+testdb: _testuser
 	@docker exec -it $(POSTGRES_CONTAINER_NAME) /bin/bash -c \
-		"psql -c \"CREATE USER testuser WITH ENCRYPTED PASSWORD 'testpw';\" csm"
+		"psql -c 'CREATE DATABASE testdb OWNER testuser;' csm" || true
 
-run: up testuser testdb
+run: up testdb
 
 clean:
 	@docker-compose down
@@ -92,7 +92,7 @@ attach:
 shell:
 	@docker-compose exec -it $(APP_CONTAINER_NAME) sh
 
-test:
+test: testdb
 	@docker exec -it $(APP_CONTAINER_NAME) sh -c 'pipenv run pytest'
 
 testing: test
