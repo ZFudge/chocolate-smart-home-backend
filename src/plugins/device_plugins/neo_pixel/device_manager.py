@@ -1,4 +1,5 @@
 import logging
+from typing import List
 
 import src.models as models
 from src.crud.devices import get_device_by_mqtt_id
@@ -82,22 +83,25 @@ class NeoPixelDeviceManager(BaseDeviceManager):
         db.refresh(db_neo_pixel)
         return db_neo_pixel
 
-    def update_server_side_values(self, incoming_neo_pixel: dict | NeoPixelOptions) -> NeoPixel:
+    def update_server_side_values(self, incoming_neo_pixel: dict | NeoPixelOptions) -> List[NeoPixel]:
         logger.info('Updating server side values for Neo Pixel device "%s"' % incoming_neo_pixel)
         db = db_session.get()
         if isinstance(incoming_neo_pixel, NeoPixelOptions):
             incoming_neo_pixel = incoming_neo_pixel.model_dump()
 
-        name = incoming_neo_pixel.name
+        np_db_devices = []
+        value_name = incoming_neo_pixel.name
         value = incoming_neo_pixel.value
-        mqtt_id = incoming_neo_pixel.mqtt_id
-        db_device: models.Device = get_device_by_mqtt_id(mqtt_id)
+        mqtt_ids = incoming_neo_pixel.get_mqtt_ids()
+        for mqtt_id in mqtt_ids:
+            db_device: models.Device = get_device_by_mqtt_id(mqtt_id)
+            db_neo_pixel = db.query(NeoPixel).filter(NeoPixel.device == db_device).one()
 
-        db_neo_pixel = db.query(NeoPixel).filter(NeoPixel.device == db_device).one()
+            if value_name == "scheduled_palette_rotation":
+                db_neo_pixel.scheduled_palette_rotation = value
 
-        if name == "scheduled_palette_rotation":
-            db_neo_pixel.scheduled_palette_rotation = value
-        db.add(db_neo_pixel)
+            db.add(db_neo_pixel)
+            np_db_devices.append(db_neo_pixel)
 
         try:
             db.commit()
@@ -105,7 +109,7 @@ class NeoPixelDeviceManager(BaseDeviceManager):
             db.rollback()
             raise
 
-        return db_neo_pixel
+        return np_db_devices
 
 
 # Alias NeoPixelDeviceManager for use in ..discovered_plugins.DISCOVERED_PLUGINS["neo_pixel"] dict

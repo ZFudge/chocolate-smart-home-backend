@@ -1,6 +1,6 @@
 import logging
 from types import MappingProxyType
-from typing import Callable
+from typing import Callable, List
 
 from sqlalchemy.orm.exc import NoResultFound
 from pydantic import ValidationError
@@ -92,31 +92,34 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
 
         return np_dict
 
-    def serialize_db_object(self, data: NeoPixel) -> dict:
+    def serialize_db_objects(self, data: List[NeoPixel]) -> dict:
         """Serialize neo pixel data for broadcast through webocket."""
-        device = np_schemas.DeviceReceived(
-            mqtt_id=data.device.mqtt_id,
-            device_type_name="neo_pixel",
-            remote_name="Neo Pixel Device - 1",
-        )
-        pir = np_schemas.PIR(
-            armed=data.pir_armed,
-            timeout_seconds=data.pir_timeout_seconds,
-        )
-        np_data = np_schemas.NeoPixelDeviceReceived(
-            device=device,
-            on=data.on,
-            twinkle=data.twinkle,
-            all_twinkle_colors_are_current=data.all_twinkle_colors_are_current,
-            scheduled_palette_rotation=data.scheduled_palette_rotation,
-            transform=data.transform,
-            ms=data.ms,
-            brightness=data.brightness,
-            palette=data.palette,
-            pir=pir,
-        )
+        serialized_data = []
+        for db_neo_pixel in data:
+            device = np_schemas.DeviceReceived(
+                mqtt_id=db_neo_pixel.device.mqtt_id,
+                device_type_name="neo_pixel",
+                remote_name="Neo Pixel Device - 1",
+            )
+            pir = np_schemas.PIR(
+                armed=db_neo_pixel.pir_armed,
+                timeout_seconds=db_neo_pixel.pir_timeout_seconds,
+            )
+            np_data = np_schemas.NeoPixelDeviceReceived(
+                device=device,
+                on=db_neo_pixel.on,
+                twinkle=db_neo_pixel.twinkle,
+                all_twinkle_colors_are_current=db_neo_pixel.all_twinkle_colors_are_current,
+                scheduled_palette_rotation=db_neo_pixel.scheduled_palette_rotation,
+                transform=db_neo_pixel.transform,
+                ms=db_neo_pixel.ms,
+                brightness=db_neo_pixel.brightness,
+                palette=db_neo_pixel.palette,
+                pir=pir,
+            )
+            serialized_data.append(self.serialize(np_data))
 
-        return self.serialize(np_data)
+        return serialized_data
 
     def compose_msg(self, data: dict | np_schemas.NeoPixelOptions) -> str | None:
         """Compose outgoing message to be published through MQTT."""

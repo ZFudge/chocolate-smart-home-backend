@@ -42,13 +42,10 @@ async def handle_incoming_websocket_message(incoming_ws_data: dict):
 
     # Some values are only used server side, so we need to update the server side values
     if hasattr(DeviceManager, "SERVER_SIDE_VALUES") and ws_msg.name in DeviceManager.SERVER_SIDE_VALUES:
+        # update device objects in the db with server side values
         device_config = DeviceManager().update_server_side_values(ws_msg)
-        logger.info("Updated server side values for Neo Pixel device %s" % device_config)
-        fe_data = DuplexMessenger().serialize_db_object(device_config)
-        logger.info("Sending FE data %s" % fe_data)
-        # async def broadcast(fe_data):
+        fe_data = DuplexMessenger().serialize_db_objects(device_config)
         await manager.broadcast(fe_data)
-        # asyncio.run(broadcast(fe_data))
         return
 
 
