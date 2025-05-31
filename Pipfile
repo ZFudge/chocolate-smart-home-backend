@@ -13,6 +13,7 @@ psycopg2-binary = "*"
 pytest-cov = "*"
 websockets = "*"
 ruff = "*"
+pytest-asyncio = "*"
 
 [dev-packages]
 
