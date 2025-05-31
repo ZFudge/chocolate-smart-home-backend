@@ -1,10 +1,11 @@
 import logging
 
 import src.models as models
+from src.crud.devices import get_device_by_mqtt_id
 from src.dependencies import db_session
 from src.plugins.base_device_manager import BaseDeviceManager
 from .model import NeoPixel
-from .schemas import NeoPixelDeviceReceived
+from .schemas import NeoPixelDeviceReceived, NeoPixelOptions
 
 
 logger = logging.getLogger()
@@ -12,6 +13,9 @@ logger = logging.getLogger()
 
 class NeoPixelDeviceManager(BaseDeviceManager):
     """Manage "neo_pixels" and "devices" table rows using incoming device data."""
+
+    # These values are only used server-side and not sent to the controller.
+    SERVER_SIDE_VALUES = ["scheduled_palette_rotation"]
 
     def create_device(self, incoming_neo_pixel: NeoPixelDeviceReceived) -> NeoPixel:
         logger.info('Creating Neo Pixel device "%s"' % incoming_neo_pixel)
@@ -53,7 +57,11 @@ class NeoPixelDeviceManager(BaseDeviceManager):
         db_neo_pixel = db.query(NeoPixel).filter(NeoPixel.device == device).one()
 
         db_neo_pixel.on = incoming_neo_pixel.on
+        # START twinkle
         db_neo_pixel.twinkle = incoming_neo_pixel.twinkle
+        db_neo_pixel.all_twinkle_colors_are_current = incoming_neo_pixel.all_twinkle_colors_are_current
+        db_neo_pixel.scheduled_palette_rotation = incoming_neo_pixel.scheduled_palette_rotation
+        # END twinkle
         db_neo_pixel.transform = incoming_neo_pixel.transform
         db_neo_pixel.ms = incoming_neo_pixel.ms
         db_neo_pixel.brightness = incoming_neo_pixel.brightness
@@ -72,6 +80,31 @@ class NeoPixelDeviceManager(BaseDeviceManager):
             raise
 
         db.refresh(db_neo_pixel)
+        return db_neo_pixel
+
+    def update_server_side_values(self, incoming_neo_pixel: dict | NeoPixelOptions) -> NeoPixel:
+        logger.info('Updating server side values for Neo Pixel device "%s"' % incoming_neo_pixel)
+        db = db_session.get()
+        if isinstance(incoming_neo_pixel, NeoPixelOptions):
+            incoming_neo_pixel = incoming_neo_pixel.model_dump()
+
+        name = incoming_neo_pixel.name
+        value = incoming_neo_pixel.value
+        mqtt_id = incoming_neo_pixel.mqtt_id
+        db_device: models.Device = get_device_by_mqtt_id(mqtt_id)
+
+        db_neo_pixel = db.query(NeoPixel).filter(NeoPixel.device == db_device).one()
+
+        if name == "scheduled_palette_rotation":
+            db_neo_pixel.scheduled_palette_rotation = value
+        db.add(db_neo_pixel)
+
+        try:
+            db.commit()
+        except:
+            db.rollback()
+            raise
+
         return db_neo_pixel
 
 

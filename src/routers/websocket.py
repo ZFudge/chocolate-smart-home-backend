@@ -18,8 +18,8 @@ logger = logging.getLogger()
 ws_router = APIRouter()
 
 
-def handle_incoming_websocket_message(incoming_ws_data: dict):
-    logger.info('Received incoming msg from websocket: "%s"' % (incoming_ws_data,))
+async def handle_incoming_websocket_message(incoming_ws_data: dict):
+    logger.info('Received incoming msg from FE websocket: "%s"' % (incoming_ws_data,))
     # Validate that the incoming websocket message has the required fields for
     # publishing via mqtt.
     try:
@@ -28,26 +28,47 @@ def handle_incoming_websocket_message(incoming_ws_data: dict):
         logger.error("Invalid websocket message: %s" % e)
         return
 
-    plugin = get_plugin_by_device_type(ws_msg.device_type_name)
+    device_plugin = get_plugin_by_device_type(ws_msg.device_type_name)
 
-    DuplexMessenger = plugin["DuplexMessenger"]
+    if "DeviceManager" not in device_plugin:
+        logger.error("Plugin %s does not have a DeviceManager" % device_plugin)
+        return
+    DeviceManager = device_plugin["DeviceManager"]
+
+    if "DuplexMessenger" not in device_plugin:
+        logger.error("Plugin %s does not have a DuplexMessenger" % device_plugin)
+        return
+    DuplexMessenger = device_plugin["DuplexMessenger"]
+
+    # Some values are only used server side, so we need to update the server side values
+    if hasattr(DeviceManager, "SERVER_SIDE_VALUES") and ws_msg.name in DeviceManager.SERVER_SIDE_VALUES:
+        device_config = DeviceManager().update_server_side_values(ws_msg)
+        logger.info("Updated server side values for Neo Pixel device %s" % device_config)
+        fe_data = DuplexMessenger().serialize_db_object(device_config)
+        logger.info("Sending FE data %s" % fe_data)
+        # async def broadcast(fe_data):
+        await manager.broadcast(fe_data)
+        # asyncio.run(broadcast(fe_data))
+        return
+
+
     try:
         complete_topics: Iterable[str] = DuplexMessenger().get_topics(ws_msg)
     except ValueError as e:
         logger.error("Error getting topics: %s" % e)
         return
 
-    if "DuplexMessenger" not in plugin:
-        logger.error("Plugin %s does not have a DuplexMessenger" % plugin)
-        return
-    DuplexMessenger = plugin["DuplexMessenger"]
-
     msg_data = {
         ws_msg.name: ws_msg.value,
     }
     outgoing_data = DuplexMessenger().compose_msg(msg_data)
 
-    mqtt_client.publish_all(topics=complete_topics, message=outgoing_data)
+    if outgoing_data:
+        logger.info(
+            "Publishing outgoing data to MQTT: %s, %s"
+            % (complete_topics, outgoing_data)
+        )
+        mqtt_client.publish_all(topics=complete_topics, message=outgoing_data)
 
 
 @ws_router.websocket_route("/ws")
@@ -64,4 +85,4 @@ async def websocket_endpoint(websocket: WebSocket):
             manager.disconnect(websocket)
             break
 
-        handle_incoming_websocket_message(incoming_ws_data)
+        await handle_incoming_websocket_message(incoming_ws_data)

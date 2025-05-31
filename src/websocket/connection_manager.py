@@ -42,6 +42,8 @@ class ConnectionManager:
                 await connection.send_json(data=data_message)
             except WebSocketDisconnect:
                 self.disconnect(connection)
+            except Exception as e:
+                logger.error("Error sending message to client: %s" % e)
 
 
 manager = ConnectionManager()

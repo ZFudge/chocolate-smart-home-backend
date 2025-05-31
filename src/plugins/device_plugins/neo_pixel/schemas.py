@@ -29,6 +29,10 @@ class NeoPixelValues(BaseModel, PaletteValidator):
     on: bool
     twinkle: bool
     transform: bool
+    # This value is read-only from the controller. It is not updated by user.
+    all_twinkle_colors_are_current: bool | None = None
+    # This is only used server side and not sent to the controller.
+    scheduled_palette_rotation: bool | None = None
     ms: int = Field(None, ge=0, le=255)
     brightness: int = Field(None, ge=0, le=255)
     palette: Tuple[*([str] * 9)]
@@ -37,7 +41,13 @@ class NeoPixelValues(BaseModel, PaletteValidator):
 
 class NeoPixelOptions(BaseModel, PaletteValidator):
     on: bool = None
+    # START twinkle
     twinkle: bool = None
+    # This value is read-only from the controller. It is not updated by user.
+    all_twinkle_colors_are_current: bool = None
+    # This is only used server side and not sent to the controller.
+    #scheduled_palette_rotation: bool = None
+    # END twinkle
     transform: bool = None
     ms: int = Field(None, ge=0, le=255)
     brightness: int = Field(None, ge=0, le=255)

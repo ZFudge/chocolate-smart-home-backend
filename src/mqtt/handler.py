@@ -35,15 +35,15 @@ class MQTTMessageHandler:
             logger.error("Invalid payload: %s" % payload)
             return
 
-        plugin: Dict = get_plugin_by_device_type(device_type_name)
+        device_plugin: Dict = get_plugin_by_device_type(device_type_name)
 
-        DuplexMessenger: Callable = plugin["DuplexMessenger"]
-        DeviceManager: Callable = plugin["DeviceManager"]
+        DuplexMessenger: Callable = device_plugin["DuplexMessenger"]
+        DeviceManager: Callable = device_plugin["DeviceManager"]
 
         # Parse message data
         try:
             msg_data: Dict = DuplexMessenger().parse_msg(payload)
-            logger.debug("msg_data %s" % msg_data)
+            logger.info("msg_data %s" % msg_data)
         except StopIteration as e:
             logger.error(e)
             return
