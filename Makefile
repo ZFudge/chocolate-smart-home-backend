@@ -71,10 +71,12 @@ up:
 	@docker-compose up -d
 
 _testuser:
+	@echo "Creating test user if one does not exist. Errors about user already existing are expected."
 	@docker exec -it $(POSTGRES_CONTAINER_NAME) /bin/bash -c \
 		"psql -c \"CREATE USER testuser WITH ENCRYPTED PASSWORD 'testpw';\" csm" || true
 
 testdb: _testuser
+	@echo "Creating test database if one does not exist. Errors about database already existing are expected."
 	@docker exec -it $(POSTGRES_CONTAINER_NAME) /bin/bash -c \
 		"psql -c 'CREATE DATABASE testdb OWNER testuser;' csm" || true
 
@@ -93,7 +95,7 @@ shell:
 	@docker-compose exec -it $(APP_CONTAINER_NAME) sh
 
 test: testdb
-	@docker exec -it $(APP_CONTAINER_NAME) sh -c 'pipenv run pytest'
+	@docker exec -it $(APP_CONTAINER_NAME) sh -c 'pipenv run pytest -vv'
 
 testing: test
 

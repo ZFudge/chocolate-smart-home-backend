@@ -317,6 +317,8 @@ def test_serilize_msg():
         "name": "Remote Name - 1",
         "on": True,
         "twinkle": True,
+        "all_twinkle_colors_are_current": None,
+        "scheduled_palette_rotation": None,
         "transform": True,
         "ms": 5,
         "brightness": 255,

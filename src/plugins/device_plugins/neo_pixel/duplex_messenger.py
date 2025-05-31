@@ -114,14 +114,14 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
 
     def compose_msg(self, data: dict | np_schemas.NeoPixelOptions) -> str | None:
         """Compose outgoing message to be published through MQTT."""
+        if isinstance(data, np_schemas.NeoPixelOptions):
+            data = data.model_dump()
+
         if data.get("scheduled_palette_rotation") is False:
             logger.info("Skipping outgoing message because scheduled_palette_rotation is False")
             return None
 
         msg = ""
-
-        if isinstance(data, np_schemas.NeoPixelOptions):
-            data = data.model_dump()
 
         _add_bool_key_value = self._get_add_key_value_func(
             data, value_mutator=lambda x: NeoPixelDuplexMessenger.OUTGOING_LOOKUP[x]
