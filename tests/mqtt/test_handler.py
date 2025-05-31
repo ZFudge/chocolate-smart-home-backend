@@ -26,15 +26,21 @@ def test_plugin_method_calls(empty_test_db):
     msg = MQTTMessage(b"test_topic")
     msg.payload = b"1,UNKNOWN_DEVICE_TYPE,Remote Name - uid"
 
-    with (patch("src.mqtt.handler.get_plugin_by_device_type") as get_plugin,
-          patch("src.mqtt.handler.get_device_by_mqtt_id", side_effect=NoResultFound) as get_device):
+    with (
+        patch("src.mqtt.handler.get_plugin_by_device_type") as get_plugin,
+        patch(
+            "src.mqtt.handler.get_device_by_mqtt_id", side_effect=NoResultFound
+        ) as get_device,
+    ):
         mqtt_handler.MQTTMessageHandler().device_data_received(0, None, msg)
 
         get_plugin.assert_called_once_with("UNKNOWN_DEVICE_TYPE")
         get_plugin.return_value["DuplexMessenger"]().parse_msg.assert_called_once_with(
             "1,UNKNOWN_DEVICE_TYPE,Remote Name - uid"
         )
-        get_plugin.return_value["DeviceManager"]().create_device.assert_called_once_with(
+        get_plugin.return_value[
+            "DeviceManager"
+        ]().create_device.assert_called_once_with(
             get_plugin.return_value["DuplexMessenger"]().parse_msg.return_value
         )
         get_device.assert_called_once_with("1")
@@ -42,7 +48,9 @@ def test_plugin_method_calls(empty_test_db):
         get_device.side_effect = lambda *x: None
         mqtt_handler.MQTTMessageHandler().device_data_received(0, None, msg)
 
-        assert get_plugin.return_value["DuplexMessenger"]().parse_msg.call_args_list == [
+        assert get_plugin.return_value[
+            "DuplexMessenger"
+        ]().parse_msg.call_args_list == [
             call("1,UNKNOWN_DEVICE_TYPE,Remote Name - uid"),
             call("1,UNKNOWN_DEVICE_TYPE,Remote Name - uid"),
         ]
@@ -52,7 +60,9 @@ def test_plugin_method_calls(empty_test_db):
 
         mqtt_handler.MQTTMessageHandler().device_data_received(0, None, msg)
 
-        assert get_plugin.return_value["DuplexMessenger"]().parse_msg.call_args_list == [
+        assert get_plugin.return_value[
+            "DuplexMessenger"
+        ]().parse_msg.call_args_list == [
             call("1,UNKNOWN_DEVICE_TYPE,Remote Name - uid"),
             call("1,UNKNOWN_DEVICE_TYPE,Remote Name - uid"),
             call("1,UNKNOWN_DEVICE_TYPE,Remote Name - uid"),
@@ -66,8 +76,12 @@ def test_empty_payload():
     msg = MQTTMessage(b"test_topic")
     msg.payload = None
 
-    with (patch("src.mqtt.handler.get_plugin_by_device_type") as get_plugin,
-          patch("src.mqtt.handler.get_device_by_mqtt_id", side_effect=NoResultFound) as get_device):
+    with (
+        patch("src.mqtt.handler.get_plugin_by_device_type") as get_plugin,
+        patch(
+            "src.mqtt.handler.get_device_by_mqtt_id", side_effect=NoResultFound
+        ) as get_device,
+    ):
         mqtt_handler.MQTTMessageHandler().device_data_received(0, None, msg)
         get_plugin.assert_not_called()
         get_device.assert_not_called()

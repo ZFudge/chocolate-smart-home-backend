@@ -39,9 +39,7 @@ def test_message_handler_fails_on_missing_values(populated_test_db, caplog):
 
     MQTTMessageHandler().device_data_received(0, None, message)
 
-    expected_exc_text = (
-        "Controller palette message must be 27 comma-separated byte strings long, but iteration interrupted early:"
-    )
+    expected_exc_text = "Controller palette message must be 27 comma-separated byte strings long, but iteration interrupted early:"
     assert expected_exc_text in caplog.text
 
 

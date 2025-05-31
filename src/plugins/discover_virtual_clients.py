@@ -5,7 +5,11 @@ import logging
 import re
 
 from src.mqtt.client import MQTTClient
-from src.mqtt.topics import get_format_topic_by_device_id, RECEIVE_DEVICE_DATA, REQUEST_DEVICE_DATA_ALL
+from src.mqtt.topics import (
+    get_format_topic_by_device_id,
+    RECEIVE_DEVICE_DATA,
+    REQUEST_DEVICE_DATA_ALL,
+)
 from src.plugins import iter_nametag
 import src.plugins.device_plugins
 
@@ -13,13 +17,18 @@ import src.plugins.device_plugins
 logger = logging.getLogger(__name__)
 
 
-def get_data_received_handler(*, mqtt_client: MQTTClient, virtual_clients: Dict, translate_vc_dict_to_mqtt_msg: Callable) -> Callable:
+def get_data_received_handler(
+    *,
+    mqtt_client: MQTTClient,
+    virtual_clients: Dict,
+    translate_vc_dict_to_mqtt_msg: Callable,
+) -> Callable:
     def data_received_handler(_client, _userdata, message):
         logger.info(f"Received message: {message.topic} {message.payload.decode()}")
         sleep(1)
 
         topic = message.topic
-        mqtt_id = re.sub(r'[^\d]', '', topic)
+        mqtt_id = re.sub(r"[^\d]", "", topic)
         if not mqtt_id.isdigit():
             logger.error(f"Invalid mqtt_id: {mqtt_id}")
             return
@@ -30,13 +39,13 @@ def get_data_received_handler(*, mqtt_client: MQTTClient, virtual_clients: Dict,
             return
 
         vc: Dict = virtual_clients.get(mqtt_id)
-        device_type_name = re.sub(r'[^A-Za-z]', '', topic)
+        device_type_name = re.sub(r"[^A-Za-z]", "", topic)
         msg = f"{mqtt_id},{device_type_name}"
         logger.info(f"{device_type_name} id: {mqtt_id} virtual_client: {vc}")
 
         payload = message.payload.decode()
         try:
-            key, value = re.split('=|;', payload)[:2]
+            key, value = re.split("=|;", payload)[:2]
         except ValueError:
             logger.error("Invalid payload: %s" % payload)
             return
@@ -69,6 +78,7 @@ def get_data_received_handler(*, mqtt_client: MQTTClient, virtual_clients: Dict,
 
     return data_received_handler
 
+
 def discover_virtual_clients(client: MQTTClient) -> List[str]:
     """Discover all virtual clients in the system."""
     mqtt_id = 900
@@ -81,13 +91,15 @@ def discover_virtual_clients(client: MQTTClient) -> List[str]:
         try:
             vcs_module = importlib.import_module(vcs_module_name)
         except ImportError:
-            logger.warning("No %s.virtual_client_seeds module found for %s", (short_name, name))
+            logger.warning(
+                "No %s.virtual_client_seeds module found for %s", (short_name, name)
+            )
             continue
 
         try:
             seeds = vcs_module.seeds
             translate_vc_dict_to_mqtt_msg = vcs_module.translate_vc_dict_to_mqtt_msg
-        except AttributeError as e:
+        except AttributeError:
             logger.warning("No seeds found for %s", short_name)
             continue
 
@@ -96,7 +108,7 @@ def discover_virtual_clients(client: MQTTClient) -> List[str]:
         data_received_handler = get_data_received_handler(
             mqtt_client=client,
             virtual_clients=virtual_clients,
-            translate_vc_dict_to_mqtt_msg=translate_vc_dict_to_mqtt_msg
+            translate_vc_dict_to_mqtt_msg=translate_vc_dict_to_mqtt_msg,
         )
 
         for seed in seeds:
@@ -111,7 +123,9 @@ def discover_virtual_clients(client: MQTTClient) -> List[str]:
             mqtt_id += 1
 
     def publish_states(_client, userdata, message):
-        logger.info(f"publish_states message: {message.topic} {message.payload.decode()}")
+        logger.info(
+            f"publish_states message: {message.topic} {message.payload.decode()}"
+        )
         # Publish the states of all devices
         for mqtt_id, vc_dict in virtual_clients.items():
             virtual_state_string = translate_vc_dict_to_mqtt_msg(vc_dict)

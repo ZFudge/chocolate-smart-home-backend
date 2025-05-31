@@ -2,17 +2,15 @@ import logging
 from types import MappingProxyType
 from typing import Callable, List
 
-from sqlalchemy.orm.exc import NoResultFound
 from pydantic import ValidationError
 
 from src.plugins.base_duplex_messenger import BaseDuplexMessenger
-from src.dependencies import db_session
-from src.models import Device
 import src.plugins.device_plugins.neo_pixel.schemas as np_schemas
 import src.plugins.device_plugins.neo_pixel.utils as utils
 from .model import NeoPixel
 
 logger = logging.getLogger()
+
 
 class NeoPixelDuplexMessenger(BaseDuplexMessenger):
     """Adapts data between app and MQTT."""
@@ -86,11 +84,12 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
     def serialize_db_objects(self, data: List[NeoPixel]) -> dict:
         """Serialize neo pixel data for broadcast through webocket."""
         serialized_data = []
+
         for db_neo_pixel in data:
             device = np_schemas.DeviceReceived(
                 mqtt_id=db_neo_pixel.device.mqtt_id,
                 device_type_name="neo_pixel",
-                remote_name="Neo Pixel Device - 1",
+                remote_name=db_neo_pixel.device.name,
             )
             pir = np_schemas.PIR(
                 armed=db_neo_pixel.pir_armed,
@@ -118,7 +117,9 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
             data = data.model_dump()
 
         if data.get("scheduled_palette_rotation") is False:
-            logger.info("Skipping outgoing message because scheduled_palette_rotation is False")
+            logger.info(
+                "Skipping outgoing message because scheduled_palette_rotation is False"
+            )
             return None
 
         msg = ""

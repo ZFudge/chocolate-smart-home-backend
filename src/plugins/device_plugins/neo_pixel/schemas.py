@@ -46,7 +46,7 @@ class NeoPixelOptions(BaseModel, PaletteValidator):
     # This value is read-only from the controller. It is not updated by user.
     all_twinkle_colors_are_current: bool = None
     # This is only used server side and not sent to the controller.
-    #scheduled_palette_rotation: bool = None
+    # scheduled_palette_rotation: bool = None
     # END twinkle
     transform: bool = None
     ms: int = Field(None, ge=0, le=255)

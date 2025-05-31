@@ -46,6 +46,7 @@ class DeviceReceived(BaseModel):
         if "name" not in kwargs:
             self.name = kwargs.get("remote_name")
 
+
 __all__ = [
     "DeviceBase",
     "Device",

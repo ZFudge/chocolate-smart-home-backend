@@ -56,7 +56,7 @@ class MQTTClient:
             self._host = host
             self._port = port
             self._initialized = True
-    
+
     def subscribe_all(self, *, topics: List[str], handler: Callable) -> None:
         for topic_for_sub in self.subscription_topics:
             self._client.subscribe(topic_for_sub)
@@ -77,7 +77,9 @@ class MQTTClient:
             return
 
         self._client.loop_start()
-        self.subscribe_all(topics=self.subscription_topics, handler=self.message_handler)
+        self.subscribe_all(
+            topics=self.subscription_topics, handler=self.message_handler
+        )
 
     def is_connected(self):
         return self._client.is_connected()
@@ -92,7 +94,7 @@ class MQTTClient:
         topic: str,
         message: str = "0",
         callback: Callable = lambda x: None,
-        **kwargs
+        **kwargs,
     ) -> None:
         logger.info('Publishing message: "%s" through topic: %s...' % (message, topic))
         if not self._client.is_connected():
@@ -116,7 +118,7 @@ class MQTTClient:
             self.publish(topic=topic, **kwargs)
 
     def subscribe(self, *, topic: str, handler: Callable) -> None:
-        logger.info('Subscribing to topic: %s' % topic)
+        logger.info("Subscribing to topic: %s" % topic)
         self._client.subscribe(topic)
         self._client.message_callback_add(topic, handler)
 

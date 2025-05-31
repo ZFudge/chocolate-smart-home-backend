@@ -60,8 +60,12 @@ class NeoPixelDeviceManager(BaseDeviceManager):
         db_neo_pixel.on = incoming_neo_pixel.on
         # START twinkle
         db_neo_pixel.twinkle = incoming_neo_pixel.twinkle
-        db_neo_pixel.all_twinkle_colors_are_current = incoming_neo_pixel.all_twinkle_colors_are_current
-        db_neo_pixel.scheduled_palette_rotation = incoming_neo_pixel.scheduled_palette_rotation
+        db_neo_pixel.all_twinkle_colors_are_current = (
+            incoming_neo_pixel.all_twinkle_colors_are_current
+        )
+        db_neo_pixel.scheduled_palette_rotation = (
+            incoming_neo_pixel.scheduled_palette_rotation
+        )
         # END twinkle
         db_neo_pixel.transform = incoming_neo_pixel.transform
         db_neo_pixel.ms = incoming_neo_pixel.ms
@@ -83,8 +87,12 @@ class NeoPixelDeviceManager(BaseDeviceManager):
         db.refresh(db_neo_pixel)
         return db_neo_pixel
 
-    def update_server_side_values(self, incoming_neo_pixel: dict | NeoPixelOptions) -> List[NeoPixel]:
-        logger.info('Updating server side values for Neo Pixel device "%s"' % incoming_neo_pixel)
+    def update_server_side_values(
+        self, incoming_neo_pixel: dict | NeoPixelOptions
+    ) -> List[NeoPixel]:
+        logger.info(
+            'Updating server side values for Neo Pixel device "%s"' % incoming_neo_pixel
+        )
         db = db_session.get()
         if isinstance(incoming_neo_pixel, NeoPixelOptions):
             incoming_neo_pixel = incoming_neo_pixel.model_dump()

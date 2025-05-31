@@ -32,7 +32,7 @@ class OnOffDuplexMessenger(BaseDuplexMessenger):
         """Parse incoming message from controller."""
         device, msg_seq = super().parse_msg(incoming_msg)
 
-        try:    
+        try:
             on_off_value: str = next(msg_seq)
         except StopIteration:
             logger.error(
@@ -40,9 +40,7 @@ class OnOffDuplexMessenger(BaseDuplexMessenger):
                 % incoming_msg
             )
             logger.info("Returning default on=False for device %s", device)
-            return OnOffDeviceReceived(
-                on=False, device=device
-            )
+            return OnOffDeviceReceived(on=False, device=device)
 
         return OnOffDeviceReceived(
             on=OnOffDuplexMessenger.INCOMING_LOOKUP[on_off_value], device=device
