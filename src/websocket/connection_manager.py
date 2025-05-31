@@ -39,7 +39,11 @@ class ConnectionManager:
         )
         for connection in self.active_connections:
             try:
-                await connection.send_json(data=data_message)
+                if isinstance(data_message, list):
+                    for item in data_message:
+                        await connection.send_json(data=item)
+                else:
+                    await connection.send_json(data=data_message)
             except WebSocketDisconnect:
                 self.disconnect(connection)
             except Exception as e:

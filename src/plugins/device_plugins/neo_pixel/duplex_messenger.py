@@ -76,15 +76,6 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
         # TODO: check online status
         np_dict["online"] = True
 
-        db = db_session.get()
-        try:
-            db_device = db.query(Device).filter(Device.mqtt_id == data.device.mqtt_id).one()
-            db_neo_pixel = db.query(NeoPixel).filter(NeoPixel.device == db_device).one()
-            np_dict["scheduled_palette_rotation"] = db_neo_pixel.scheduled_palette_rotation
-        except NoResultFound:
-            logger.error("No Neo Pixel device found for device %s" % data.device.mqtt_id)
-            np_dict["scheduled_palette_rotation"] = None
-
         device_dict = super().serialize(data.device)
         del np_dict["device"]
 
