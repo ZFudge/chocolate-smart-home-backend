@@ -81,8 +81,10 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
 
         return np_dict
 
-    def serialize_db_objects(self, data: List[NeoPixel]) -> dict:
+    def serialize_db_objects(self, data: NeoPixel | List[NeoPixel]) -> dict:
         """Serialize neo pixel data for broadcast through webocket."""
+        if not isinstance(data, (list, tuple, set)):
+            data = [data]
         serialized_data = []
 
         for db_neo_pixel in data:
@@ -91,10 +93,14 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
                 device_type_name="neo_pixel",
                 remote_name=db_neo_pixel.device.name,
             )
-            pir = np_schemas.PIR(
-                armed=db_neo_pixel.pir_armed,
-                timeout_seconds=db_neo_pixel.pir_timeout_seconds,
-            )
+
+            pir = None
+            if db_neo_pixel.pir_armed is not None:
+                pir = np_schemas.PIR(
+                    armed=db_neo_pixel.pir_armed,
+                    timeout_seconds=db_neo_pixel.pir_timeout_seconds,
+                )
+
             np_data = np_schemas.NeoPixelDeviceReceived(
                 device=device,
                 on=db_neo_pixel.on,

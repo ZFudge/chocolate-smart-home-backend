@@ -47,8 +47,9 @@ async def handle_incoming_websocket_message(incoming_ws_data: dict):
     ):
         # update device objects in the db with server side values
         logger.info("Updating server side values for Neo Pixel device %s" % ws_msg)
-        device_config = DeviceManager().update_server_side_values(ws_msg)
-        fe_data = DuplexMessenger().serialize_db_objects(device_config)
+        DeviceManager().update_server_side_values(ws_msg)
+        np_db_objects = DeviceManager().get_device_by_mqtt_id(ws_msg.get_mqtt_ids())
+        fe_data = DuplexMessenger().serialize_db_objects(np_db_objects)
         await manager.broadcast(fe_data)
         return
 

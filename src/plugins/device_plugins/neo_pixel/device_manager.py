@@ -1,6 +1,8 @@
 import logging
 from typing import List
 
+from sqlalchemy.orm import Session
+
 import src.models as models
 from src.crud.devices import get_device_by_mqtt_id
 from src.dependencies import db_session
@@ -16,7 +18,16 @@ class NeoPixelDeviceManager(BaseDeviceManager):
     """Manage "neo_pixels" and "devices" table rows using incoming device data."""
 
     # These values are only used server-side and not sent to the controller.
-    SERVER_SIDE_VALUES = ["scheduled_palette_rotation"]
+    SERVER_SIDE_VALUES = [
+        "scheduled_palette_rotation",
+    ]
+
+    def get_device_by_mqtt_id(self, mqtt_id: int | List[int]) -> NeoPixel:
+        db: Session = db_session.get()
+        if isinstance(mqtt_id, list):
+            return db.query(NeoPixel).filter(NeoPixel.device.has(models.Device.mqtt_id.in_(mqtt_id))).all()
+        else:
+            return db.query(NeoPixel).filter(NeoPixel.device.has(models.Device.mqtt_id == mqtt_id)).one()
 
     def create_device(self, incoming_neo_pixel: NeoPixelDeviceReceived) -> NeoPixel:
         logger.info('Creating Neo Pixel device "%s"' % incoming_neo_pixel)
@@ -62,9 +73,6 @@ class NeoPixelDeviceManager(BaseDeviceManager):
         db_neo_pixel.twinkle = incoming_neo_pixel.twinkle
         db_neo_pixel.all_twinkle_colors_are_current = (
             incoming_neo_pixel.all_twinkle_colors_are_current
-        )
-        db_neo_pixel.scheduled_palette_rotation = (
-            incoming_neo_pixel.scheduled_palette_rotation
         )
         # END twinkle
         db_neo_pixel.transform = incoming_neo_pixel.transform
