@@ -142,24 +142,24 @@ def test_device_manager_update_fails_device_does_not_exist(empty_test_db):
         NeoPixelDeviceManager().update_device(device_data)
 
 
-def test_device_manager_update_server_side_values(populated_test_db):
-    assert NeoPixelDeviceManager().get_device_by_mqtt_id(123).scheduled_palette_rotation is None
+def test_device_manager__scheduled_palette_rotation(populated_test_db):
+    assert NeoPixelDeviceManager().get_devices_by_mqtt_id(123).scheduled_palette_rotation is True
 
     NeoPixelDeviceManager().update_server_side_values(
         WebsocketMessage(
             device_type_name="neo_pixel",
             mqtt_ids=[123],
             name="scheduled_palette_rotation",
-            value=True,
+            value=False,
         )
     )
 
-    assert NeoPixelDeviceManager().get_device_by_mqtt_id(123).scheduled_palette_rotation is True
+    assert NeoPixelDeviceManager().get_devices_by_mqtt_id(123).scheduled_palette_rotation is False
 
 
-def test_device_manager_update_server_side_values_multiple_devices(populated_test_db):
-    assert NeoPixelDeviceManager().get_device_by_mqtt_id(123).scheduled_palette_rotation is None
-    assert NeoPixelDeviceManager().get_device_by_mqtt_id(456).scheduled_palette_rotation is None
+def test_device_manager__scheduled_palette_rotation_multiple_devices(populated_test_db):
+    assert NeoPixelDeviceManager().get_devices_by_mqtt_id(123).scheduled_palette_rotation is True
+    assert NeoPixelDeviceManager().get_devices_by_mqtt_id(456).scheduled_palette_rotation is None
 
     NeoPixelDeviceManager().update_server_side_values(
         WebsocketMessage(
@@ -170,6 +170,18 @@ def test_device_manager_update_server_side_values_multiple_devices(populated_tes
         )
     )
 
-    assert NeoPixelDeviceManager().get_device_by_mqtt_id(123).scheduled_palette_rotation is True
-    assert NeoPixelDeviceManager().get_device_by_mqtt_id(456).scheduled_palette_rotation is True
+    assert NeoPixelDeviceManager().get_devices_by_mqtt_id(123).scheduled_palette_rotation is True
+    assert NeoPixelDeviceManager().get_devices_by_mqtt_id(456).scheduled_palette_rotation is True
+
+    NeoPixelDeviceManager().update_server_side_values(
+        WebsocketMessage(
+            device_type_name="neo_pixel",
+            mqtt_ids=[123, 456],
+            name="scheduled_palette_rotation",
+            value=False,
+        )
+    )
+
+    assert NeoPixelDeviceManager().get_devices_by_mqtt_id(123).scheduled_palette_rotation is False
+    assert NeoPixelDeviceManager().get_devices_by_mqtt_id(456).scheduled_palette_rotation is False
 

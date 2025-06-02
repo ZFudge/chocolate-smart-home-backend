@@ -39,6 +39,7 @@ def populated_test_db(empty_test_db):
     neo_pixel_device__id_1 = NeoPixel(
         on=True,
         twinkle=True,
+        scheduled_palette_rotation=True,
         transform=True,
         ms=5,
         brightness=255,

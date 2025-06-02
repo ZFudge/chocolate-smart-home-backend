@@ -18,11 +18,17 @@ async def test_np_ws_msg__mqtt_publish():
         "value": 255,
     }
 
-    with patch("src.mqtt.client.MQTTClient.publish") as publish:
+    with (
+        patch(
+            "src.plugins.device_plugins.neo_pixel.device_manager.NeoPixelDeviceManager.update_server_side_values"
+        ) as update_server_side_values,
+        patch("src.mqtt.client.MQTTClient.publish") as publish,
+    ):
         await handle_incoming_websocket_message(incoming_data_dict)
         publish.assert_called_once_with(
             topic="/neo_pixel/1/", message="brightness=255;"
         )
+        update_server_side_values.assert_not_called()
 
 
 @pytest.mark.asyncio

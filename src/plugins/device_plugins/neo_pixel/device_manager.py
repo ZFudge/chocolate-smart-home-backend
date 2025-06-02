@@ -4,7 +4,7 @@ from typing import List
 from sqlalchemy.orm import Session
 
 import src.models as models
-from src.crud.devices import get_device_by_mqtt_id
+from src.crud.devices import get_devices_by_mqtt_id
 from src.dependencies import db_session
 from src.plugins.base_device_manager import BaseDeviceManager
 from .model import NeoPixel
@@ -22,12 +22,11 @@ class NeoPixelDeviceManager(BaseDeviceManager):
         "scheduled_palette_rotation",
     ]
 
-    def get_device_by_mqtt_id(self, mqtt_id: int | List[int]) -> NeoPixel:
+    def get_devices_by_mqtt_id(self, mqtt_id: int | List[int]) -> NeoPixel:
         db: Session = db_session.get()
         if isinstance(mqtt_id, list):
             return db.query(NeoPixel).filter(NeoPixel.device.has(models.Device.mqtt_id.in_(mqtt_id))).all()
-        else:
-            return db.query(NeoPixel).filter(NeoPixel.device.has(models.Device.mqtt_id == mqtt_id)).one()
+        return db.query(NeoPixel).filter(NeoPixel.device.has(models.Device.mqtt_id == mqtt_id)).one()
 
     def create_device(self, incoming_neo_pixel: NeoPixelDeviceReceived) -> NeoPixel:
         logger.info('Creating Neo Pixel device "%s"' % incoming_neo_pixel)
@@ -110,7 +109,7 @@ class NeoPixelDeviceManager(BaseDeviceManager):
         value = incoming_neo_pixel.value
         mqtt_ids = incoming_neo_pixel.get_mqtt_ids()
         for mqtt_id in mqtt_ids:
-            db_device: models.Device = get_device_by_mqtt_id(mqtt_id)
+            db_device: models.Device = get_devices_by_mqtt_id(mqtt_id)
             db_neo_pixel = db.query(NeoPixel).filter(NeoPixel.device == db_device).one()
 
             if value_name == "scheduled_palette_rotation":

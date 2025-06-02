@@ -1,12 +1,12 @@
 import asyncio
 import logging
-from typing import Callable, Dict
+from typing import Callable, Dict, List
 
 from paho.mqtt.client import Client, MQTTMessage
 from pydantic import ValidationError
 from sqlalchemy.exc import NoResultFound
 
-from src.crud import get_device_by_mqtt_id
+from src.crud import get_devices_by_mqtt_id
 from src.models import Device
 from src.plugins.discovered_plugins import (
     get_plugin_by_device_type,
@@ -54,8 +54,10 @@ class MQTTMessageHandler:
         # Store client data in DB
         db_plugin_device: Device | None = None
         try:
-            _: Device = get_device_by_mqtt_id(mqtt_id)
+            _: Device | List[Device] = get_devices_by_mqtt_id(mqtt_id)
             logger.debug("found existing device %s" % _)
+            if isinstance(_, list):
+                raise NotImplementedError("Multiple devices with the same mqtt_id are not supported")
         except NoResultFound:
             db_plugin_device = DeviceManager().create_device(msg_data)
         else:

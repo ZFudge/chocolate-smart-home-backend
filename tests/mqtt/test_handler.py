@@ -29,7 +29,7 @@ def test_plugin_method_calls(empty_test_db):
     with (
         patch("src.mqtt.handler.get_plugin_by_device_type") as get_plugin,
         patch(
-            "src.mqtt.handler.get_device_by_mqtt_id", side_effect=NoResultFound
+            "src.mqtt.handler.get_devices_by_mqtt_id", side_effect=NoResultFound
         ) as get_device,
     ):
         mqtt_handler.MQTTMessageHandler().device_data_received(0, None, msg)
@@ -57,6 +57,7 @@ def test_plugin_method_calls(empty_test_db):
         get_plugin.return_value["DeviceManager"]().update_device.assert_called_with(
             get_plugin.return_value["DuplexMessenger"]().parse_msg.return_value
         )
+        get_plugin.return_value["DeviceManager"]().update_server_side_values.assert_not_called()
 
         mqtt_handler.MQTTMessageHandler().device_data_received(0, None, msg)
 
@@ -79,7 +80,7 @@ def test_empty_payload():
     with (
         patch("src.mqtt.handler.get_plugin_by_device_type") as get_plugin,
         patch(
-            "src.mqtt.handler.get_device_by_mqtt_id", side_effect=NoResultFound
+            "src.mqtt.handler.get_devices_by_mqtt_id", side_effect=NoResultFound
         ) as get_device,
     ):
         mqtt_handler.MQTTMessageHandler().device_data_received(0, None, msg)
