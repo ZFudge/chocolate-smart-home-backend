@@ -54,8 +54,8 @@ def populated_test_db(empty_test_db):
             "#d2dce6",
             "#f0faff",
         ],
-        pir_armed=True,
-        pir_timeout_seconds=172,
+        armed=True,
+        timeout=172,
         device=device__id_1,
     )
     neo_pixel_device__id_2 = NeoPixel(

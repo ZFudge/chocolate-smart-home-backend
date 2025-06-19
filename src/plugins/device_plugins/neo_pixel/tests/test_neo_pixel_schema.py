@@ -31,7 +31,7 @@ def test_to_neo_pixel_schema(populated_test_db):
             "#d2dce6",
             "#f0faff",
         ],
-        pir=neo_pixel_schemas.PIR(armed=True, timeout_seconds=172),
+        pir=neo_pixel_schemas.PIR(armed=True, timeout=172),
         device=schemas.Device(
             id=1,
             online=True,

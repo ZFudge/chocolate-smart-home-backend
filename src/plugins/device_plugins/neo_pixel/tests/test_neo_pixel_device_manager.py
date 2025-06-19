@@ -30,7 +30,7 @@ def test_device_manager_create(empty_test_db):
             "#d2dce6",
             "#f0faff",
         ],
-        pir=PIR(armed=True, timeout_seconds=65),
+        pir=PIR(armed=True, timeout=65),
         device=DeviceReceived(
             mqtt_id=123,
             device_type_name="neo_pixel",
@@ -44,8 +44,8 @@ def test_device_manager_create(empty_test_db):
     assert neo_pixel_device.transform is True
     assert neo_pixel_device.ms == 5
     assert neo_pixel_device.brightness == 255
-    assert neo_pixel_device.pir_armed is True
-    assert neo_pixel_device.pir_timeout_seconds == 65
+    assert neo_pixel_device.armed is True
+    assert neo_pixel_device.timeout == 65
     assert neo_pixel_device.palette == [
         "#000102",
         "#030405",
@@ -80,7 +80,7 @@ def test_device_manager_update(populated_test_db):
             "#d2dce6",
             "#f0faff",
         ],
-        pir=PIR(armed=False, timeout_seconds=20),
+        pir=PIR(armed=False, timeout=20),
         device=DeviceReceived(
             mqtt_id=123,
             device_type_name="neo_pixel",
@@ -95,8 +95,8 @@ def test_device_manager_update(populated_test_db):
     assert neo_pixel_device.transform is True
     assert neo_pixel_device.ms == 5
     assert neo_pixel_device.brightness == 255
-    assert neo_pixel_device.pir_armed is False
-    assert neo_pixel_device.pir_timeout_seconds == 20
+    assert neo_pixel_device.armed is False
+    assert neo_pixel_device.timeout == 20
     assert neo_pixel_device.palette == [
         "#000102",
         "#030405",

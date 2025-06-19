@@ -1,3 +1,4 @@
+from random import random
 from time import sleep
 from typing import Callable, Dict, List
 import importlib
@@ -25,32 +26,34 @@ def get_data_received_handler(
 ) -> Callable:
     def data_received_handler(_client, _userdata, message):
         logger.info(f"Received message: {message.topic} {message.payload.decode()}")
-        sleep(1)
+        # Simulate the delay observed across different controllers
+        sleep(random() * 2 + 0.5)
 
         topic = message.topic
         mqtt_id = re.sub(r"[^\d]", "", topic)
         if not mqtt_id.isdigit():
-            logger.error(f"Invalid mqtt_id: {mqtt_id}")
+            logger.debug(f"Invalid mqtt_id: {mqtt_id}")
             return
 
         mqtt_id = int(mqtt_id)
         if mqtt_id not in virtual_clients:
-            logger.error(f"mqtt_id: {mqtt_id} not in virtual_clients")
+            logger.debug(f"mqtt_id: {mqtt_id} not in virtual_clients")
             return
 
         vc: Dict = virtual_clients.get(mqtt_id)
         device_type_name = re.sub(r"[^A-Za-z]", "", topic)
         msg = f"{mqtt_id},{device_type_name}"
-        logger.info(f"{device_type_name} id: {mqtt_id} virtual_client: {vc}")
+        logger.debug(f"{device_type_name} id: {mqtt_id} virtual_client: {vc}")
 
         payload = message.payload.decode()
         try:
             key, value = re.split("=|;", payload)[:2]
         except ValueError:
-            logger.error("Invalid payload: %s" % payload)
+            logger.debug("Invalid payload: %s" % payload)
             return
 
         old_value = vc.get(key)
+        logger.info(f'{vc=}', f'{payload=}', f'{key=}', f'{value=}', f'{old_value=}')
         if old_value is None:
             vc[key] = value
         elif isinstance(old_value, bool):
@@ -74,7 +77,7 @@ def get_data_received_handler(
         try:
             mqtt_client.publish(topic=RECEIVE_DEVICE_DATA, message=msg)
         except Exception as e:
-            logger.error(f"Error publishing message: {e}")
+            logger.debug(f"Error publishing message: {e}")
 
     return data_received_handler
 

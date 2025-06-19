@@ -25,8 +25,8 @@ seeds = [
             "#008000",
         ],
         "pir": True,
-        "pir_armed": True,
-        "pir_timeout": 10,
+        "armed": True,
+        "timeout": 10,
     },
     {
         "name": "Virtual Neo Pixel 2",
@@ -49,8 +49,8 @@ seeds = [
             "#00FF00",
         ],
         "pir": True,
-        "pir_armed": False,
-        "pir_timeout": 35,
+        "armed": False,
+        "timeout": 35,
     },
     {
         "name": "Virtual Neo Pixel 3",
@@ -73,8 +73,8 @@ seeds = [
             "#00FF00",
         ],
         "pir": True,
-        "pir_armed": False,
-        "pir_timeout": 17,
+        "armed": False,
+        "timeout": 17,
     },
 ]
 
@@ -87,7 +87,7 @@ def translate_vc_dict_to_mqtt_msg(seed: dict) -> str:
         int(seed["transform"])                          << 2 |
         int(seed["all_twinkle_colors_are_current"])     << 3 |
         int(seed["pir"])                                << 4 |
-        int(seed["pir_armed"])                          << 5
+        int(seed["armed"])                              << 5
     )
 
     palette = seed["palette"]
@@ -103,7 +103,7 @@ def translate_vc_dict_to_mqtt_msg(seed: dict) -> str:
         bools_byte,
         seed["ms"],
         seed["brightness"],
-        seed["pir_timeout"],
+        seed["timeout"],
         palette,
     ]
 

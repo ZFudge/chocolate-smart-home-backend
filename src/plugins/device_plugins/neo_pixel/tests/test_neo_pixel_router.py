@@ -37,7 +37,7 @@ def test_get_neo_pixel_devices(populated_test_db):
             ],
             "pir": {
                 "armed": True,
-                "timeout_seconds": 172,
+                "timeout": 172,
             },
             "device": {
                 "id": 1,
@@ -127,7 +127,7 @@ def test_get_neo_pixel_device(populated_test_db):
         ],
         "pir": {
             "armed": True,
-            "timeout_seconds": 172,
+            "timeout": 172,
         },
         "device": {
             "id": 1,

@@ -17,10 +17,8 @@ PaletteHexNamedTuple = namedtuple(
 
 def to_neo_pixel_schema(neo_pixel: NeoPixel) -> NeoPixelDevice:
     pir = None
-    if neo_pixel.pir_armed is not None:
-        pir = PIR(
-            armed=neo_pixel.pir_armed, timeout_seconds=neo_pixel.pir_timeout_seconds
-        )
+    if neo_pixel.armed is not None:
+        pir = PIR(armed=neo_pixel.armed, timeout=neo_pixel.timeout)
 
     return NeoPixelDevice(
         id=neo_pixel.id,

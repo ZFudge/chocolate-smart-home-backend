@@ -22,7 +22,7 @@ class PaletteValidator:
 
 class PIR(BaseModel):
     armed: bool
-    timeout_seconds: int
+    timeout: int
 
 
 class NeoPixelValues(BaseModel, PaletteValidator):
@@ -52,8 +52,8 @@ class NeoPixelOptions(BaseModel, PaletteValidator):
     ms: int = Field(None, ge=0, le=255)
     brightness: int = Field(None, ge=0, le=255)
     palette: Tuple[*([str] * 9)] = None
-    pir_armed: bool = None
-    pir_timeout_seconds: int | None = None
+    armed: bool = None
+    timeout: int | None = None
 
 
 class NeoPixelDevices(BaseModel):
