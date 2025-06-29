@@ -32,25 +32,29 @@ def get_data_received_handler(
         topic = message.topic
         mqtt_id = re.sub(r"[^\d]", "", topic)
         if not mqtt_id.isdigit():
-            logger.debug(f"Invalid mqtt_id: {mqtt_id}")
+            logger.error(f"Invalid mqtt_id: {mqtt_id}")
             return
 
         mqtt_id = int(mqtt_id)
         if mqtt_id not in virtual_clients:
-            logger.debug(f"mqtt_id: {mqtt_id} not in virtual_clients")
+            logger.error(f"mqtt_id: {mqtt_id} not in virtual_clients")
             return
 
         vc: Dict = virtual_clients.get(mqtt_id)
-        device_type_name = re.sub(r"[^A-Za-z]", "", topic)
+        device_type_name = re.sub(r"[^A-Za-z|_]", "", topic)
         msg = f"{mqtt_id},{device_type_name}"
-        logger.debug(f"{device_type_name} id: {mqtt_id} virtual_client: {vc}")
+        logger.info(f"{device_type_name} id: {mqtt_id} virtual_client: {vc}")
 
         payload = message.payload.decode()
-        try:
-            key, value = re.split("=|;", payload)[:2]
-        except ValueError:
-            logger.debug("Invalid payload: %s" % payload)
-            return
+        if device_type_name == "on_off":
+            key = "on"
+            value = payload
+        else:
+            try:
+                key, value = re.split("=|;", payload)[:2]
+            except ValueError:
+                logger.error("Invalid payload: %s" % payload)
+                return
 
         old_value = vc.get(key)
         logger.info(f'{vc=}', f'{payload=}', f'{key=}', f'{value=}', f'{old_value=}')
@@ -86,13 +90,16 @@ def discover_virtual_clients(client: MQTTClient) -> List[str]:
     """Discover all virtual clients in the system."""
     mqtt_id = 900
     virtual_clients = dict()
+    trans_funcs = dict()
 
     for _finder, name, _ispkg in iter_nametag(src.plugins.device_plugins):
+        logger.info(f"plugin name: {name}")
         vcs_module_name = f"{name}.virtual_client_seeds"
         short_name = name.split(".")[-1]
 
         try:
             vcs_module = importlib.import_module(vcs_module_name)
+            logger.info(f"Imported {vcs_module_name}")
         except ImportError:
             logger.warning(
                 "No %s.virtual_client_seeds module found for %s", (short_name, name)
@@ -101,7 +108,7 @@ def discover_virtual_clients(client: MQTTClient) -> List[str]:
 
         try:
             seeds = vcs_module.seeds
-            translate_vc_dict_to_mqtt_msg = vcs_module.translate_vc_dict_to_mqtt_msg
+            trans_funcs[short_name] = vcs_module.translate_vc_dict_to_mqtt_msg
         except AttributeError:
             logger.warning("No seeds found for %s", short_name)
             continue
@@ -111,28 +118,29 @@ def discover_virtual_clients(client: MQTTClient) -> List[str]:
         data_received_handler = get_data_received_handler(
             mqtt_client=client,
             virtual_clients=virtual_clients,
-            translate_vc_dict_to_mqtt_msg=translate_vc_dict_to_mqtt_msg,
+            translate_vc_dict_to_mqtt_msg=trans_funcs[short_name],
         )
 
         for seed in seeds:
             seed |= dict(mqtt_id=mqtt_id, device_type_name=short_name)
             virtual_clients[mqtt_id] = seed
-            logger.info(seed)
+            logger.info(f"Added virtual {short_name} client: {seed}")
 
             topic = format_topic_by_device_id(seed["mqtt_id"])
-            logger.info(topic)
+            logger.info(f"Subscribed to {topic}")
 
             client.subscribe(topic=topic, handler=data_received_handler)
             mqtt_id += 1
 
     def publish_states(_client, userdata, message):
-        logger.info(
-            f"publish_states message: {message.topic} {message.payload.decode()}"
-        )
         # Publish the states of all devices
-        for mqtt_id, vc_dict in virtual_clients.items():
-            virtual_state_string = translate_vc_dict_to_mqtt_msg(vc_dict)
+        for mqtt_id, vc_mem_state in virtual_clients.items():
+            translate_func = trans_funcs[vc_mem_state["device_type_name"]]
+            virtual_state_string = translate_func(vc_mem_state)
             client.publish(topic=RECEIVE_DEVICE_DATA, message=virtual_state_string)
 
+    logger.info(f"Virtual clients discovered: {virtual_clients}")
     # Subscribe to all devices data request
     client.subscribe(topic=REQUEST_DEVICE_DATA_ALL, handler=publish_states)
+
+    return virtual_clients
