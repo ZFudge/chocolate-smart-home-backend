@@ -1,5 +1,5 @@
 import logging
-from typing import List
+import datetime as dt
 
 from sqlalchemy.orm import Session
 
@@ -30,6 +30,7 @@ class BaseDeviceManager:
             remote_name=device.remote_name,
             name=truncated_remote_name,
             device_type=device_type,
+            last_seen=dt.datetime.now(),
         )
 
         db: Session = db_session.get()
@@ -64,6 +65,7 @@ class BaseDeviceManager:
 
         db_device.device_type = device_type
         db_device.online = True
+        db_device.last_seen = dt.datetime.now()
 
         db.add(db_device)
 

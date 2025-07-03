@@ -1,5 +1,5 @@
-from typing import List
 from pydantic import BaseModel, field_validator
+from typing import List
 
 from src.schemas.device_type import DeviceType
 from src.schemas.tag import Tag
@@ -45,6 +45,10 @@ class DeviceReceived(BaseModel):
         super().__init__(**kwargs)
         if "name" not in kwargs:
             self.name = kwargs.get("remote_name")
+
+
+class DeviceFrontend(DeviceReceived):
+    last_seen: str | None = None
 
 
 __all__ = [

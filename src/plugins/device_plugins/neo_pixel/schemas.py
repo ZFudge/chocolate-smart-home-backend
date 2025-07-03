@@ -2,7 +2,7 @@ from typing import List, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
-from src.schemas.device import Device, DeviceReceived
+from src.schemas.device import Device, DeviceFrontend, DeviceReceived
 
 
 class NeoPixelId(BaseModel):
@@ -67,3 +67,6 @@ class NeoPixelDevice(NeoPixelId, NeoPixelValues):
 
 class NeoPixelDeviceReceived(NeoPixelValues):
     device: DeviceReceived
+
+class NeoPixelDeviceFrontend(NeoPixelValues):
+    device: DeviceFrontend

@@ -2,6 +2,10 @@
 
 seeds = [
     {
+        "name": "On/Off Virtual Client 0",
+        "on": False,
+    },
+    {
         "name": "On/Off Virtual Client 1",
         "on": True,
     },
@@ -24,22 +28,6 @@ seeds = [
     {
         "name": "On/Off Virtual Client 6",
         "on": True,
-    },
-    {
-        "name": "On/Off Virtual Client 7",
-        "on": True,
-    },
-    {
-        "name": "On/Off Virtual Client 8",
-        "on": False,
-    },
-    {
-        "name": "On/Off Virtual Client 9",
-        "on": True,
-    },
-    {
-        "name": "On/Off Virtual Client 10",
-        "on": False,
     },
 ]
 

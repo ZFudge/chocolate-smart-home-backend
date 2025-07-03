@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from src.database import Base
@@ -13,6 +13,7 @@ class Device(Base, ModelStrFormatter):
     mqtt_id = Column(Integer, unique=True)
 
     online = Column(Boolean, default=False)
+    last_seen = Column(DateTime, default=None)
     reboots = Column(Integer, default=0)
 
     remote_name = Column(String)

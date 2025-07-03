@@ -2,7 +2,7 @@ from typing import List
 
 from pydantic import BaseModel
 
-from src.schemas.device import Device, DeviceReceived
+from src.schemas.device import Device, DeviceFrontend, DeviceReceived
 
 
 class OnOffId(BaseModel):
@@ -23,3 +23,7 @@ class OnOffDevice(OnOffId, OnOffValue):
 
 class OnOffDeviceReceived(OnOffValue):
     device: DeviceReceived
+
+
+class OnOffDeviceFrontend(OnOffValue):
+    device: DeviceFrontend

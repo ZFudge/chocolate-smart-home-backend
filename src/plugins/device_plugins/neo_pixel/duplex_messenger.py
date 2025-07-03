@@ -7,6 +7,7 @@ from pydantic import ValidationError
 from src.plugins.base_duplex_messenger import BaseDuplexMessenger
 import src.plugins.device_plugins.neo_pixel.schemas as np_schemas
 import src.plugins.device_plugins.neo_pixel.utils as utils
+from src.plugins.device_plugins.neo_pixel.schemas import NeoPixelDeviceFrontend
 from .model import NeoPixel
 
 logger = logging.getLogger()
@@ -69,9 +70,6 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
         """Serialize neo pixel data for broadcast through webocket."""
         np_dict = data.model_dump()
 
-        # TODO: check online status
-        np_dict["online"] = True
-
         device_dict = super().serialize(data.device)
         del np_dict["device"]
 
@@ -90,10 +88,11 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
         serialized_data = []
 
         for db_neo_pixel in data:
-            device = np_schemas.DeviceReceived(
+            device = np_schemas.DeviceFrontend(
                 mqtt_id=db_neo_pixel.device.mqtt_id,
                 device_type_name="neo_pixel",
                 remote_name=db_neo_pixel.device.name,
+                last_seen=str(db_neo_pixel.device.last_seen),
             )
 
             pir = None
@@ -103,7 +102,7 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
                     timeout=db_neo_pixel.timeout,
                 )
 
-            np_data = np_schemas.NeoPixelDeviceReceived(
+            np_data = NeoPixelDeviceFrontend(
                 device=device,
                 on=db_neo_pixel.on,
                 twinkle=db_neo_pixel.twinkle,
