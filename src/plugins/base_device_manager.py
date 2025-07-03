@@ -1,10 +1,11 @@
 import logging
+import datetime as dt
 
 from sqlalchemy.orm import Session
 
 import src.crud.device_types as device_types
 import src.models as models
-from src.crud.devices import get_device_by_mqtt_id
+from src.crud.devices import get_devices_by_mqtt_id
 from src.dependencies import db_session
 from src.schemas import DeviceReceived
 
@@ -29,6 +30,7 @@ class BaseDeviceManager:
             remote_name=device.remote_name,
             name=truncated_remote_name,
             device_type=device_type,
+            last_seen=dt.datetime.now(),
         )
 
         db: Session = db_session.get()
@@ -47,7 +49,7 @@ class BaseDeviceManager:
         logger.info('Updating Base device "%s"' % device)
         db: Session = db_session.get()
 
-        db_device: models.Device = get_device_by_mqtt_id(device.mqtt_id)
+        db_device: models.Device = get_devices_by_mqtt_id(device.mqtt_id)
 
         device_type_name: str = device.device_type_name
         device_type: models.DeviceType = (
@@ -63,6 +65,7 @@ class BaseDeviceManager:
 
         db_device.device_type = device_type
         db_device.online = True
+        db_device.last_seen = dt.datetime.now()
 
         db.add(db_device)
 
@@ -74,3 +77,6 @@ class BaseDeviceManager:
 
         db.refresh(db_device)
         return db_device
+
+    def update_server_side_values(self, *_, **__):
+        pass

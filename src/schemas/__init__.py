@@ -1,6 +1,7 @@
 from .device import (
     Device,
     DeviceBase,
+    DeviceFrontend,
     DeviceId,
     DeviceReceived,
     DeviceUpdate,
@@ -14,6 +15,7 @@ __all__ = [
     "Device",
     "DeviceBase",
     "DeviceId",
+    "DeviceFrontend",
     "DeviceReceived",
     "DeviceType",
     "DeviceTypeBase",

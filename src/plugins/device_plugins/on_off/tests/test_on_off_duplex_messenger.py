@@ -71,9 +71,7 @@ def test_message_handler_fails_on_missing_values(populated_test_db, caplog):
     caplog.set_level(logging.INFO)
     MQTTMessageHandler().device_data_received(0, None, message)
 
-    expected_exc_text = (
-        "Not enough comma-separated values in message.payload. payload='111,on_off,Remote Name 40 - uid'."
-    )
+    expected_exc_text = "Not enough comma-separated values in message.payload. payload='111,on_off,Remote Name 40 - uid'."
     assert expected_exc_text in caplog.text
 
 
@@ -83,6 +81,7 @@ def test_on_off_serialize():
 
     expected_serialized_data_dict = {
         "on": True,
+        "online": True,
         "mqtt_id": 123,
         "name": "Remote Name - uid",
         "device_type_name": "on_off",

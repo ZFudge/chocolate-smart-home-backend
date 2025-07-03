@@ -39,9 +39,7 @@ def test_message_handler_fails_on_missing_values(populated_test_db, caplog):
 
     MQTTMessageHandler().device_data_received(0, None, message)
 
-    expected_exc_text = (
-        "Controller palette message must be 27 comma-separated byte strings long, but iteration interrupted early:"
-    )
+    expected_exc_text = "Controller palette message must be 27 comma-separated byte strings long, but iteration interrupted early:"
     assert expected_exc_text in caplog.text
 
 
@@ -118,36 +116,36 @@ def test_incoming_msg_pir_enabled(populated_test_db):
 
     message.payload = b"789,neo_pixel,Remote Name - uid,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
     neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
-    assert neo_pixel_device.pir_armed is not None
-    assert neo_pixel_device.pir_timeout_seconds is not None
+    assert neo_pixel_device.armed is not None
+    assert neo_pixel_device.timeout is not None
 
 
-def test_incoming_msg_pir_armed(populated_test_db):
+def test_incoming_msg_pir__armed(populated_test_db):
     message = MQTTMessage(b"test_topic")
 
     message.payload = b"789,neo_pixel,Remote Name - uid,48,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
     neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
-    assert neo_pixel_device.pir_armed is True
+    assert neo_pixel_device.armed is True
 
     message.payload = b"789,neo_pixel,Remote Name - uid,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
     neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
-    assert neo_pixel_device.pir_armed is False
+    assert neo_pixel_device.armed is False
 
 
-def test_incoming_msg_pir_timeout(populated_test_db):
+def test_incoming_msg_pir__timeout(populated_test_db):
     message = MQTTMessage(b"test_topic")
 
     message.payload = b"789,neo_pixel,Remote Name - uid,16,0,0,123,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
     neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
-    assert neo_pixel_device.pir_timeout_seconds == 123
+    assert neo_pixel_device.timeout == 123
 
     message.payload = b"789,neo_pixel,Remote Name - uid,16,0,0,234,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
     neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
-    assert neo_pixel_device.pir_timeout_seconds == 234
+    assert neo_pixel_device.timeout == 234
 
     message.payload = b"789,neo_pixel,Remote Name - uid,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
     neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
-    assert neo_pixel_device.pir_timeout_seconds == 0
+    assert neo_pixel_device.timeout == 0
 
 
 def test_compose_msg_on():
@@ -258,28 +256,28 @@ def test_compose_msg_palette():
     )
 
 
-def test_compose_msg_pir_armed():
+def test_compose_msg_pir__armed():
     outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
-        np_schemas.NeoPixelOptions(pir_armed=True)
+        np_schemas.NeoPixelOptions(armed=True)
     )
-    assert outgoing_msg == "pir_armed=1;"
+    assert outgoing_msg == "armed=1;"
 
     outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
-        np_schemas.NeoPixelOptions(pir_armed=False)
+        np_schemas.NeoPixelOptions(armed=False)
     )
-    assert outgoing_msg == "pir_armed=0;"
+    assert outgoing_msg == "armed=0;"
 
 
-def test_compose_msg_pir_timeout():
+def test_compose_msg_pir__timeout():
     outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
-        np_schemas.NeoPixelOptions(pir_timeout_seconds=123)
+        np_schemas.NeoPixelOptions(timeout=123)
     )
-    assert outgoing_msg == "pir_timeout=123;"
+    assert outgoing_msg == "timeout=123;"
 
     outgoing_msg = NeoPixelDuplexMessenger().compose_msg(
-        np_schemas.NeoPixelOptions(pir_timeout_seconds=234)
+        np_schemas.NeoPixelOptions(timeout=234)
     )
-    assert outgoing_msg == "pir_timeout=234;"
+    assert outgoing_msg == "timeout=234;"
 
 
 def test_serilize_msg():
@@ -306,7 +304,7 @@ def test_serilize_msg():
             "#151617",
             "#18191a",
         ],
-        pir=np_schemas.PIR(armed=True, timeout_seconds=172),
+        pir=np_schemas.PIR(armed=True, timeout=172),
         device=device,
     )
 
@@ -334,10 +332,8 @@ def test_serilize_msg():
             "#18191a",
         ),
         "online": True,
-        "pir": {
-            "armed": True,
-            "timeout_seconds": 172,
-        },
+        "armed": True,
+        "timeout": 172,
         # "reboots": 0,
         # "online": True,
     }

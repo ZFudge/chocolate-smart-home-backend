@@ -9,6 +9,7 @@ from src.plugins.device_plugins.neo_pixel.schemas import (
     NeoPixelDeviceReceived,
     PIR,
 )
+from src.schemas.websocket_msg import WebsocketMessage
 
 
 def test_device_manager_create(empty_test_db):
@@ -29,7 +30,7 @@ def test_device_manager_create(empty_test_db):
             "#d2dce6",
             "#f0faff",
         ],
-        pir=PIR(armed=True, timeout_seconds=65),
+        pir=PIR(armed=True, timeout=65),
         device=DeviceReceived(
             mqtt_id=123,
             device_type_name="neo_pixel",
@@ -43,8 +44,8 @@ def test_device_manager_create(empty_test_db):
     assert neo_pixel_device.transform is True
     assert neo_pixel_device.ms == 5
     assert neo_pixel_device.brightness == 255
-    assert neo_pixel_device.pir_armed is True
-    assert neo_pixel_device.pir_timeout_seconds == 65
+    assert neo_pixel_device.armed is True
+    assert neo_pixel_device.timeout == 65
     assert neo_pixel_device.palette == [
         "#000102",
         "#030405",
@@ -79,7 +80,7 @@ def test_device_manager_update(populated_test_db):
             "#d2dce6",
             "#f0faff",
         ],
-        pir=PIR(armed=False, timeout_seconds=20),
+        pir=PIR(armed=False, timeout=20),
         device=DeviceReceived(
             mqtt_id=123,
             device_type_name="neo_pixel",
@@ -94,8 +95,8 @@ def test_device_manager_update(populated_test_db):
     assert neo_pixel_device.transform is True
     assert neo_pixel_device.ms == 5
     assert neo_pixel_device.brightness == 255
-    assert neo_pixel_device.pir_armed is False
-    assert neo_pixel_device.pir_timeout_seconds == 20
+    assert neo_pixel_device.armed is False
+    assert neo_pixel_device.timeout == 20
     assert neo_pixel_device.palette == [
         "#000102",
         "#030405",
@@ -139,3 +140,48 @@ def test_device_manager_update_fails_device_does_not_exist(empty_test_db):
     )
     with pytest.raises(NoResultFound):
         NeoPixelDeviceManager().update_device(device_data)
+
+
+def test_device_manager__scheduled_palette_rotation(populated_test_db):
+    assert NeoPixelDeviceManager().get_devices_by_mqtt_id(123).scheduled_palette_rotation is True
+
+    NeoPixelDeviceManager().update_server_side_values(
+        WebsocketMessage(
+            device_type_name="neo_pixel",
+            mqtt_ids=[123],
+            name="scheduled_palette_rotation",
+            value=False,
+        )
+    )
+
+    assert NeoPixelDeviceManager().get_devices_by_mqtt_id(123).scheduled_palette_rotation is False
+
+
+def test_device_manager__scheduled_palette_rotation_multiple_devices(populated_test_db):
+    assert NeoPixelDeviceManager().get_devices_by_mqtt_id(123).scheduled_palette_rotation is True
+    assert NeoPixelDeviceManager().get_devices_by_mqtt_id(456).scheduled_palette_rotation is None
+
+    NeoPixelDeviceManager().update_server_side_values(
+        WebsocketMessage(
+            device_type_name="neo_pixel",
+            mqtt_ids=[123, 456],
+            name="scheduled_palette_rotation",
+            value=True,
+        )
+    )
+
+    assert NeoPixelDeviceManager().get_devices_by_mqtt_id(123).scheduled_palette_rotation is True
+    assert NeoPixelDeviceManager().get_devices_by_mqtt_id(456).scheduled_palette_rotation is True
+
+    NeoPixelDeviceManager().update_server_side_values(
+        WebsocketMessage(
+            device_type_name="neo_pixel",
+            mqtt_ids=[123, 456],
+            name="scheduled_palette_rotation",
+            value=False,
+        )
+    )
+
+    assert NeoPixelDeviceManager().get_devices_by_mqtt_id(123).scheduled_palette_rotation is False
+    assert NeoPixelDeviceManager().get_devices_by_mqtt_id(456).scheduled_palette_rotation is False
+

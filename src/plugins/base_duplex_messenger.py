@@ -31,9 +31,11 @@ class BaseDuplexMessenger:
         return device, msg_seq
 
     @staticmethod
-    def serialize(data: schemas.DeviceReceived) -> dict:
+    def serialize(data: schemas.DeviceFrontend) -> dict:
         """Serialize device data for broadcast through webocket."""
-        return data.model_dump()
+        data = data.model_dump()
+        data["online"] = True
+        return data
 
     @staticmethod
     def compose_msg(*args, **kwargs):

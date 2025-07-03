@@ -11,8 +11,8 @@ MQTT_IMAGE := eclipse-mosquitto:2.0.20
 MQTT_VOLUME_PATH := $(shell pwd)/mosquitto.conf:/mosquitto/config/mosquitto.conf
 
 POSTGRES_CONTAINER_NAME := csm-postgres-db-dev
-POSTGRES_IMAGE := postgres:12.18-bullseye
 POSTGRES_VOLUME_NAME := csm-postgres-vol
+POSTGRES_IMAGE := postgres:12.18-bullseye
 
 TEST_DB_NAME := testdb
 TEST_DB_PW := testpw

@@ -1,12 +1,12 @@
 import asyncio
 import logging
-from typing import Callable, Dict
+from typing import Callable, Dict, List
 
 from paho.mqtt.client import Client, MQTTMessage
 from pydantic import ValidationError
 from sqlalchemy.exc import NoResultFound
 
-from src.crud import get_device_by_mqtt_id
+from src.crud import get_devices_by_mqtt_id
 from src.models import Device
 from src.plugins.discovered_plugins import (
     get_plugin_by_device_type,
@@ -51,19 +51,29 @@ class MQTTMessageHandler:
             logger.error(e)
             return
 
+        # Store client data in DB
+        db_plugin_device: Device | None = None
+        try:
+            _: Device | List[Device] = get_devices_by_mqtt_id(mqtt_id)
+            logger.debug("found existing device %s" % _)
+            if isinstance(_, list):
+                raise NotImplementedError("Multiple devices with the same mqtt_id are not supported")
+        except NoResultFound:
+            db_plugin_device = DeviceManager().create_device(msg_data)
+        else:
+            db_plugin_device = DeviceManager().update_device(msg_data)
+
         # Broadcast message data through websocket, to all connected clients
-        async def broadcast_to_fe_clients():
-            fe_data = DuplexMessenger().serialize(msg_data)
+        async def broadcast_to_fe_clients(pd: Device | None):
+            if pd is None:
+                return
+            if hasattr(DuplexMessenger, "serialize_db_objects"):
+                fe_data = DuplexMessenger().serialize_db_objects(pd)
+            else:
+                fe_data = DuplexMessenger().serialize(msg_data)
             logger.info("Sending FE data %s" % fe_data)
             await manager.broadcast(fe_data)
 
-        asyncio.run(broadcast_to_fe_clients())
+        asyncio.run(broadcast_to_fe_clients(db_plugin_device))
 
-        # Store client data in DB
-        try:
-            _: Device = get_device_by_mqtt_id(mqtt_id)
-            logger.debug("found existing device %s" % _)
-        except NoResultFound:
-            return DeviceManager().create_device(msg_data)
-
-        return DeviceManager().update_device(msg_data)
+        return db_plugin_device

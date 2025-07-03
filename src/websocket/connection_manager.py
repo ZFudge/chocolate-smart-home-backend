@@ -34,7 +34,7 @@ class ConnectionManager:
 
     async def broadcast(self, data_message: dict):
         logger.info(
-            "Broadcasting message to all connected clients %s %s"
+            "Broadcasting message to all connected clients: %s, msg: %s"
             % (self.active_connections, data_message)
         )
         for connection in self.active_connections:

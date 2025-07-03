@@ -25,8 +25,8 @@ class NeoPixel(Base, PluginModelStrFormatter):
 
     palette = Column(ARRAY(String))
 
-    pir_armed = Column(Boolean, nullable=True)
-    pir_timeout_seconds = Column(Integer, nullable=True)
+    armed = Column(Boolean, nullable=True)
+    timeout = Column(Integer, nullable=True)
 
 
 Base.metadata.create_all(bind=engine)
