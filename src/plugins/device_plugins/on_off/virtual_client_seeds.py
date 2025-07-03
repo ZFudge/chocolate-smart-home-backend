@@ -1,44 +1,44 @@
-# seed data for virtual clients, to simulate on/off controllers during development
+# seed data for virtual clients, to simulate On/Off Virtual Client controllers during development
 
 seeds = [
     {
-        "name": "On/Off 1",
+        "name": "On/Off Virtual Client 1",
         "on": True,
     },
     {
-        "name": "On/Off 2",
+        "name": "On/Off Virtual Client 2",
         "on": False,
     },
     {
-        "name": "On/Off 3",
+        "name": "On/Off Virtual Client 3",
         "on": True,
     },
     {
-        "name": "On/Off 4",
+        "name": "On/Off Virtual Client 4",
         "on": True,
     },
     {
-        "name": "On/Off 5",
+        "name": "On/Off Virtual Client 5",
         "on": False,
     },
     {
-        "name": "On/Off 6",
+        "name": "On/Off Virtual Client 6",
         "on": True,
     },
     {
-        "name": "On/Off 7",
+        "name": "On/Off Virtual Client 7",
         "on": True,
     },
     {
-        "name": "On/Off 8",
+        "name": "On/Off Virtual Client 8",
         "on": False,
     },
     {
-        "name": "On/Off 9",
+        "name": "On/Off Virtual Client 9",
         "on": True,
     },
     {
-        "name": "On/Off 10",
+        "name": "On/Off Virtual Client 10",
         "on": False,
     },
 ]
