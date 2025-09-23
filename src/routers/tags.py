@@ -35,9 +35,9 @@ def create_tag(tag_data: schemas.TagBase):
 
 
 @tags_router.put("/{tag_id}", response_model=schemas.Tag)
-def update_tag(tag_id: int, tag: schemas.TagBase):
+def put_tag(tag_id: int, tag: schemas.TagBase):
     try:
-        updated_tag = crud.update_tag(tag_id, tag.name)
+        updated_tag = crud.put_tag(tag_id, tag.name)
         return schemas.Tag(id=updated_tag.id, name=updated_tag.name)
     except NoResultFound as e:
         raise HTTPException(status_code=500, detail=e.args[0])

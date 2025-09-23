@@ -3,6 +3,7 @@ from typing import Tuple
 from fastapi import APIRouter, HTTPException
 from paho.mqtt import MQTTException
 from sqlalchemy.exc import NoResultFound
+from starlette.responses import JSONResponse
 
 from src import crud, mqtt, schemas
 import src.schemas.utils as schema_utils
@@ -34,6 +35,27 @@ def delete_device(device_id: int):
     except NoResultFound as e:
         (detail,) = e.args
         raise HTTPException(status_code=500, detail=detail)
+
+
+@device_router.put("/{device_id}/tags", response_model=schemas.Device)
+def put_device_tags(device_id: int, tag_ids: schemas.TagIds):
+    try:
+        device = crud.put_device_tags(device_id, tag_ids.ids)
+    except NoResultFound as e:
+        (detail,) = e.args
+        raise HTTPException(status_code=500, detail=detail)
+    if len(device.tags) < len(tag_ids.ids):
+        return JSONResponse(
+            status_code=202,
+            content={
+                "detail": "Some tag ids were added. Of the given tag ids, %s, the following were not added: %s" % (
+                    tag_ids.ids,
+                    list(set(tag_ids.ids) - set([tag.id for tag in device.tags]))
+                ),
+                "device": schema_utils.to_schema(device).model_dump(),
+            }
+        )
+    return schema_utils.to_schema(device)
 
 
 @device_router.post("/tag/{device_id}/{tag_id}", response_model=schemas.Device)

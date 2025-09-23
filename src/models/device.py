@@ -1,9 +1,12 @@
+from typing import List
+
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, Mapped
 
 from src.database import Base
+from .device_tags import device_tags
 from .model_str_formatter import ModelStrFormatter
-from .device_tag import DeviceTag
+from .tag import Tag
 
 
 class Device(Base, ModelStrFormatter):
@@ -22,7 +25,7 @@ class Device(Base, ModelStrFormatter):
     device_type_id = Column(Integer, ForeignKey("device_types.id"))
     device_type = relationship("DeviceType", back_populates="devices")
 
-    tags = relationship("Tag", secondary=DeviceTag.__table__, backref="devices")
+    tags: Mapped[List[Tag]] = relationship(secondary=device_tags, back_populates="devices")
 
     def __str__(self):
         """Return ModelStrFormatter.__str__ result of both the Device object and

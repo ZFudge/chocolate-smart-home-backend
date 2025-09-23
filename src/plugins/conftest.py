@@ -42,7 +42,7 @@ def empty_test_db():
 
     yield db_session.get()
 
-    db_session.get().query(models.DeviceTag).delete()
+    db_session.get().query(models.device_tags).delete()
     db_session.get().query(models.Device).delete()
     db_session.get().query(models.DeviceType).delete()
     db_session.get().query(models.Tag).delete()

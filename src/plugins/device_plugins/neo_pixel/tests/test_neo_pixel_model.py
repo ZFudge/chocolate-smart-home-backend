@@ -11,7 +11,7 @@ def test_neo_pixel_model_str(populated_test_db):
         "armed=True, timeout=172)\n"
         "Device(id=1, mqtt_id=123, online=True, last_seen=None, reboots=0, remote_name=Test Neo Pixel Device - 1, name=Test Neo Pixel Device One, device_type_id=1)\n"
         "DeviceType(id=1, name=neo_pixel)\n"
-        "[Tag(id=1, name=Main Tag)]"
+        "[Tag(id=1, name=NeoPixel Tag)]"
     )
     assert str(neo_pixel_device_1) == expected_str
 

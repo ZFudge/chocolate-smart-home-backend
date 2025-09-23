@@ -28,7 +28,7 @@ def test_get_on_off_devices(populated_test_db):
                 "tags": [
                     {
                         "id": 1,
-                        "name": "Main Tag",
+                        "name": "OnOff Tag",
                     },
                 ],
                 "online": True,
@@ -79,7 +79,7 @@ def test_get_on_off_device(populated_test_db):
             "tags": [
                 {
                     "id": 1,
-                    "name": "Main Tag",
+                    "name": "OnOff Tag",
                 },
             ],
             "online": True,

@@ -18,7 +18,7 @@ def empty_test_db(empty_test_db):
 def populated_test_db(empty_test_db):
     device_type = models.DeviceType(name="neo_pixel")
 
-    tag = models.Tag(name="Main Tag")
+    tag = models.Tag(name="NeoPixel Tag")
 
     device__id_1 = models.Device(
         online=True,
@@ -26,8 +26,9 @@ def populated_test_db(empty_test_db):
         mqtt_id=123,
         device_type=device_type,
         name="Test Neo Pixel Device One",
-        tags=[tag],
     )
+    device__id_1.tags.append(tag)
+
     device__id_2 = models.Device(
         online=True,
         remote_name="Test Neo Pixel Device - 2",

@@ -52,6 +52,50 @@ def delete_device(device_id: int) -> None:
         db.rollback()
         raise
 
+def get_tags_by_ids(tag_ids: List[int|str]) -> List[models.Tag]:
+    db: Session = dependencies.db_session.get()
+    return db.query(models.Tag).filter(models.Tag.id.in_(tag_ids)).all()
+
+
+def put_device_tags(device_id: int, tag_ids: List[int|str]|None) -> models.Device:
+    logger.info(f"putting tags for device {device_id} with tag ids {tag_ids}")
+    if tag_ids is None:
+        tag_ids = []
+    logger.info(
+        'Adding Tag(s) id(s) of %s to Device with id of "%s"' % (tag_ids, device_id)
+    )
+    db: Session = dependencies.db_session.get()
+    try:
+        device = db.query(models.Device).filter(models.Device.id == device_id).one()
+    except NoResultFound as e:
+        msg = "Failed to add Tag id(s) of %s to " "Device of id %s - %s" % (
+            tag_ids,
+            device_id,
+            e.args[0],
+        )
+        logger.error(msg)
+        raise NoResultFound(msg)
+
+    tags = get_tags_by_ids(tag_ids)
+    if len(tags) == 0:
+        msg = "Failed to add Tag id(s) of %s to " "Device of id %s - No Tag object(s) with id(s) %s found." % (
+            tag_ids,
+            device_id,
+            tag_ids,
+        )
+        logger.error(msg)
+        raise NoResultFound(msg)
+    device.tags = []
+
+    for tag in tags:
+        device.tags.append(tag)
+
+    db.add(device)
+    db.commit()
+    db.refresh(device)
+
+    return device
+
 
 def add_device_tag(device_id: int, tag_id: int) -> models.Device:
     logger.info(
@@ -63,7 +107,7 @@ def add_device_tag(device_id: int, tag_id: int) -> models.Device:
         tag = db.query(models.Tag).filter(models.Tag.id == tag_id).one()
         device = db.query(models.Device).filter(models.Device.id == device_id).one()
     except NoResultFound as e:
-        msg = "Failed to add Tag with id of %s to " "Device with id of %s - %s" % (
+        msg = "Failed to add Tag of id %s to " "Device of id %s - %s" % (
             tag_id,
             device_id,
             e.args[0],

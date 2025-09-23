@@ -18,7 +18,7 @@ def empty_test_db(empty_test_db):
 def populated_test_db(empty_test_db):
     device_type = models.DeviceType(name="on_off")
 
-    tag = models.Tag(name="Main Tag")
+    tag = models.Tag(name="OnOff Tag")
 
     device__id_1 = models.Device(
         mqtt_id=123,

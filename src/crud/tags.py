@@ -46,7 +46,7 @@ def get_new_or_existing_tag_by_name(tag_name: str) -> models.Tag:
     return tag
 
 
-def update_tag(tag_id: int, tag_name: str) -> models.Tag:
+def put_tag(tag_id: int, tag_name: str) -> models.Tag:
     logger.info('Updating tag of id %s and name of "%s' % (tag_id, tag_name))
     db: Session = db_session.get()
 

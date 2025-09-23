@@ -40,7 +40,7 @@ def test_to_neo_pixel_schema(populated_test_db):
             mqtt_id=123,
             name="Test Neo Pixel Device One",
             device_type=schemas.DeviceType(id=1, name="neo_pixel"),
-            tags=[schemas.Tag(id=1, name="Main Tag")],
+            tags=[schemas.Tag(id=1, name="NeoPixel Tag")],
         ),
     )
     assert utils.to_neo_pixel_schema(device) == expected_schema
