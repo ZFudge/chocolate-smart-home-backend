@@ -7,7 +7,8 @@ from starlette.responses import JSONResponse
 
 from src import crud, mqtt, schemas
 import src.schemas.utils as schema_utils
-
+from src.models import Device as models_Device
+from src.websocket.dynamic_broadcast import dynamic_broadcast
 
 device_router = APIRouter(prefix="/device")
 
@@ -37,14 +38,17 @@ def delete_device(device_id: int):
         raise HTTPException(status_code=500, detail=detail)
 
 
-@device_router.put("/{device_id}/tags", response_model=schemas.Device)
-def put_device_tags(device_id: int, tag_ids: schemas.TagIds):
+@device_router.put("/{device_mqtt_id}/tags", response_model=schemas.Device)
+async def put_device_tags(device_mqtt_id: int, tag_ids: schemas.TagIds):
     try:
-        device = crud.put_device_tags(device_id, tag_ids.ids)
+        device: models_Device = crud.put_device_tags(device_mqtt_id, tag_ids.ids)
     except NoResultFound as e:
         (detail,) = e.args
         raise HTTPException(status_code=500, detail=detail)
-    if len(device.tags) < len(tag_ids.ids):
+
+    await dynamic_broadcast(device)
+
+    if tag_ids.ids and len(device.tags) < len(tag_ids.ids):
         return JSONResponse(
             status_code=202,
             content={

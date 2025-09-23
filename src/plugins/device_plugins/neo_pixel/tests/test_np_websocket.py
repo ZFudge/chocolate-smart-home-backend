@@ -147,4 +147,3 @@ async def test_np_ws_msg__scheduled_palette_rotation__twinkle(populated_test_db)
     await handle_incoming_websocket_message(incoming_data_dict)
 
     assert populated_test_db.query(NeoPixel).filter(NeoPixel.device.has(Device.mqtt_id == 123)).one().scheduled_palette_rotation is True
-
