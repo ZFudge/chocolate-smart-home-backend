@@ -50,7 +50,7 @@ def test_get_neo_pixel_devices(populated_test_db):
                 "tags": [
                     {
                         "id": 1,
-                        "name": "Main Tag",
+                        "name": "NeoPixel Tag",
                     },
                 ],
                 "remote_name": "Test Neo Pixel Device - 1",
@@ -143,7 +143,7 @@ def test_get_neo_pixel_device(populated_test_db):
             "tags": [
                 {
                     "id": 1,
-                    "name": "Main Tag",
+                    "name": "NeoPixel Tag",
                 },
             ],
         },

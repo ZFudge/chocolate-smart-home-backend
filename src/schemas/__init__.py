@@ -7,7 +7,7 @@ from .device import (
     DeviceUpdate,
 )
 from .device_type import DeviceType, DeviceTypeBase
-from .tag import Tag, TagBase, TagId
+from .tag import Tag, TagBase, TagId, TagIds
 from .websocket_msg import WebsocketMessage
 from .utils import to_schema
 
@@ -23,6 +23,7 @@ __all__ = [
     "Tag",
     "TagBase",
     "TagId",
+    "TagIds",
     "to_schema",
     "WebsocketMessage",
 ]

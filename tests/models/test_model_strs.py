@@ -8,7 +8,7 @@ def test_device_model_str(populated_test_db):
     expected_str_1 = (
         "Device(id=1, mqtt_id=123, online=True, last_seen=None, reboots=0, remote_name=Remote Name 1 - 1, name=Test Device Name 1, device_type_id=1)\n"
         "DeviceType(id=1, name=TEST_DEVICE_TYPE_NAME_1)\n"
-        "[Tag(id=1, name=Main Tag)]"
+        "[Tag(id=1, name=Main Tag), Tag(id=2, name=Other Tag)]"
     )
     assert str(device_1) == expected_str_1
     assert repr(device_1) == expected_str_1

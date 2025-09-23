@@ -42,7 +42,7 @@ def empty_test_db():
 
     yield db_session.get()
 
-    db_session.get().query(models.DeviceTag).delete()
+    db_session.get().query(models.device_tags).delete()
     db_session.get().query(models.Device).delete()
     db_session.get().query(models.DeviceType).delete()
     db_session.get().query(models.Tag).delete()
@@ -60,15 +60,17 @@ def populated_test_db(empty_test_db):
 
     tag_1 = models.Tag(name="Main Tag")
     tag_2 = models.Tag(name="Other Tag")
+    tag_3 = models.Tag(name="Third Tag")
 
     device_1 = models.Device(
         mqtt_id=123,
         remote_name="Remote Name 1 - 1",
         name="Test Device Name 1",
         device_type=type_1,
-        tags=[tag_1],
+        tags=[tag_1, tag_2],
         online=True,
     )
+
     device_2 = models.Device(
         mqtt_id=456,
         remote_name="Remote Name 2 - 2",
@@ -81,6 +83,7 @@ def populated_test_db(empty_test_db):
     test_db.add(type_2)
     test_db.add(tag_1)
     test_db.add(tag_2)
+    test_db.add(tag_3)
     test_db.add(device_1)
     test_db.add(device_2)
 
