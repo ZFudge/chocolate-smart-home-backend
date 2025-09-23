@@ -49,6 +49,7 @@ class DeviceReceived(BaseModel):
 
 class DeviceFrontend(DeviceReceived):
     last_seen: str | None = None
+    tags: List[Tag] | None = None
 
 
 __all__ = [
@@ -56,4 +57,5 @@ __all__ = [
     "Device",
     "DeviceReceived",
     "DeviceUpdate",
+    "DeviceFrontend",
 ]

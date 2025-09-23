@@ -117,7 +117,7 @@ def test_delete_device_duplicate_deletion_fails(populated_test_db):
 
 
 def test_put_device_tags(populated_test_db):
-    resp = client.put("/device/1/tags", json={"ids": [1, 2, 3]})
+    resp = client.put("/device/123/tags", json={"ids": [1, 2, 3]})
     assert resp.status_code == 200
 
     expected_data = {
@@ -149,24 +149,64 @@ def test_put_device_tags(populated_test_db):
     assert resp.json() == expected_data
 
 
+def test_put_device_tags_no_tags_none_ids_value(populated_test_db):
+    resp = client.put("/device/123/tags", json={"ids": None})
+    assert resp.status_code == 200
+
+    expected_data = {
+        "id": 1,
+        'name': 'Test Device Name 1',
+        "tags": [],
+        'device_type': {
+            'id': 1,
+            'name': 'TEST_DEVICE_TYPE_NAME_1',
+        },
+        'mqtt_id': 123,
+        'online': True,
+        'reboots': 0,
+        'remote_name': 'Remote Name 1 - 1',
+    }
+    assert resp.json() == expected_data
+
+
+def test_put_device_tags_no_tags_empty_ids_value(populated_test_db):
+    resp = client.put("/device/123/tags", json={"ids": []})
+    assert resp.status_code == 200
+
+    expected_data = {
+        "id": 1,
+        'name': 'Test Device Name 1',
+        "tags": [],
+        'device_type': {
+            'id': 1,
+            'name': 'TEST_DEVICE_TYPE_NAME_1',
+        },
+        'mqtt_id': 123,
+        'online': True,
+        'reboots': 0,
+        'remote_name': 'Remote Name 1 - 1',
+    }
+    assert resp.json() == expected_data
+
+
 def test_put_device_tags_fails_on_invalid_device_id(populated_test_db):
-    resp = client.put("/device/1234/tags", json={"ids": [1, 2]})
+    resp = client.put("/device/777/tags", json={"ids": [1, 2]})
     assert resp.status_code == 500
     assert resp.json() == {
-        "detail": "Failed to add Tag id(s) of [1, 2] to Device of id 1234 - No row was found when one was required"
+        "detail": "Failed to add Tag id(s) of [1, 2] to Device of mqtt id 777 - No row was found when one was required"
     }
 
 
 def test_put_device_tags_fails_on_invalid_tag_ids(populated_test_db):
-    resp = client.put("/device/1/tags", json={"ids": [1234, 5678]})
+    resp = client.put("/device/123/tags", json={"ids": [1234, 5678]})
     assert resp.status_code == 500
     assert resp.json() == {
-        "detail": "Failed to add Tag id(s) of [1234, 5678] to Device of id 1 - No Tag object(s) with id(s) [1234, 5678] found."
+        "detail": "Failed to add Tag id(s) of [1234, 5678] to Device of mqtt id 123 - No Tag object(s) with id(s) [1234, 5678] found."
     }
 
 
 def test_put_device_tags_partial_success_202(populated_test_db):
-    resp = client.put("/device/1/tags", json={"ids": [1, 5678]})
+    resp = client.put("/device/123/tags", json={"ids": [1, 5678]})
     assert resp.status_code == 202
     assert resp.json() == {
         "detail": "Some tag ids were added. Of the given tag ids, [1, 5678], the following were not added: [5678]",

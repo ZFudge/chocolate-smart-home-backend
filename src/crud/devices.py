@@ -57,38 +57,39 @@ def get_tags_by_ids(tag_ids: List[int|str]) -> List[models.Tag]:
     return db.query(models.Tag).filter(models.Tag.id.in_(tag_ids)).all()
 
 
-def put_device_tags(device_id: int, tag_ids: List[int|str]|None) -> models.Device:
-    logger.info(f"putting tags for device {device_id} with tag ids {tag_ids}")
+def put_device_tags(device_mqtt_id: int, tag_ids: List[int|str]|None) -> models.Device:
+    logger.info(f"Putting tags for device with mqtt id {device_mqtt_id} with tag ids {tag_ids}")
     if tag_ids is None:
         tag_ids = []
     logger.info(
-        'Adding Tag(s) id(s) of %s to Device with id of "%s"' % (tag_ids, device_id)
+        'Adding Tag(s) id(s) of %s to Device with mqtt id of "%s"' % (tag_ids, device_mqtt_id)
     )
     db: Session = dependencies.db_session.get()
     try:
-        device = db.query(models.Device).filter(models.Device.id == device_id).one()
+        device = db.query(models.Device).filter(models.Device.mqtt_id == device_mqtt_id).one()
     except NoResultFound as e:
-        msg = "Failed to add Tag id(s) of %s to " "Device of id %s - %s" % (
+        msg = "Failed to add Tag id(s) of %s to " "Device of mqtt id %s - %s" % (
             tag_ids,
-            device_id,
+            device_mqtt_id,
             e.args[0],
         )
         logger.error(msg)
         raise NoResultFound(msg)
 
-    tags = get_tags_by_ids(tag_ids)
-    if len(tags) == 0:
-        msg = "Failed to add Tag id(s) of %s to " "Device of id %s - No Tag object(s) with id(s) %s found." % (
-            tag_ids,
-            device_id,
-            tag_ids,
-        )
-        logger.error(msg)
-        raise NoResultFound(msg)
     device.tags = []
 
-    for tag in tags:
-        device.tags.append(tag)
+    if tag_ids:
+        tags = get_tags_by_ids(tag_ids)
+        if len(tags) == 0:
+            msg = "Failed to add Tag id(s) of %s to " "Device of mqtt id %s - No Tag object(s) with id(s) %s found." % (
+                tag_ids,
+                device_mqtt_id,
+                tag_ids,
+            )
+            logger.error(msg)
+            raise NoResultFound(msg)
+        for tag in tags:
+            device.tags.append(tag)
 
     db.add(device)
     db.commit()

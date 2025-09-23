@@ -119,7 +119,7 @@ def test_delete_device_fails_on_invalid_device_id(populated_test_db):
 
 
 def test_add_device_tag(populated_test_db):
-    device_id = 1
+    device_id = 123
     new_tag_id = 2
     resp = client.put(f"/device/{device_id}/tags", json={"ids": [new_tag_id]})
     assert resp.status_code == 200
