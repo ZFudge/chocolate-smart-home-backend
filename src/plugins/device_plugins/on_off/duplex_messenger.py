@@ -6,6 +6,7 @@ from src.plugins.base_duplex_messenger import (
     BaseDuplexMessenger,
 )
 from src.schemas.device import DeviceFrontend
+from src.schemas.tag import Tag
 from .schemas import OnOffDeviceFrontend, OnOffDeviceReceived
 
 
@@ -74,6 +75,8 @@ class OnOffDuplexMessenger(BaseDuplexMessenger):
                 remote_name=db_on_off_device.device.name,
                 last_seen=str(db_on_off_device.device.last_seen),
             )
+            if db_on_off_device.device.tags:
+                device.tags = [Tag(id=tag.id, name=tag.name) for tag in db_on_off_device.device.tags]
 
             on_off_data = OnOffDeviceFrontend(
                 device=device,
