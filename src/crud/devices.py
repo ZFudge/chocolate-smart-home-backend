@@ -52,6 +52,7 @@ def delete_device(device_id: int) -> None:
         db.rollback()
         raise
 
+
 def get_tags_by_ids(tag_ids: List[int|str]) -> List[models.Tag]:
     db: Session = dependencies.db_session.get()
     return db.query(models.Tag).filter(models.Tag.id.in_(tag_ids)).all()
@@ -66,7 +67,7 @@ def put_device_tags(device_mqtt_id: int, tag_ids: List[int|str]|None) -> models.
     )
     db: Session = dependencies.db_session.get()
     try:
-        device = db.query(models.Device).filter(models.Device.mqtt_id == device_mqtt_id).one()
+        device = get_devices_by_mqtt_id(device_mqtt_id)
     except NoResultFound as e:
         msg = "Failed to add Tag id(s) of %s to " "Device of mqtt id %s - %s" % (
             tag_ids,
@@ -106,7 +107,7 @@ def add_device_tag(device_id: int, tag_id: int) -> models.Device:
 
     try:
         tag = db.query(models.Tag).filter(models.Tag.id == tag_id).one()
-        device = db.query(models.Device).filter(models.Device.id == device_id).one()
+        device = get_device_by_device_id(device_id)
     except NoResultFound as e:
         msg = "Failed to add Tag of id %s to " "Device of id %s - %s" % (
             tag_id,
@@ -137,7 +138,7 @@ def remove_device_tag(device_id: int, tag_id: int) -> models.Device:
     db: Session = dependencies.db_session.get()
 
     try:
-        device = db.query(models.Device).filter(models.Device.id == device_id).one()
+        device = get_device_by_device_id(device_id)
         tag = db.query(models.Tag).filter(models.Tag.id == tag_id).one()
     except NoResultFound as e:
         msg = "Failed to remove Tag from " "Device with id of %s - %s" % (
@@ -157,4 +158,23 @@ def remove_device_tag(device_id: int, tag_id: int) -> models.Device:
     db.commit()
     db.refresh(device)
 
+    return device
+
+
+def update_device_name(device_id: int, device_name: str) -> models.Device:
+    logger.info(f"Updating device name for device with id {device_id} to {device_name}")
+    db: Session = dependencies.db_session.get()
+    try:
+        device = get_device_by_device_id(device_id)
+    except NoResultFound as e:
+        msg = "Failed to update device name for " "Device with id of %s - %s" % (
+            device_id,
+            e.args[0],
+        )
+        logger.error(msg)
+        raise NoResultFound(msg)
+    device.name = device_name
+    db.add(device)
+    db.commit()
+    db.refresh(device)
     return device

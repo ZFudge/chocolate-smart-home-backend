@@ -91,3 +91,13 @@ def broadcast_request_devices_state():
     except MQTTException as e:
         (detail,) = e.args
         raise HTTPException(status_code=500, detail=detail)
+
+
+@device_router.post("/{device_id}/name", response_model=schemas.Device)
+def update_device_name(device_id: int, name: schemas.UpdateDeviceName):
+    try:
+        updated_device = crud.update_device_name(device_id, name.name)
+    except NoResultFound as e:
+        (detail,) = e.args
+        raise HTTPException(status_code=500, detail=detail)
+    return schema_utils.to_schema(updated_device)
