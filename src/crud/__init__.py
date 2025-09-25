@@ -10,6 +10,7 @@ from src.crud.devices import (
     get_devices_by_mqtt_id,
     remove_device_tag,
     put_device_tags,
+    update_device_name,
 )
 from src.crud.tags import (
     create_tag,
@@ -36,4 +37,5 @@ __all__ = [
     "get_devices_by_mqtt_id",
     "get_new_or_existing_device_type_by_name",
     "create_device_type",
+    "update_device_name",
 ]

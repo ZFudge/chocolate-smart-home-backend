@@ -35,6 +35,10 @@ class DeviceUpdate(BaseModel):
     device_type_name: str
 
 
+class UpdateDeviceName(BaseModel):
+    name: str
+
+
 class DeviceReceived(BaseModel):
     mqtt_id: int
     device_type_name: str
