@@ -29,4 +29,11 @@ class NeoPixel(Base, PluginModelStrFormatter):
     timeout = Column(Integer, nullable=True)
 
 
+class Palette(Base):
+    __tablename__ = "palettes"
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True)
+    colors = Column(ARRAY(String), unique=True)
+
+
 Base.metadata.create_all(bind=engine)
