@@ -152,7 +152,7 @@ def test_request_controllers_state():
 
 
 def test_update_device_name(populated_test_db):
-    resp = client.post("/device/1/name", json={"name": "Updated Device Name"})
+    resp = client.post("/device/123/name", json={"name": "Updated Device Name"})
     assert resp.status_code == 200
     expected_data = {
         'device_type': {

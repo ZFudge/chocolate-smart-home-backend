@@ -72,7 +72,8 @@ class OnOffDuplexMessenger(BaseDuplexMessenger):
             device = DeviceFrontend(
                 mqtt_id=db_on_off_device.device.mqtt_id,
                 device_type_name="on_off",
-                remote_name=db_on_off_device.device.name,
+                remote_name=db_on_off_device.device.remote_name,
+                name=db_on_off_device.device.name,
                 last_seen=str(db_on_off_device.device.last_seen),
             )
             if db_on_off_device.device.tags:

@@ -45,11 +45,6 @@ class DeviceReceived(BaseModel):
     remote_name: str
     name: str | None = None
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        if "name" not in kwargs:
-            self.name = kwargs.get("remote_name")
-
 
 class DeviceFrontend(DeviceReceived):
     last_seen: str | None = None
