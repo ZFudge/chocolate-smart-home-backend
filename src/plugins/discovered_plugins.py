@@ -28,10 +28,16 @@ def discover_and_import_device_plugin_modules():
         device_manager_module_name = f"{name}.device_manager"
         duplex_messenger_module_name = f"{name}.duplex_messenger"
         router_module_name = f"{name}.router"
+        db_seeding_module_name = f"{name}.db_seeding"
 
         device_manager_module = importlib.import_module(device_manager_module_name)
         duplex_messenger_module = importlib.import_module(duplex_messenger_module_name)
         router_module = importlib.import_module(router_module_name)
+        try:
+            db_seeding_module = importlib.import_module(db_seeding_module_name)
+            db_seeding_module.seed_db()
+        except ImportError:
+            pass
 
         DeviceManager = device_manager_module.DeviceManager
         DuplexMessenger = duplex_messenger_module.DuplexMessenger
