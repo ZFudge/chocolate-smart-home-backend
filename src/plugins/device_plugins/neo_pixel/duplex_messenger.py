@@ -92,7 +92,8 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
             device = np_schemas.DeviceFrontend(
                 mqtt_id=db_neo_pixel.device.mqtt_id,
                 device_type_name="neo_pixel",
-                remote_name=db_neo_pixel.device.name,
+                remote_name=db_neo_pixel.device.remote_name,
+                name=db_neo_pixel.device.name,
                 last_seen=str(db_neo_pixel.device.last_seen),
             )
             if db_neo_pixel.device.tags:

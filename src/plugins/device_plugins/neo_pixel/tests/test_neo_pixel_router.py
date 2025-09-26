@@ -219,3 +219,37 @@ def test_update_multiple_devices(populated_test_db):
         ]
 
     assert resp.status_code == 204
+
+
+def test_update_neo_pixel_device_name(populated_test_db):
+    resp = client.post("/device/123/name", json={"name": "Updated Neo Pixel Device Name"})
+    assert resp.status_code == 200
+    expected_data = {
+        'device_type': {
+            'id': 1,
+            'name': 'TEST_DEVICE_TYPE_NAME_1',
+        },
+        'id': 1,
+        'mqtt_id': 123,
+        'name': 'Updated Neo Pixel Device Name',
+        'online': True,
+        'reboots': 0,
+        'remote_name': 'Remote Name 1 - 1',
+        'tags': [
+            {
+                'id': 1,
+                'name': 'Main Tag',
+            },
+            {
+                'id': 2,
+                'name': 'Other Tag',
+            },
+        ],
+    }
+    assert resp.json() == expected_data
+
+
+def test_update_neo_pixel_device_name_fail(populated_test_db):
+    resp = client.post("/device/777/name", json={"name": "Updated Neo Pixel Device Name"})
+    assert resp.status_code == 500
+    assert resp.json() == {"detail": "Failed to update device name for Device with id of 777 - No row was found when one was required"}

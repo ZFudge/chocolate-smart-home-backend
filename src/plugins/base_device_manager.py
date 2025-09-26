@@ -22,6 +22,7 @@ class BaseDeviceManager:
             device_types.get_new_or_existing_device_type_by_name(device_type_name)
         )
 
+        # TODO: lookup existing device name from previously exported settings
         truncated_remote_name = device.remote_name.split(" - ")[0]
 
         db_device = models.Device(
@@ -56,8 +57,9 @@ class BaseDeviceManager:
             device_types.get_new_or_existing_device_type_by_name(device_type_name)
         )
 
-        truncated_remote_name = device.remote_name.split(" - ")[0]
-        db_device.name = truncated_remote_name
+        if not db_device.name:
+            truncated_remote_name = device.remote_name.split(" - ")[0]
+            db_device.name = truncated_remote_name
 
         if db_device.remote_name != device.remote_name:
             db_device.reboots += 1

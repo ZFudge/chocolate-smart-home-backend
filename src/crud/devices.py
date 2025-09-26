@@ -161,14 +161,14 @@ def remove_device_tag(device_id: int, tag_id: int) -> models.Device:
     return device
 
 
-def update_device_name(device_id: int, device_name: str) -> models.Device:
-    logger.info(f"Updating device name for device with id {device_id} to {device_name}")
+def update_device_name(device_mqtt_id: int, device_name: str) -> models.Device:
+    logger.info(f"Updating device name for device with mqtt id {device_mqtt_id} to {device_name}")
     db: Session = dependencies.db_session.get()
     try:
-        device = get_device_by_device_id(device_id)
+        device = get_devices_by_mqtt_id(device_mqtt_id)
     except NoResultFound as e:
-        msg = "Failed to update device name for " "Device with id of %s - %s" % (
-            device_id,
+        msg = "Failed to update device name for " "Device with mqtt id of %s - %s" % (
+            device_mqtt_id,
             e.args[0],
         )
         logger.error(msg)
