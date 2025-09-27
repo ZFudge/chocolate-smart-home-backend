@@ -227,22 +227,18 @@ def test_update_neo_pixel_device_name(populated_test_db):
     expected_data = {
         'device_type': {
             'id': 1,
-            'name': 'TEST_DEVICE_TYPE_NAME_1',
+            'name': 'neo_pixel',
         },
         'id': 1,
         'mqtt_id': 123,
         'name': 'Updated Neo Pixel Device Name',
         'online': True,
         'reboots': 0,
-        'remote_name': 'Remote Name 1 - 1',
+        'remote_name': 'Test Neo Pixel Device - 1',
         'tags': [
             {
                 'id': 1,
-                'name': 'Main Tag',
-            },
-            {
-                'id': 2,
-                'name': 'Other Tag',
+                'name': 'NeoPixel Tag',
             },
         ],
     }
@@ -252,4 +248,24 @@ def test_update_neo_pixel_device_name(populated_test_db):
 def test_update_neo_pixel_device_name_fail(populated_test_db):
     resp = client.post("/device/777/name", json={"name": "Updated Neo Pixel Device Name"})
     assert resp.status_code == 500
-    assert resp.json() == {"detail": "Failed to update device name for Device with id of 777 - No row was found when one was required"}
+    assert resp.json() == {"detail": "Failed to update device name for Device with mqtt id of 777 - No row was found when one was required"}
+
+
+def test_get_palettes_route(populated_test_db):
+    resp = client.get("/neo_pixel/palettes/")
+    assert resp.status_code == 200
+    expected_data = [
+        {
+            'id': 1,
+            'name': 'Outrun',
+            'colors': [
+                '#00ffff', '#0394fc', '#0341fc', '#0000ff', '#5500ff', '#7703fc', '#ba03fc', '#de19ff', '#fc03a5']
+        },
+        {
+            'id': 2,
+            'name': 'Outrun 2',
+            'colors': [
+                '#508db8', '#336999', '#78419f', '#a42991', '#cd50ab', '#ec75be', '#f9ac5d', '#fbce88', '#fcecb0']
+        },
+    ]
+    assert resp.json() == expected_data

@@ -12,7 +12,7 @@ import src.plugins.device_plugins.neo_pixel.schemas as np_schemas
 LOGGER = logging.getLogger(__name__)
 
 
-def test_incoming_msg_device(populated_test_db):
+def test_incoming_msg_device_unseen_device(populated_test_db):
     message = MQTTMessage(b"test_topic")
 
     message.payload = b"789,neo_pixel,Remote Name - uid,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
@@ -22,12 +22,15 @@ def test_incoming_msg_device(populated_test_db):
     assert device.id == 3
     assert device.device_type.name == "neo_pixel"
     assert device.name == "Remote Name"
+    assert device.remote_name == "Remote Name - uid"
 
     message.payload = b"789,neo_pixel,New Remote Name - uid,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
     neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
     device = neo_pixel_device.device
 
-    assert device.name == "New Remote Name"
+    assert device.remote_name == "New Remote Name - uid"
+    # Assert name is not updated
+    assert device.name == "Remote Name"
 
 
 def test_message_handler_fails_on_missing_values(populated_test_db, caplog):
@@ -312,7 +315,7 @@ def test_serilize_msg():
         "mqtt_id": 123,
         "device_type_name": "neo_pixel",
         "remote_name": "Remote Name - 1",
-        "name": "Remote Name - 1",
+        "name": None,
         "on": True,
         "twinkle": True,
         "all_twinkle_colors_are_current": None,

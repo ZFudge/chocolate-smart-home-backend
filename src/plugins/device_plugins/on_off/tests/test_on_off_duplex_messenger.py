@@ -25,7 +25,7 @@ def test_turn_off_message(populated_test_db):
 
     assert device.id == 1
     assert device.device_type.name == "on_off"
-    assert device.name == "Remote Name"
+    assert device.name == 'Test On Device'
     assert on_off_device.on is False
 
     message.payload = b"123,on_off,Remote Name - uid,1"
@@ -50,7 +50,7 @@ def test_turn_on_message(populated_test_db):
 
     assert device.id == 2
     assert device.device_type.name == "on_off"
-    assert device.name == "Remote Name"
+    assert device.name == 'Test Off Device'
     assert on_off_device.on is True
 
     message.payload = b"456,on_off,Remote Name - uid,0"
@@ -83,7 +83,7 @@ def test_on_off_serialize():
         "on": True,
         "online": True,
         "mqtt_id": 123,
-        "name": "Remote Name - uid",
+        "name": None,
         "device_type_name": "on_off",
         "remote_name": "Remote Name - uid",
     }

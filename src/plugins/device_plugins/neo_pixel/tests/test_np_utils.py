@@ -1,6 +1,7 @@
 from typing import Iterable
 
 import src.plugins.device_plugins.neo_pixel.utils as utils
+from src.plugins.device_plugins.neo_pixel.model import Palette as PaletteModel
 
 
 def test_controller_palette_message():
@@ -83,3 +84,65 @@ def test_hex_list_to_byte_tuple():
         3,
         165,
     )
+
+def test_convert_27_byte_int_to_9_hex_str():
+    palette = utils.PaletteByteNamedTuple(
+        0,
+        255,
+        255,
+        3,
+        148,
+        252,
+        3,
+        65,
+        252,
+        0,
+        0,
+        255,
+        85,
+        0,
+        255,
+        119,
+        3,
+        252,
+        186,
+        3,
+        252,
+        222,
+        25,
+        255,
+        252,
+        3,
+        165,
+    )
+    expected_hex_str_tuple = (
+        "#00ffff",
+        "#0394fc",
+        "#0341fc",
+        "#0000ff",
+        "#5500ff",
+        "#7703fc",
+        "#ba03fc",
+        "#de19ff",
+        "#fc03a5",
+    )
+    assert utils.convert_27_byte_int_to_9_hex_str(palette) == expected_hex_str_tuple
+
+
+def test_byte_palettes_to_hex_palette_schemas(populated_test_db):
+    palette = populated_test_db.query(PaletteModel).filter(PaletteModel.id == 1).one()
+    hex_palette_schema = utils.byte_palettes_to_hex_palette_schemas(palette)
+    expected_hex_str_tuple = (
+        "#00ffff",
+        "#0394fc",
+        "#0341fc",
+        "#0000ff",
+        "#5500ff",
+        "#7703fc",
+        "#ba03fc",
+        "#de19ff",
+        "#fc03a5",
+    )
+    assert hex_palette_schema.colors == expected_hex_str_tuple
+    assert hex_palette_schema.name == palette.name
+    assert hex_palette_schema.id == palette.id

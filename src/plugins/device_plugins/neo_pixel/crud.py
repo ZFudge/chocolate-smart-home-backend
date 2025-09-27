@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from src import dependencies
 from src.mqtt import mqtt_client_ctx, topics
 from .duplex_messenger import NeoPixelDuplexMessenger
-from .model import NeoPixel
+from .model import NeoPixel, Palette
 
 logger = logging.getLogger()
 NEO_PIXEL_SEND_TOPIC_TEMPLATE = topics.SEND_DEVICE_DATA_TEMPLATE.format(
@@ -71,3 +71,8 @@ def delete_neo_pixel_device(neo_pixel_device_id: int):
     except:
         db.rollback()
         raise
+
+
+def get_all_palettes() -> List[Palette]:
+    db: Session = dependencies.db_session.get()
+    return db.query(Palette).all()

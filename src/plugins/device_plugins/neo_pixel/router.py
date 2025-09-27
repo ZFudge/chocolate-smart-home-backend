@@ -7,12 +7,13 @@ from sqlalchemy.exc import SQLAlchemyError
 from .crud import (
     delete_neo_pixel_device,
     get_all_neo_pixel_devices_data,
+    get_all_palettes,
     get_neo_pixel_device_by_device_id,
     publish_message,
 )
 from .model import NeoPixel
-from .schemas import NeoPixelDevice, NeoPixelDevices, NeoPixelOptions
-from .utils import to_neo_pixel_schema
+from .schemas import HexPaletteSchema, NeoPixelDevice, NeoPixelDevices, NeoPixelOptions
+from .utils import byte_palettes_to_hex_palette_schemas, to_neo_pixel_schema
 
 
 logger = logging.getLogger()
@@ -61,6 +62,16 @@ def update_device(neo_pixel_device_id: int, data: NeoPixelOptions):
 def delete_device(neo_pixel_device_id: int):
     try:
         delete_neo_pixel_device(neo_pixel_device_id)
+    except SQLAlchemyError as e:
+        (detail,) = e.args
+        logger.error(detail)
+        raise HTTPException(status_code=404, detail=detail)
+
+
+@plugin_router.get("/palettes/")
+def get_palettes() -> Tuple[HexPaletteSchema, ...]:
+    try:
+        return tuple(map(byte_palettes_to_hex_palette_schemas, get_all_palettes()))
     except SQLAlchemyError as e:
         (detail,) = e.args
         logger.error(detail)
