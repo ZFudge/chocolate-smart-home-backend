@@ -1,12 +1,20 @@
 import importlib
+import logging
+import os
 from typing import Dict
 
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
+
 import src.plugins.device_plugins
+from src.dependencies import db_session
 from src.plugins import iter_nametag
 from src.plugins.base_device_manager import (
     BaseDeviceManager as DefaultDeviceManager,
 )
 from src.plugins.base_duplex_messenger import DefaultDuplexMessenger
+
+logger = logging.getLogger()
 
 
 DISCOVERED_PLUGINS = {}
@@ -24,20 +32,16 @@ def discover_and_import_device_plugin_modules():
            },
            ...
        }"""
+    logger.info("Discovering and importing device plugin modules...")
     for _finder, name, _ispkg in iter_nametag(src.plugins.device_plugins):
+        logger.info(f"importing device plugin module: {name}")
         device_manager_module_name = f"{name}.device_manager"
         duplex_messenger_module_name = f"{name}.duplex_messenger"
         router_module_name = f"{name}.router"
-        db_seeding_module_name = f"{name}.db_seeding"
 
         device_manager_module = importlib.import_module(device_manager_module_name)
         duplex_messenger_module = importlib.import_module(duplex_messenger_module_name)
         router_module = importlib.import_module(router_module_name)
-        try:
-            db_seeding_module = importlib.import_module(db_seeding_module_name)
-            db_seeding_module.seed_db()
-        except ImportError:
-            pass
 
         DeviceManager = device_manager_module.DeviceManager
         DuplexMessenger = duplex_messenger_module.DuplexMessenger
@@ -50,6 +54,14 @@ def discover_and_import_device_plugin_modules():
             "DuplexMessenger": DuplexMessenger,
             "DeviceManager": DeviceManager,
         }
+
+        db_seeding_module_name = f"{name}.db_seeding"
+        try:
+            logger.info(f"Attempting import of db_seeding module for {name} at {db_seeding_module_name}")
+            db_seeding_module = importlib.import_module(db_seeding_module_name)
+            db_seeding_module.seed_db()
+        except ImportError as e:
+            logger.error(f"Error importing db_seeding module for {name}: {e}")
 
 
 DEFAULT_PLUGIN = {

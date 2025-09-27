@@ -35,5 +35,9 @@ class Palette(Base):
     name = Column(String, unique=True)
     colors = Column(ARRAY(String), unique=True)
 
-
-Base.metadata.create_all(bind=engine)
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception as e:
+    print(e)
+    print("Error creating tables")
+    print("Continuing...")

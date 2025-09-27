@@ -104,3 +104,8 @@ async def update_device_name(device_mqtt_id: int, name: schemas.UpdateDeviceName
     await dynamic_broadcast(updated_device)
 
     return schema_utils.to_schema(updated_device)
+
+
+@device_router.get("/health/check/", response_model=dict[str, str], status_code=200)
+def health() -> dict:
+    return {"status": "ok"}
