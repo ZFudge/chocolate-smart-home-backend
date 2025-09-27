@@ -7,6 +7,8 @@ WORKDIR /backend
 COPY ./Pipfile /backend/
 COPY ./Pipfile.lock /backend/
 
+RUN apk add --no-cache curl
+
 RUN mkdir -p /var/logs/csm/
 RUN pip install pipenv && pipenv install
 

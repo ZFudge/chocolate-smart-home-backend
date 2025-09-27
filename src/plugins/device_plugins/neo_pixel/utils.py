@@ -1,11 +1,11 @@
 from collections import namedtuple
 from logging import getLogger
-from typing import Iterator, List
+from typing import Iterator, List, Tuple
 
 
 from src.schemas.utils import to_schema
-from .model import NeoPixel
-from .schemas import NeoPixelDevice, PIR
+from .model import NeoPixel, Palette as PaletteModel
+from .schemas import HexPaletteSchema, NeoPixelDevice, PIR
 
 logger = getLogger(__name__)
 
@@ -59,6 +59,17 @@ def convert_9_hex_to_27_byte_str(palette: List[str]) -> str:
     return ",".join(map(str, palette_bytes))
 
 
+def convert_27_byte_int_to_9_hex_str(palette: PaletteByteNamedTuple) -> Tuple[str, ...]:
+    """Convert a tuple of 27 bytes to a list of 9 hex strings."""
+    hex_strings = []
+    for i in range(9):
+        hex_str = '#'
+        for c in palette[i*3:i*3+3]:
+            hex_str += hex(int(c)).removeprefix('0x').zfill(2)
+        hex_strings.append(hex_str)
+    return tuple(hex_strings)
+
+
 def received_controller_palette_value_to_hex_str_tuple(
     msg_seq: Iterator[str],
 ) -> PaletteHexNamedTuple:
@@ -87,3 +98,11 @@ def received_controller_palette_value_to_hex_str_tuple(
         logger.error(e)
         logger.info("Returning default empty palette")
         return PaletteHexNamedTuple(*[""] * 9)
+
+
+def byte_palettes_to_hex_palette_schemas(palette: PaletteModel) -> HexPaletteSchema:
+    return HexPaletteSchema(
+        id=palette.id,
+        name=palette.name,
+        colors=convert_27_byte_int_to_9_hex_str(palette.colors),
+    )

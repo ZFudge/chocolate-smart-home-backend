@@ -20,6 +20,12 @@ class PaletteValidator:
         return v
 
 
+class HexPaletteSchema(BaseModel):
+    id: int
+    name: str
+    colors: Tuple[str, ...]
+
+
 class PIR(BaseModel):
     armed: bool
     timeout: int

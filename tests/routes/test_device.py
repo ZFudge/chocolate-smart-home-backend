@@ -182,4 +182,4 @@ def test_update_device_name(populated_test_db):
 def test_update_device_name_fail(populated_test_db):
     resp = client.post("/device/777/name", json={"name": "Updated Device Name"})
     assert resp.status_code == 500
-    assert resp.json() == {"detail": "Failed to update device name for Device with id of 777 - No row was found when one was required"}
+    assert resp.json() == {"detail": "Failed to update device name for Device with mqtt id of 777 - No row was found when one was required"}

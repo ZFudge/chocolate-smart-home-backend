@@ -44,6 +44,9 @@ logger.info(f"{tag_ids=}")
 
 vcs_mqtt_client.request_all_devices_data()
 
+# sleep here is a hacky way of waiting for the virtual clients' published states
+# to be received by the backend server and added to the database's Device table.
+# This must be completed before adding the tags to the devices, below.
 sleep(3)
 
 device_mqtt_ids_and_tag_ids = (
