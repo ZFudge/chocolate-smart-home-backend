@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 
 from .crud import (
+    create_palette_from_hex_strs,
     delete_neo_pixel_device,
     get_all_neo_pixel_devices_data,
     get_all_palettes,
@@ -12,7 +13,7 @@ from .crud import (
     publish_message,
 )
 from .model import NeoPixel
-from .schemas import HexPaletteSchema, NeoPixelDevice, NeoPixelDevices, NeoPixelOptions
+from .schemas import CreateHexPaletteSchema, HexPaletteSchema, NeoPixelDevice, NeoPixelDevices, NeoPixelOptions
 from .utils import byte_palettes_to_hex_palette_schemas, to_neo_pixel_schema
 
 
@@ -76,3 +77,14 @@ def get_palettes() -> Tuple[HexPaletteSchema, ...]:
         (detail,) = e.args
         logger.error(detail)
         raise HTTPException(status_code=404, detail=detail)
+
+
+@plugin_router.post("/palettes/")
+def create_palette(palette: CreateHexPaletteSchema) -> HexPaletteSchema:
+    try:
+        new_palette = create_palette_from_hex_strs(palette)
+        return byte_palettes_to_hex_palette_schemas(new_palette)
+    except SQLAlchemyError as e:
+        (detail,) = e.args
+        logger.error(detail)
+        raise HTTPException(status_code=500, detail=detail)

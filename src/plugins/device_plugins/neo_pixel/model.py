@@ -33,7 +33,7 @@ class Palette(Base):
     __tablename__ = "palettes"
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
-    colors = Column(ARRAY(String), unique=True)
+    colors = Column(ARRAY(Integer), unique=True)
 
 try:
     Base.metadata.create_all(bind=engine)

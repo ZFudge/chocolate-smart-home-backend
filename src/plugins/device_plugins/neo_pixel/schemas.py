@@ -5,23 +5,62 @@ from pydantic import BaseModel, Field, field_validator
 from src.schemas.device import Device, DeviceFrontend, DeviceReceived
 
 
+def validate_hex_colors(v: Tuple[*([str] * 9)]) -> Tuple[*([str] * 9)]:
+    if len(v) != 9:
+        raise ValueError(
+            f"Hex palette must have a length of 9. length: {len(v)}"
+        )
+    if not all(len(color) == 7 for color in v):
+        raise ValueError("Each hex color should have a length of exactly 7")
+    if not all(color.startswith("#") for color in v):
+        raise ValueError("Each hex color should start with a #")
+    return v
+
+
+def validate_bytes_colors(v: Tuple[*([int] * 27)]) -> Tuple[*([int] * 27)]:
+    if len(v) != 27:
+        raise ValueError(
+            f"Bytes palette must have a length of 27. length: {len(v)}"
+        )
+    if not all(0 <= color <= 255 for color in v):
+        raise ValueError("Each byte color should be between 0 and 255")
+    return v
+
+
 class NeoPixelId(BaseModel):
     id: int
 
 
-class PaletteValidator:
-    @field_validator("palette")
+class ValidateHexColors:
+    @field_validator("colors")
     @classmethod
-    def palette_must_contain_tag(cls, v: Tuple[*([str] * 9)]) -> Tuple[*([str] * 9)]:
-        if len(v) != 9:
-            raise ValueError(
-                f"Neo Pixel palette must have a length of 9. length: {len(v)}"
-            )
-        return v
+    def validate_hex_colors(cls, v: Tuple[*([str] * 9)]) -> Tuple[*([str] * 9)]:
+        return validate_hex_colors(v)
 
 
-class HexPaletteSchema(BaseModel):
+class HexPaletteSchema(BaseModel, ValidateHexColors):
     id: int
+    name: str
+    colors: Tuple[str, ...]
+    @field_validator("colors")
+    @classmethod
+    def validate_hex_colors(cls, v: Tuple[str, ...]) -> Tuple[str, ...]:
+        return validate_hex_colors(v)
+
+
+class ValidateBytesColors:
+    @field_validator("colors")
+    @classmethod
+    def validate_bytes_colors(cls, v: Tuple[*([int] * 27)]) -> Tuple[*([int] * 27)]:
+        return validate_bytes_colors(v)
+
+
+class CreateBytesPaletteSchema(BaseModel, ValidateBytesColors):
+    name: str
+    colors: Tuple[int, ...]
+
+
+class CreateHexPaletteSchema(BaseModel, ValidateHexColors):
     name: str
     colors: Tuple[str, ...]
 
@@ -31,7 +70,14 @@ class PIR(BaseModel):
     timeout: int
 
 
-class NeoPixelValues(BaseModel, PaletteValidator):
+class NeoPixelPaletteValidator:
+    @field_validator("palette")
+    @classmethod
+    def palette_must_contain_tag(cls, v: Tuple[*([str] * 9)]) -> Tuple[*([str] * 9)]:
+        return validate_hex_colors(v)
+
+
+class NeoPixelValues(BaseModel, NeoPixelPaletteValidator):
     on: bool
     twinkle: bool
     transform: bool
@@ -45,7 +91,7 @@ class NeoPixelValues(BaseModel, PaletteValidator):
     pir: PIR | None = None
 
 
-class NeoPixelOptions(BaseModel, PaletteValidator):
+class NeoPixelOptions(BaseModel, NeoPixelPaletteValidator):
     on: bool = None
     # START twinkle
     twinkle: bool = None
@@ -73,6 +119,7 @@ class NeoPixelDevice(NeoPixelId, NeoPixelValues):
 
 class NeoPixelDeviceReceived(NeoPixelValues):
     device: DeviceReceived
+
 
 class NeoPixelDeviceFrontend(NeoPixelValues):
     device: DeviceFrontend
