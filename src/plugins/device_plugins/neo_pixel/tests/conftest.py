@@ -91,7 +91,7 @@ def populated_test_db(empty_test_db):
     db.add(neo_pixel_device__id_1)
     db.add(neo_pixel_device__id_2)
 
-    palette = Palette(name="Test Palette", colors=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26])
+    palette = Palette(name="Test Palette", palette=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26])
     db.add(palette)
 
     db.commit()

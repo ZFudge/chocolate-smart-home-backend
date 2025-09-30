@@ -22,7 +22,7 @@ def seed_db():
     for name, colors in palette_presets:
         logger.info(f"Seeding palette: {name}")
         try:
-            palette = Palette(name=name, colors=colors)
+            palette = Palette(name=name, palette=colors)
             db.add(palette)
             commit = True
         except SQLAlchemyError:

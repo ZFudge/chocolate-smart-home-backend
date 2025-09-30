@@ -83,7 +83,7 @@ def get_all_palettes() -> List[Palette]:
 def create_palette(palette: CreateBytesPaletteSchema):
     db: Session = dependencies.db_session.get()
     try:
-        db_palette = Palette(name=palette.name, colors=palette.colors)
+        db_palette = Palette(name=palette.name, palette=palette.palette)
         db.add(db_palette)
         db.commit()
     except SQLAlchemyError:
@@ -97,6 +97,6 @@ def create_palette_from_hex_strs(palette: CreateHexPaletteSchema):
     return create_palette(
         CreateBytesPaletteSchema(
             name=palette.name,
-            colors=hex_list_to_byte_tuple(palette.colors)
+            palette=hex_list_to_byte_tuple(palette.palette)
         )
     )

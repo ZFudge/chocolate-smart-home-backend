@@ -260,7 +260,7 @@ def test_get_palettes_route(populated_test_db):
         {
             'id': 1,
             'name': 'Test Palette',
-            'colors': ['#000102', '#030405', '#060708', '#090a0b', '#0c0d0e', '#0f1011', '#121314', '#151617', '#18191a'],
+            'palette': ['#000102', '#030405', '#060708', '#090a0b', '#0c0d0e', '#0f1011', '#121314', '#151617', '#18191a'],
         }
     ]
 
@@ -268,14 +268,14 @@ def test_get_palettes_route(populated_test_db):
 def test_create_palette(empty_test_db):
     post_data = {
         "name": "Test Palette",
-        "colors": ["#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000"]
+        "palette": ["#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000"]
     }
     resp = client.post("/neo_pixel/palettes/", json=post_data)
     assert resp.status_code == 200
     expected_data = {
         "id": 1,
         "name": "Test Palette",
-        "colors": ["#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000"]
+        "palette": ["#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000"]
     }
     assert resp.json() == expected_data
 
@@ -283,7 +283,7 @@ def test_create_palette(empty_test_db):
 def test_create_palette_duplicate(populated_test_db):
     post_data = {
         "name": "Test Palette",
-        "colors": ["#000102", "#030405", "#060708", "#090a0b", "#0c0d0e", "#0f1011", "#121314", "#151617", "#18191a"]
+        "palette": ["#000102", "#030405", "#060708", "#090a0b", "#0c0d0e", "#0f1011", "#121314", "#151617", "#18191a"]
     }
     resp = client.post("/neo_pixel/palettes/", json=post_data)
     assert resp.status_code == 500

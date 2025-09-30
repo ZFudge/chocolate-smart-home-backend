@@ -143,6 +143,6 @@ def test_byte_palettes_to_hex_palette_schemas(populated_test_db):
         "#151617",
         "#18191a",
     )
-    assert hex_palette_schema.colors == expected_hex_str_tuple
+    assert hex_palette_schema.palette == expected_hex_str_tuple
     assert hex_palette_schema.name == palette.name
     assert hex_palette_schema.id == palette.id

@@ -34,7 +34,7 @@ class NeoPixelId(BaseModel):
 
 
 class ValidateHexColors:
-    @field_validator("colors")
+    @field_validator("palette")
     @classmethod
     def validate_hex_colors(cls, v: Tuple[*([str] * 9)]) -> Tuple[*([str] * 9)]:
         return validate_hex_colors(v)
@@ -43,15 +43,15 @@ class ValidateHexColors:
 class HexPaletteSchema(BaseModel, ValidateHexColors):
     id: int
     name: str
-    colors: Tuple[str, ...]
-    @field_validator("colors")
+    palette: Tuple[str, ...]
+    @field_validator("palette")
     @classmethod
     def validate_hex_colors(cls, v: Tuple[str, ...]) -> Tuple[str, ...]:
         return validate_hex_colors(v)
 
 
 class ValidateBytesColors:
-    @field_validator("colors")
+    @field_validator("palette")
     @classmethod
     def validate_bytes_colors(cls, v: Tuple[*([int] * 27)]) -> Tuple[*([int] * 27)]:
         return validate_bytes_colors(v)
@@ -59,12 +59,12 @@ class ValidateBytesColors:
 
 class CreateBytesPaletteSchema(BaseModel, ValidateBytesColors):
     name: str
-    colors: Tuple[int, ...]
+    palette: Tuple[int, ...]
 
 
 class CreateHexPaletteSchema(BaseModel, ValidateHexColors):
     name: str
-    colors: Tuple[str, ...]
+    palette: Tuple[str, ...]
 
 
 class PIR(BaseModel):
