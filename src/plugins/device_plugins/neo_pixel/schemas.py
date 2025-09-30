@@ -14,6 +14,8 @@ def validate_hex_colors(v: Tuple[*([str] * 9)]) -> Tuple[*([str] * 9)]:
         raise ValueError("Each hex color should have a length of exactly 7")
     if not all(color.startswith("#") for color in v):
         raise ValueError("Each hex color should start with a #")
+    if not all([all(['0' <= c <= 'f' for c in color[1:]]) for color in v]):
+        raise ValueError("Each hex color should have valid hex digits")
     return v
 
 
