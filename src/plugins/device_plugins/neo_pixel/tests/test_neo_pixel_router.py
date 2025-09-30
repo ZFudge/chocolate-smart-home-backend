@@ -7,6 +7,7 @@ from src.plugins.device_plugins.neo_pixel.schemas import (
     NeoPixelOptions,
 )
 
+
 client = TestClient(app)
 
 
@@ -254,18 +255,36 @@ def test_update_neo_pixel_device_name_fail(populated_test_db):
 def test_get_palettes_route(populated_test_db):
     resp = client.get("/neo_pixel/palettes/")
     assert resp.status_code == 200
-    expected_data = [
+    data = resp.json()
+    assert data == [
         {
             'id': 1,
-            'name': 'Outrun',
-            'colors': [
-                '#00ffff', '#0394fc', '#0341fc', '#0000ff', '#5500ff', '#7703fc', '#ba03fc', '#de19ff', '#fc03a5']
-        },
-        {
-            'id': 2,
-            'name': 'Outrun 2',
-            'colors': [
-                '#508db8', '#336999', '#78419f', '#a42991', '#cd50ab', '#ec75be', '#f9ac5d', '#fbce88', '#fcecb0']
-        },
+            'name': 'Test Palette',
+            'palette': ['#000102', '#030405', '#060708', '#090a0b', '#0c0d0e', '#0f1011', '#121314', '#151617', '#18191a'],
+        }
     ]
+
+
+def test_create_palette(empty_test_db):
+    post_data = {
+        "name": "Test Palette",
+        "palette": ["#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000"]
+    }
+    resp = client.post("/neo_pixel/palettes/", json=post_data)
+    assert resp.status_code == 200
+    expected_data = {
+        "id": 1,
+        "name": "Test Palette",
+        "palette": ["#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000"]
+    }
     assert resp.json() == expected_data
+
+
+def test_create_palette_duplicate(populated_test_db):
+    post_data = {
+        "name": "Test Palette",
+        "palette": ["#000102", "#030405", "#060708", "#090a0b", "#0c0d0e", "#0f1011", "#121314", "#151617", "#18191a"]
+    }
+    resp = client.post("/neo_pixel/palettes/", json=post_data)
+    assert resp.status_code == 500
+    assert resp.json() == {"detail": "Palette with name Test Palette already exists"}

@@ -3,11 +3,7 @@ import logging
 import os
 from typing import Dict
 
-from sqlalchemy import text
-from sqlalchemy.exc import SQLAlchemyError
-
 import src.plugins.device_plugins
-from src.dependencies import db_session
 from src.plugins import iter_nametag
 from src.plugins.base_device_manager import (
     BaseDeviceManager as DefaultDeviceManager,
@@ -55,13 +51,15 @@ def discover_and_import_device_plugin_modules():
             "DeviceManager": DeviceManager,
         }
 
-        db_seeding_module_name = f"{name}.db_seeding"
-        try:
-            logger.info(f"Attempting import of db_seeding module for {name} at {db_seeding_module_name}")
-            db_seeding_module = importlib.import_module(db_seeding_module_name)
-            db_seeding_module.seed_db()
-        except ImportError as e:
-            logger.error(f"Error importing db_seeding module for {name}: {e}")
+        # Don't seed db in pytest tests
+        if "PYTEST_VERSION" not in os.environ:
+            db_seeding_module_name = f"{name}.db_seeding"
+            try:
+                logger.info(f"Attempting import of db_seeding module for {name} at {db_seeding_module_name}")
+                db_seeding_module = importlib.import_module(db_seeding_module_name)
+                db_seeding_module.seed_db()
+            except ImportError as e:
+                logger.error(f"Error importing db_seeding module for {name}: {e}")
 
 
 DEFAULT_PLUGIN = {

@@ -104,5 +104,5 @@ def byte_palettes_to_hex_palette_schemas(palette: PaletteModel) -> HexPaletteSch
     return HexPaletteSchema(
         id=palette.id,
         name=palette.name,
-        colors=convert_27_byte_int_to_9_hex_str(palette.colors),
+        palette=convert_27_byte_int_to_9_hex_str(palette.palette),
     )

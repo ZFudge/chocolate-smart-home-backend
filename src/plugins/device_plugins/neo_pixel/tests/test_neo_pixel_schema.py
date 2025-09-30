@@ -117,3 +117,31 @@ def test_palette_validator_length_long(populated_test_db):
                 "#000000",
             ]
         )
+
+
+def test_palette_validator_invalid_color_10th_color(populated_test_db):
+    with pytest.raises(pydantic.ValidationError):
+        neo_pixel_schemas.NeoPixelOptions(
+            palette=["#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000"]
+        )
+
+
+def test_palette_validator_invalid_color_format_missing_digit(populated_test_db):
+    with pytest.raises(pydantic.ValidationError):
+        neo_pixel_schemas.NeoPixelOptions(
+            palette=["#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#00000"]
+        )
+
+
+def test_palette_validator_invalid_color_format_missing_pound_sign(populated_test_db):
+    with pytest.raises(pydantic.ValidationError):
+        neo_pixel_schemas.NeoPixelOptions(
+            palette=["#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "0000000"]
+        )
+
+
+def test_palette_validator_invalid_color_format_digit_out_of_range(populated_test_db):
+    with pytest.raises(pydantic.ValidationError):
+        neo_pixel_schemas.NeoPixelOptions(
+            palette=["#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#00000g"]
+        )

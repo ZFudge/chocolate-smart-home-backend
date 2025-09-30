@@ -133,16 +133,16 @@ def test_byte_palettes_to_hex_palette_schemas(populated_test_db):
     palette = populated_test_db.query(PaletteModel).filter(PaletteModel.id == 1).one()
     hex_palette_schema = utils.byte_palettes_to_hex_palette_schemas(palette)
     expected_hex_str_tuple = (
-        "#00ffff",
-        "#0394fc",
-        "#0341fc",
-        "#0000ff",
-        "#5500ff",
-        "#7703fc",
-        "#ba03fc",
-        "#de19ff",
-        "#fc03a5",
+        "#000102",
+        "#030405",
+        "#060708",
+        "#090a0b",
+        "#0c0d0e",
+        "#0f1011",
+        "#121314",
+        "#151617",
+        "#18191a",
     )
-    assert hex_palette_schema.colors == expected_hex_str_tuple
+    assert hex_palette_schema.palette == expected_hex_str_tuple
     assert hex_palette_schema.name == palette.name
     assert hex_palette_schema.id == palette.id

@@ -16,7 +16,6 @@ def get_sqlalchemy_database_url():
 
 
 SQLALCHEMY_DATABASE_URL = get_sqlalchemy_database_url()
-print(f"SQLALCHEMY_DATABASE_URL: {SQLALCHEMY_DATABASE_URL}")
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
 

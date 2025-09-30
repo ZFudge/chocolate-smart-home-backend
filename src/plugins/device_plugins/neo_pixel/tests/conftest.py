@@ -2,7 +2,6 @@ import pytest
 
 from src import models
 from src.plugins.device_plugins.neo_pixel.model import NeoPixel, Palette
-from src.plugins.device_plugins.neo_pixel.palette_seeds import palette_presets
 
 
 @pytest.fixture
@@ -12,6 +11,7 @@ def empty_test_db(empty_test_db):
     yield empty_test_db
 
     empty_test_db.query(NeoPixel).delete()
+    empty_test_db.query(Palette).delete()
     empty_test_db.commit()
 
 
@@ -91,9 +91,8 @@ def populated_test_db(empty_test_db):
     db.add(neo_pixel_device__id_1)
     db.add(neo_pixel_device__id_2)
 
-    for name, colors in palette_presets[:2]:
-        palette = Palette(name=name, colors=colors)
-        db.add(palette)
+    palette = Palette(name="Test Palette", palette=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26])
+    db.add(palette)
 
     db.commit()
 
