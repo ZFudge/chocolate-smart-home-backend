@@ -86,9 +86,16 @@ def create_palette(palette: CreateBytesPaletteSchema):
         db_palette = Palette(name=palette.name, palette=palette.palette)
         db.add(db_palette)
         db.commit()
-    except SQLAlchemyError:
+    except SQLAlchemyError as e:
+        (detail,) = e.args
         db.rollback()
-        raise SQLAlchemyError("Palette with name %s already exists" % palette.name)
+        if 'duplicate key value violates unique constraint "palettes_palette_key"' in detail:
+            raise SQLAlchemyError("Palette value already exists")
+        elif 'duplicate key value violates unique constraint "palettes_name_key"' in detail:
+            raise SQLAlchemyError("Palette name already exists: %s" % str(palette.name))
+        else:
+            logger.error('An error occurred while creating palette: %s' % e)
+            raise SQLAlchemyError('An error occurred while creating palette')
     db.refresh(db_palette)
     return db_palette
 
