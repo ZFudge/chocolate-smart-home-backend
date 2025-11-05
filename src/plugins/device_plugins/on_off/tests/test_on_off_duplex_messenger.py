@@ -76,9 +76,6 @@ def test_message_handler_fails_on_missing_values(populated_test_db, caplog):
 
 
 def test_on_off_serialize():
-    message = MQTTMessage(b"test_topic")
-    message.payload = b"123,on_off,Remote Name - uid,1"
-
     expected_serialized_data_dict = {
         "on": True,
         "online": True,

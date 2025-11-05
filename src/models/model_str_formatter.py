@@ -1,11 +1,8 @@
-from .utils import get_model_class_name
-
-
 class ModelStrFormatter:
     """Provides methods for getting dev-friendly textual data of model objects."""
 
     def __str__(self):
-        model_name = get_model_class_name(self)
+        model_name = self.__class__.__name__
 
         attrs = (
             [column.key, getattr(self, column.key)] for column in self.__table__.columns

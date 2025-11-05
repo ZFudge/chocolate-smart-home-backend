@@ -38,9 +38,9 @@ class BaseDuplexMessenger:
         return data
 
     @staticmethod
-    def compose_msg(*args, **kwargs):
+    def compose_msg(msg: str, *args, **kwargs):
         """Implemented at the plugin level"""
-        pass
+        return msg
 
     @staticmethod
     def get_topics(ws_msg: schemas.WebsocketMessage) -> Iterable[str]:

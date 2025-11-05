@@ -24,6 +24,15 @@ def get_device_by_device_id(device_id: int) -> models.Device:
     )
 
 
+def get_device_by_mqtt_id(mqtt_id: int) -> models.Device:
+    return (
+        dependencies.db_session.get()
+        .query(models.Device)
+        .filter(models.Device.mqtt_id == mqtt_id)
+        .one()
+    )
+
+
 def get_devices_by_mqtt_id(mqtt_id: int | List[int]) -> models.Device | List[models.Device]:
     logger.info(f"getting device by mqtt_id: {mqtt_id}")
     db: Session = dependencies.db_session.get()
