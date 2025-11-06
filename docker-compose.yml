@@ -4,8 +4,8 @@ networks:
     external: true
 
 volumes:
-  csm-postgres-vol:
-    name: csm-postgres-vol
+  csm-postgres-vol-0:
+    name: csm-postgres-vol-0
 
 x-common-attrs: &common-attrs
   env_file: .env
@@ -22,17 +22,29 @@ services:
       watch:
         - action: sync
           path: ./
-          target: /csm-backend
+          target: /backend/
     ports:
       - 8000:8000
     volumes:
-      - .:/csm-backend
       - type: bind
-        source: ./logs
-        target: /var/logs/csm
+        source: ./
+        target: /backend/
+      - type: bind
+        source: ./logs/
+        target: /var/logs/csm/
+      - type: bind
+        source: ./csm.sh
+        target: /etc/profile.d/csm.sh
     depends_on:
       csm-postgres-db-dev:
         condition: service_healthy
+    command: [
+      "pipenv", "run", "uvicorn", "src.main:app",
+      "--host", "0.0.0.0",
+      "--reload",
+      "--log-level", "debug",
+      "--log-config", "logs.ini"
+    ]
   csm-postgres-db-dev:
     << : *common-attrs
     image: postgres:12.18-bullseye
@@ -40,7 +52,7 @@ services:
     ports:
       - 15432:5432
     volumes:
-      - csm-postgres-vol:/var/lib/postgresql
+      - csm-postgres-vol-0:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
