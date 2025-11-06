@@ -35,6 +35,7 @@ class Palette(Base):
     name = Column(String, unique=True)
     palette = Column(ARRAY(Integer), unique=True)
 
+
 try:
     Base.metadata.create_all(bind=engine)
 except Exception as e:

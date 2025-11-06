@@ -81,7 +81,9 @@ class BaseDeviceManager:
         db.refresh(db_device)
         return db_device
 
-    def get_devices_by_mqtt_id(self, mqtt_id: int | List[int]) -> models.Device | List[models.Device]:
+    def get_devices_by_mqtt_id(
+        self, mqtt_id: int | List[int]
+    ) -> models.Device | List[models.Device]:
         return get_devices_by_mqtt_id(mqtt_id)
 
     def update_server_side_values(self, *_, **__):

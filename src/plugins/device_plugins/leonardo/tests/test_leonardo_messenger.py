@@ -1,8 +1,6 @@
 import pytest
 
-from src.plugins.device_plugins.leonardo.duplex_messenger import (
-    LeonardoDuplexMessenger
-)
+from src.plugins.device_plugins.leonardo.duplex_messenger import LeonardoDuplexMessenger
 from src.schemas import DeviceReceived
 
 

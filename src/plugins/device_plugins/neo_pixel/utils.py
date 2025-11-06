@@ -63,9 +63,9 @@ def convert_27_byte_int_to_9_hex_str(palette: PaletteByteNamedTuple) -> Tuple[st
     """Convert a tuple of 27 bytes to a list of 9 hex strings."""
     hex_strings = []
     for i in range(9):
-        hex_str = '#'
-        for c in palette[i*3:i*3+3]:
-            hex_str += hex(int(c)).removeprefix('0x').zfill(2)
+        hex_str = "#"
+        for c in palette[i * 3 : i * 3 + 3]:
+            hex_str += hex(int(c)).removeprefix("0x").zfill(2)
         hex_strings.append(hex_str)
     return tuple(hex_strings)
 

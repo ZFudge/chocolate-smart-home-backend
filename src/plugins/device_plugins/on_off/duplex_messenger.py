@@ -62,7 +62,9 @@ class OnOffDuplexMessenger(BaseDuplexMessenger):
         del on_off_dict["device"]
         return on_off_dict
 
-    def serialize_db_objects(self, data: OnOffDeviceFrontend | List[OnOffDeviceFrontend]) -> dict:
+    def serialize_db_objects(
+        self, data: OnOffDeviceFrontend | List[OnOffDeviceFrontend]
+    ) -> dict:
         """Serialize neo pixel data for broadcast through webocket."""
         if not isinstance(data, (list, tuple, set)):
             data = [data]
@@ -77,7 +79,10 @@ class OnOffDuplexMessenger(BaseDuplexMessenger):
                 last_seen=str(db_on_off_device.device.last_seen),
             )
             if db_on_off_device.device.tags:
-                device.tags = [Tag(id=tag.id, name=tag.name) for tag in db_on_off_device.device.tags]
+                device.tags = [
+                    Tag(id=tag.id, name=tag.name)
+                    for tag in db_on_off_device.device.tags
+                ]
 
             on_off_data = OnOffDeviceFrontend(
                 device=device,

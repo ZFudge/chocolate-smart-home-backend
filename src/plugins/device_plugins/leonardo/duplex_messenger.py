@@ -43,5 +43,6 @@ class LeonardoDuplexMessenger(BaseDuplexMessenger):
             )
         )
 
+
 # Alias messenger for use in ..discovered_plugins.DISCOVERED_PLUGINS["leonardo"] dict.
 DuplexMessenger = LeonardoDuplexMessenger

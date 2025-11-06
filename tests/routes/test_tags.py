@@ -122,7 +122,7 @@ def test_put_device_tags(populated_test_db):
 
     expected_data = {
         "id": 1,
-        'name': 'Test Device Name 1',
+        "name": "Test Device Name 1",
         "tags": [
             {
                 "id": 1,
@@ -137,14 +137,14 @@ def test_put_device_tags(populated_test_db):
                 "name": "Third Tag",
             },
         ],
-        'device_type': {
-            'id': 1,
-            'name': 'TEST_DEVICE_TYPE_NAME_1',
+        "device_type": {
+            "id": 1,
+            "name": "TEST_DEVICE_TYPE_NAME_1",
         },
-        'mqtt_id': 123,
-        'online': True,
-        'reboots': 0,
-        'remote_name': 'Remote Name 1 - 1',
+        "mqtt_id": 123,
+        "online": True,
+        "reboots": 0,
+        "remote_name": "Remote Name 1 - 1",
     }
     assert resp.json() == expected_data
 
@@ -155,16 +155,16 @@ def test_put_device_tags_no_tags_none_ids_value(populated_test_db):
 
     expected_data = {
         "id": 1,
-        'name': 'Test Device Name 1',
+        "name": "Test Device Name 1",
         "tags": [],
-        'device_type': {
-            'id': 1,
-            'name': 'TEST_DEVICE_TYPE_NAME_1',
+        "device_type": {
+            "id": 1,
+            "name": "TEST_DEVICE_TYPE_NAME_1",
         },
-        'mqtt_id': 123,
-        'online': True,
-        'reboots': 0,
-        'remote_name': 'Remote Name 1 - 1',
+        "mqtt_id": 123,
+        "online": True,
+        "reboots": 0,
+        "remote_name": "Remote Name 1 - 1",
     }
     assert resp.json() == expected_data
 
@@ -175,16 +175,16 @@ def test_put_device_tags_no_tags_empty_ids_value(populated_test_db):
 
     expected_data = {
         "id": 1,
-        'name': 'Test Device Name 1',
+        "name": "Test Device Name 1",
         "tags": [],
-        'device_type': {
-            'id': 1,
-            'name': 'TEST_DEVICE_TYPE_NAME_1',
+        "device_type": {
+            "id": 1,
+            "name": "TEST_DEVICE_TYPE_NAME_1",
         },
-        'mqtt_id': 123,
-        'online': True,
-        'reboots': 0,
-        'remote_name': 'Remote Name 1 - 1',
+        "mqtt_id": 123,
+        "online": True,
+        "reboots": 0,
+        "remote_name": "Remote Name 1 - 1",
     }
     assert resp.json() == expected_data
 

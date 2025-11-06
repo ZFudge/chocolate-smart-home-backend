@@ -57,7 +57,9 @@ def test_plugin_method_calls(empty_test_db):
         get_plugin.return_value["DeviceManager"]().update_device.assert_called_with(
             get_plugin.return_value["DuplexMessenger"]().parse_msg.return_value
         )
-        get_plugin.return_value["DeviceManager"]().update_server_side_values.assert_not_called()
+        get_plugin.return_value[
+            "DeviceManager"
+        ]().update_server_side_values.assert_not_called()
 
         mqtt_handler.MQTTMessageHandler().device_data_received(0, None, msg)
 

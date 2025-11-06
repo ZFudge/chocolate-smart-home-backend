@@ -66,8 +66,7 @@ async def handle_incoming_websocket_message(incoming_ws_data: dict):
 
     if outgoing_msg:
         logger.info(
-            "Publishing outgoing data to MQTT: %s, %s"
-            % (complete_topics, outgoing_msg)
+            "Publishing outgoing data to MQTT: %s, %s" % (complete_topics, outgoing_msg)
         )
         mqtt_client.publish_all(topics=complete_topics, message=outgoing_msg)
 

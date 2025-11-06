@@ -5,6 +5,7 @@ from typing import List
 class TagId(BaseModel):
     id: int
 
+
 class TagIds(BaseModel):
     ids: List[int] | None = None
 

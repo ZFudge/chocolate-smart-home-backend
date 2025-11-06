@@ -85,6 +85,7 @@ def test_hex_list_to_byte_tuple():
         165,
     )
 
+
 def test_convert_27_byte_int_to_9_hex_str():
     palette = utils.PaletteByteNamedTuple(
         0,

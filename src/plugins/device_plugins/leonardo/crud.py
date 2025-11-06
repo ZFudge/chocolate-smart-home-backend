@@ -16,8 +16,14 @@ LEONARDO_SEND_TOPIC_TEMPLATE = topics.SEND_DEVICE_DATA_TEMPLATE.format(
 
 def get_all_leonardo_devices_data() -> List[models.Device]:
     db: Session = dependencies.db_session.get()
-    leonardo_device_type = db.query(models.DeviceType).filter(models.DeviceType.name == "leonardo").one()
-    return db.query(models.Device).filter(models.Device.device_type_id == leonardo_device_type.id).all()
+    leonardo_device_type = (
+        db.query(models.DeviceType).filter(models.DeviceType.name == "leonardo").one()
+    )
+    return (
+        db.query(models.Device)
+        .filter(models.Device.device_type_id == leonardo_device_type.id)
+        .all()
+    )
 
 
 def publish_message(*, leonardo_device_id: int, command: str):

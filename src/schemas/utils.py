@@ -7,7 +7,7 @@ from sqlalchemy.orm.decl_api import DeclarativeMeta
 from src import schemas
 
 
-def to_schema(model_obj: Type[DeclarativeMeta]|None) -> Mapping|None:
+def to_schema(model_obj: Type[DeclarativeMeta] | None) -> Mapping | None:
     """Convert a sqlalchemy model object to its corresponding pydantic schema"""
     if model_obj is None:
         return None

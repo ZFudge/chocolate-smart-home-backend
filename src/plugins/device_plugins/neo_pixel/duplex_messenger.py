@@ -97,7 +97,9 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
                 last_seen=str(db_neo_pixel.device.last_seen),
             )
             if db_neo_pixel.device.tags:
-                device.tags = [Tag(id=tag.id, name=tag.name) for tag in db_neo_pixel.device.tags]
+                device.tags = [
+                    Tag(id=tag.id, name=tag.name) for tag in db_neo_pixel.device.tags
+                ]
 
             pir = None
             if db_neo_pixel.armed is not None:
@@ -127,6 +129,7 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
         data: dict, *, value_mutator=lambda x: x
     ) -> Callable[[dict, str], str]:
         """Return a function that adds a key value to a message string with an optional value mutator function."""
+
         def _func(key: str, *, preferred_key: str | None = None) -> str:
             if data.get(key) is None:
                 return ""
@@ -135,6 +138,7 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
             # Apply value mutator function to value, if it exists
             value = value_mutator(data[key])
             return f"{preferred_key}={value};"
+
         return _func
 
     def compose_msg(self, data: dict | np_schemas.NeoPixelOptions) -> str | None:
@@ -163,7 +167,7 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
         msg += _add_key_value("brightness")
 
         msg += _add_bool_key_value("armed")
-        msg += _add_key_value("timeout") #, preferred_key="pir_timeout")
+        msg += _add_key_value("timeout")  # , preferred_key="pir_timeout")
 
         if data.get("palette") is not None:
             # Palette is a list of 9 hex strings. Convert to a commas-separated list of 27 bytes

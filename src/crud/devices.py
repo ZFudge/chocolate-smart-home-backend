@@ -33,7 +33,9 @@ def get_device_by_mqtt_id(mqtt_id: int) -> models.Device:
     )
 
 
-def get_devices_by_mqtt_id(mqtt_id: int | List[int]) -> models.Device | List[models.Device]:
+def get_devices_by_mqtt_id(
+    mqtt_id: int | List[int],
+) -> models.Device | List[models.Device]:
     logger.info(f"getting device by mqtt_id: {mqtt_id}")
     db: Session = dependencies.db_session.get()
     if isinstance(mqtt_id, list):
@@ -62,17 +64,22 @@ def delete_device(device_id: int) -> None:
         raise
 
 
-def get_tags_by_ids(tag_ids: List[int|str]) -> List[models.Tag]:
+def get_tags_by_ids(tag_ids: List[int | str]) -> List[models.Tag]:
     db: Session = dependencies.db_session.get()
     return db.query(models.Tag).filter(models.Tag.id.in_(tag_ids)).all()
 
 
-def put_device_tags(device_mqtt_id: int, tag_ids: List[int|str]|None) -> models.Device:
-    logger.info(f"Putting tags for device with mqtt id {device_mqtt_id} with tag ids {tag_ids}")
+def put_device_tags(
+    device_mqtt_id: int, tag_ids: List[int | str] | None
+) -> models.Device:
+    logger.info(
+        f"Putting tags for device with mqtt id {device_mqtt_id} with tag ids {tag_ids}"
+    )
     if tag_ids is None:
         tag_ids = []
     logger.info(
-        'Adding Tag(s) id(s) of %s to Device with mqtt id of "%s"' % (tag_ids, device_mqtt_id)
+        'Adding Tag(s) id(s) of %s to Device with mqtt id of "%s"'
+        % (tag_ids, device_mqtt_id)
     )
     db: Session = dependencies.db_session.get()
     try:
@@ -91,10 +98,14 @@ def put_device_tags(device_mqtt_id: int, tag_ids: List[int|str]|None) -> models.
     if tag_ids:
         tags = get_tags_by_ids(tag_ids)
         if len(tags) == 0:
-            msg = "Failed to add Tag id(s) of %s to " "Device of mqtt id %s - No Tag object(s) with id(s) %s found." % (
-                tag_ids,
-                device_mqtt_id,
-                tag_ids,
+            msg = (
+                "Failed to add Tag id(s) of %s to "
+                "Device of mqtt id %s - No Tag object(s) with id(s) %s found."
+                % (
+                    tag_ids,
+                    device_mqtt_id,
+                    tag_ids,
+                )
             )
             logger.error(msg)
             raise NoResultFound(msg)
@@ -171,7 +182,9 @@ def remove_device_tag(device_id: int, tag_id: int) -> models.Device:
 
 
 def update_device_name(device_mqtt_id: int, device_name: str) -> models.Device:
-    logger.info(f"Updating device name for device with mqtt id {device_mqtt_id} to {device_name}")
+    logger.info(
+        f"Updating device name for device with mqtt id {device_mqtt_id} to {device_name}"
+    )
     db: Session = dependencies.db_session.get()
     try:
         device = get_devices_by_mqtt_id(device_mqtt_id)

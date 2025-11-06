@@ -55,7 +55,9 @@ def get_data_received_handler(
 
         if key is not None and value is not None:
             old_value = vc.get(key)
-            logger.info(f'{vc=}', f'{payload=}', f'{key=}', f'{value=}', f'{old_value=}')
+            logger.info(
+                f"{vc=}", f"{payload=}", f"{key=}", f"{value=}", f"{old_value=}"
+            )
             if old_value is None:
                 vc[key] = value
             elif isinstance(old_value, bool):

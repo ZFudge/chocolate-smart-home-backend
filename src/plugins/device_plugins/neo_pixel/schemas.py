@@ -7,23 +7,19 @@ from src.schemas.device import Device, DeviceFrontend, DeviceReceived
 
 def validate_hex_colors(v: Tuple[*([str] * 9)]) -> Tuple[*([str] * 9)]:
     if len(v) != 9:
-        raise ValueError(
-            f"Hex palette must have a length of 9. length: {len(v)}"
-        )
+        raise ValueError(f"Hex palette must have a length of 9. length: {len(v)}")
     if not all(len(color) == 7 for color in v):
         raise ValueError("Each hex color should have a length of exactly 7")
     if not all(color.startswith("#") for color in v):
         raise ValueError("Each hex color should start with a #")
-    if not all([all(['0' <= c <= 'f' for c in color[1:]]) for color in v]):
+    if not all([all(["0" <= c <= "f" for c in color[1:]]) for color in v]):
         raise ValueError("Each hex color should have valid hex digits")
     return v
 
 
 def validate_bytes_colors(v: Tuple[*([int] * 27)]) -> Tuple[*([int] * 27)]:
     if len(v) != 27:
-        raise ValueError(
-            f"Bytes palette must have a length of 27. length: {len(v)}"
-        )
+        raise ValueError(f"Bytes palette must have a length of 27. length: {len(v)}")
     if not all(0 <= color <= 255 for color in v):
         raise ValueError("Each byte color should be between 0 and 255")
     return v
@@ -44,6 +40,7 @@ class HexPaletteSchema(BaseModel, ValidateHexColors):
     id: int
     name: str
     palette: Tuple[str, ...]
+
     @field_validator("palette")
     @classmethod
     def validate_hex_colors(cls, v: Tuple[str, ...]) -> Tuple[str, ...]:
