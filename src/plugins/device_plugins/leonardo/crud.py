@@ -20,7 +20,7 @@ def get_all_leonardo_devices_data() -> List[models.Device]:
     return db.query(models.Device).filter(models.Device.device_type_id == leonardo_device_type.id).all()
 
 
-def publish_message(*, leonardo_device_id: int, msg: str):
+def publish_message(*, leonardo_device_id: int, command: str):
     topic: str = LEONARDO_SEND_TOPIC_TEMPLATE.format(device_id=leonardo_device_id)
-    outgoing_msg: str = LeonardoDuplexMessenger().compose_msg(msg)
+    outgoing_msg: str = LeonardoDuplexMessenger().compose_msg(command)
     mqtt_client_ctx.get().publish(topic=topic, message=outgoing_msg)

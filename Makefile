@@ -94,7 +94,7 @@ attach:
 	@docker compose logs --follow $(APP_CONTAINER_NAME)
 
 shell:
-	@docker compose exec -it \
+	@docker exec -it \
 		$(APP_CONTAINER_NAME) ash -l
 
 test: testdb

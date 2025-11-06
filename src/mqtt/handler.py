@@ -69,6 +69,8 @@ class MQTTMessageHandler:
                 return
             if hasattr(DuplexMessenger, "serialize_db_objects"):
                 fe_data = DuplexMessenger().serialize_db_objects(pd)
+            elif hasattr(DuplexMessenger, "serialize_db_obj"):
+                fe_data = DuplexMessenger().serialize_db_obj(pd)
             else:
                 fe_data = DuplexMessenger().serialize(msg_data)
             logger.info("Sending FE data %s" % fe_data)

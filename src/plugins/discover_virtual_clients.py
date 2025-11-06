@@ -23,6 +23,7 @@ def get_data_received_handler(
     mqtt_client: MQTTClient,
     virtual_clients: Dict,
     translate_vc_dict_to_mqtt_msg: Callable,
+    parse_payload: Callable,
 ) -> Callable:
     def data_received_handler(_client, _userdata, message):
         logger.info(f"Received message: {message.topic} {message.payload.decode()}")
@@ -46,36 +47,34 @@ def get_data_received_handler(
         logger.info(f"{device_type_name} id: {mqtt_id} virtual_client: {vc}")
 
         payload = message.payload.decode()
-        if device_type_name == "on_off":
-            key = "on"
-            value = payload
-        else:
-            try:
-                key, value = re.split("=|;", payload)[:2]
-            except ValueError:
-                logger.error("Invalid payload: %s" % payload)
-                return
+        try:
+            key, value = parse_payload(payload)
+        except ValueError:
+            logger.error("Invalid payload: %s" % payload)
+            return None
 
-        old_value = vc.get(key)
-        logger.info(f'{vc=}', f'{payload=}', f'{key=}', f'{value=}', f'{old_value=}')
-        if old_value is None:
-            vc[key] = value
-        elif isinstance(old_value, bool):
-            try:
-                vc[key] = int(value) == 1
-            except ValueError:
-                vc[key] = value == "True"
-        elif isinstance(old_value, int):
-            try:
-                vc[key] = int(value)
-            except ValueError:
+        if key is not None and value is not None:
+            old_value = vc.get(key)
+            logger.info(f'{vc=}', f'{payload=}', f'{key=}', f'{value=}', f'{old_value=}')
+            if old_value is None:
                 vc[key] = value
-        elif isinstance(old_value, float):
-            vc[key] = float(value)
-        else:
-            vc[key] = value
+            elif isinstance(old_value, bool):
+                try:
+                    vc[key] = int(value) == 1
+                except ValueError:
+                    vc[key] = value == "True"
+            elif isinstance(old_value, int):
+                try:
+                    vc[key] = int(value)
+                except ValueError:
+                    vc[key] = value
+            elif isinstance(old_value, float):
+                vc[key] = float(value)
+            else:
+                vc[key] = value
 
         msg = translate_vc_dict_to_mqtt_msg(vc)
+        # reflect virtual client state changes to the CSM server
         logger.info(f"{device_type_name} virtual client message: {msg}")
 
         try:
@@ -109,6 +108,7 @@ def discover_virtual_clients(client: MQTTClient) -> List[str]:
         try:
             seeds = vcs_module.seeds
             trans_funcs[short_name] = vcs_module.translate_vc_dict_to_mqtt_msg
+            parse_payload = vcs_module.parse_payload
         except AttributeError:
             logger.warning("No seeds found for %s", short_name)
             continue
@@ -119,6 +119,7 @@ def discover_virtual_clients(client: MQTTClient) -> List[str]:
             mqtt_client=client,
             virtual_clients=virtual_clients,
             translate_vc_dict_to_mqtt_msg=trans_funcs[short_name],
+            parse_payload=parse_payload,
         )
 
         for seed in seeds:

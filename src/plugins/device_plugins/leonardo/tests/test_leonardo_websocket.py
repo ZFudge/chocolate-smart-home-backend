@@ -9,8 +9,8 @@ async def test_leonardo_ws_to_duplex_messenger__compose_msg():
     incoming_data_dict = {
         "device_type_name": "leonardo",
         "id": 1,
-        "name": "msg",
-        "value": "wake",
+        "name": "command",
+        "value": "move",
     }
     with (
         patch("src.mqtt.client.MQTTClient.publish") as _,
@@ -21,7 +21,7 @@ async def test_leonardo_ws_to_duplex_messenger__compose_msg():
         await handle_incoming_websocket_message(incoming_data_dict)
         compose_msg.assert_called_once_with(
             {
-                "msg": "wake",
+                "command": "move",
             }
         )
 
@@ -31,7 +31,7 @@ async def test_leonardo_ws_to_duplex_messenger__compose_msg__invalid_message():
     incoming_data_dict = {
         "device_type_name": "leonardo",
         "id": 1,
-        "name": "msg",
+        "name": "command",
         "value": "invalid",
     }
     with patch("src.mqtt.client.MQTTClient.publish") as publish:
@@ -45,12 +45,12 @@ async def test_leonardo_ws_msg_publish_through_mqtt():
     incoming_data_dict = {
         "device_type_name": "leonardo",
         "id": 1,
-        "name": "msg",
-        "value": "wake",
+        "name": "command",
+        "value": "move",
     }
     with patch("src.mqtt.client.MQTTClient.publish") as publish:
         await handle_incoming_websocket_message(incoming_data_dict)
-        publish.assert_called_once_with(topic="/leonardo/1/", message="wake")
+        publish.assert_called_once_with(topic="/leonardo/1/", message="move")
     incoming_data_dict["value"] = "lock"
     with patch("src.mqtt.client.MQTTClient.publish") as publish:
         await handle_incoming_websocket_message(incoming_data_dict)
@@ -70,7 +70,7 @@ async def test_leonardo_ws_msg_publish_through_mqtt__invalid_message():
     incoming_data_dict = {
         "device_type_name": "leonardo",
         "id": 1,
-        "name": "msg",
+        "name": "command",
         "value": "missing_message",
     }
     with patch("src.mqtt.client.MQTTClient.publish") as publish:

@@ -10,7 +10,7 @@ class LeonardoId(BaseModel):
 
 
 class LeonardoMessage(BaseModel):
-    msg: Literal["wake", "lock", "unlock", "talon"]
+    msg: Literal["move", "lock", "unlock", "talon"]
 
 
 class LeonardoDevice(LeonardoId, LeonardoMessage):

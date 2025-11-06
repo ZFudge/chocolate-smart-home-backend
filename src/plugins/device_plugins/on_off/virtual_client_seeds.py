@@ -1,4 +1,5 @@
-# seed data for virtual clients, to simulate On/Off Virtual Client controllers during development
+# seed data for virtual clients, to simulate On/Off Virtual Client
+# controllers during development
 
 seeds = [
     {
@@ -31,6 +32,7 @@ seeds = [
     },
 ]
 
+
 def translate_vc_dict_to_mqtt_msg(seed: dict) -> str:
     """Mocks the controller state expected by the CSM server"""
     # cast bool to int
@@ -48,3 +50,7 @@ def translate_vc_dict_to_mqtt_msg(seed: dict) -> str:
     msg_values = map(str, msg_values)
 
     return ",".join(msg_values)
+
+
+def parse_payload(payload: str) -> dict:
+    return "on", payload

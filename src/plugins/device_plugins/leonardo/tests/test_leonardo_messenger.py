@@ -26,17 +26,17 @@ def test_leonardo_serialize():
 
 
 def test_leonardo_compose_msg_str():
-    assert LeonardoDuplexMessenger().compose_msg("wake") == "wake"
+    assert LeonardoDuplexMessenger().compose_msg("move") == "move"
     assert LeonardoDuplexMessenger().compose_msg("lock") == "lock"
     assert LeonardoDuplexMessenger().compose_msg("unlock") == "unlock"
     assert LeonardoDuplexMessenger().compose_msg("talon") == "talon"
 
 
 def test_leonardo_compose_msg_dict():
-    assert LeonardoDuplexMessenger().compose_msg({"msg": "wake"}) == "wake"
-    assert LeonardoDuplexMessenger().compose_msg({"msg": "lock"}) == "lock"
-    assert LeonardoDuplexMessenger().compose_msg({"msg": "unlock"}) == "unlock"
-    assert LeonardoDuplexMessenger().compose_msg({"msg": "talon"}) == "talon"
+    assert LeonardoDuplexMessenger().compose_msg({"command": "move"}) == "move"
+    assert LeonardoDuplexMessenger().compose_msg({"command": "lock"}) == "lock"
+    assert LeonardoDuplexMessenger().compose_msg({"command": "unlock"}) == "unlock"
+    assert LeonardoDuplexMessenger().compose_msg({"command": "talon"}) == "talon"
 
 
 def test_leonardo_compose_msg__invalid_message():
@@ -58,12 +58,12 @@ def test_leonardo_compose_msg__invalid_message():
 
 def test_leonardo_compose_msg_dict__invalid_message():
     with pytest.raises(ValueError):
-        LeonardoDuplexMessenger().compose_msg({"msg": "invalid"})
+        LeonardoDuplexMessenger().compose_msg({"command": "invalid"})
     with pytest.raises(ValueError):
-        LeonardoDuplexMessenger().compose_msg({"msg": None})
+        LeonardoDuplexMessenger().compose_msg({"command": None})
     with pytest.raises(ValueError):
-        LeonardoDuplexMessenger().compose_msg({"msg": 123})
+        LeonardoDuplexMessenger().compose_msg({"command": 123})
     with pytest.raises(ValueError):
-        LeonardoDuplexMessenger().compose_msg({"msg": True})
+        LeonardoDuplexMessenger().compose_msg({"command": True})
     with pytest.raises(ValueError):
-        LeonardoDuplexMessenger().compose_msg({"msg": False})
+        LeonardoDuplexMessenger().compose_msg({"command": False})

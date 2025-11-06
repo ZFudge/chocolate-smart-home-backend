@@ -52,8 +52,8 @@ def test_update_leonardo_device(populated_test_db):
     with patch(
         "src.plugins.device_plugins.leonardo.router.publish_message"
     ) as publish_message:
-        resp = client.post("/leonardo/1/wake")
-        publish_message.assert_called_once_with(leonardo_device_id=1, msg="wake")
+        resp = client.post("/leonardo/1/move")
+        publish_message.assert_called_once_with(leonardo_device_id=1, command="move")
 
     assert resp.status_code == 204
 
