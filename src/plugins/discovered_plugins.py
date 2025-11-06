@@ -55,7 +55,9 @@ def discover_and_import_device_plugin_modules():
         if "PYTEST_VERSION" not in os.environ:
             db_seeding_module_name = f"{name}.db_seeding"
             try:
-                logger.info(f"Attempting import of db_seeding module for {name} at {db_seeding_module_name}")
+                logger.info(
+                    f"Attempting import of db_seeding module for {name} at {db_seeding_module_name}"
+                )
                 db_seeding_module = importlib.import_module(db_seeding_module_name)
                 db_seeding_module.seed_db()
             except ImportError as e:

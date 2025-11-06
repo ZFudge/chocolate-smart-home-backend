@@ -62,14 +62,13 @@ async def handle_incoming_websocket_message(incoming_ws_data: dict):
     msg_data = {
         ws_msg.name: ws_msg.value,
     }
-    outgoing_data = DuplexMessenger().compose_msg(msg_data)
+    outgoing_msg = DuplexMessenger().compose_msg(msg_data)
 
-    if outgoing_data:
+    if outgoing_msg:
         logger.info(
-            "Publishing outgoing data to MQTT: %s, %s"
-            % (complete_topics, outgoing_data)
+            "Publishing outgoing data to MQTT: %s, %s" % (complete_topics, outgoing_msg)
         )
-        mqtt_client.publish_all(topics=complete_topics, message=outgoing_data)
+        mqtt_client.publish_all(topics=complete_topics, message=outgoing_msg)
 
 
 @ws_router.websocket_route("/ws")

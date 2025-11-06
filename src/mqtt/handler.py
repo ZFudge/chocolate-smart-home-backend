@@ -57,7 +57,9 @@ class MQTTMessageHandler:
             _: Device | List[Device] = get_devices_by_mqtt_id(mqtt_id)
             logger.debug("found existing device %s" % _)
             if isinstance(_, list):
-                raise NotImplementedError("Multiple devices with the same mqtt_id are not supported")
+                raise NotImplementedError(
+                    "Multiple devices with the same mqtt_id are not supported"
+                )
         except NoResultFound:
             db_plugin_device = DeviceManager().create_device(msg_data)
         else:
@@ -69,6 +71,8 @@ class MQTTMessageHandler:
                 return
             if hasattr(DuplexMessenger, "serialize_db_objects"):
                 fe_data = DuplexMessenger().serialize_db_objects(pd)
+            elif hasattr(DuplexMessenger, "serialize_db_obj"):
+                fe_data = DuplexMessenger().serialize_db_obj(pd)
             else:
                 fe_data = DuplexMessenger().serialize(msg_data)
             logger.info("Sending FE data %s" % fe_data)

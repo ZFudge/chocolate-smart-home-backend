@@ -223,23 +223,25 @@ def test_update_multiple_devices(populated_test_db):
 
 
 def test_update_neo_pixel_device_name(populated_test_db):
-    resp = client.post("/device/123/name", json={"name": "Updated Neo Pixel Device Name"})
+    resp = client.post(
+        "/device/123/name", json={"name": "Updated Neo Pixel Device Name"}
+    )
     assert resp.status_code == 200
     expected_data = {
-        'device_type': {
-            'id': 1,
-            'name': 'neo_pixel',
+        "device_type": {
+            "id": 1,
+            "name": "neo_pixel",
         },
-        'id': 1,
-        'mqtt_id': 123,
-        'name': 'Updated Neo Pixel Device Name',
-        'online': True,
-        'reboots': 0,
-        'remote_name': 'Test Neo Pixel Device - 1',
-        'tags': [
+        "id": 1,
+        "mqtt_id": 123,
+        "name": "Updated Neo Pixel Device Name",
+        "online": True,
+        "reboots": 0,
+        "remote_name": "Test Neo Pixel Device - 1",
+        "tags": [
             {
-                'id': 1,
-                'name': 'NeoPixel Tag',
+                "id": 1,
+                "name": "NeoPixel Tag",
             },
         ],
     }
@@ -247,9 +249,13 @@ def test_update_neo_pixel_device_name(populated_test_db):
 
 
 def test_update_neo_pixel_device_name_fail(populated_test_db):
-    resp = client.post("/device/777/name", json={"name": "Updated Neo Pixel Device Name"})
+    resp = client.post(
+        "/device/777/name", json={"name": "Updated Neo Pixel Device Name"}
+    )
     assert resp.status_code == 500
-    assert resp.json() == {"detail": "Failed to update device name for Device with mqtt id of 777 - No row was found when one was required"}
+    assert resp.json() == {
+        "detail": "Failed to update device name for Device with mqtt id of 777 - No row was found when one was required"
+    }
 
 
 def test_get_palettes_route(populated_test_db):
@@ -258,9 +264,19 @@ def test_get_palettes_route(populated_test_db):
     data = resp.json()
     assert data == [
         {
-            'id': 1,
-            'name': 'Test Palette',
-            'palette': ['#000102', '#030405', '#060708', '#090a0b', '#0c0d0e', '#0f1011', '#121314', '#151617', '#18191a'],
+            "id": 1,
+            "name": "Test Palette",
+            "palette": [
+                "#000102",
+                "#030405",
+                "#060708",
+                "#090a0b",
+                "#0c0d0e",
+                "#0f1011",
+                "#121314",
+                "#151617",
+                "#18191a",
+            ],
         }
     ]
 
@@ -268,14 +284,34 @@ def test_get_palettes_route(populated_test_db):
 def test_create_palette(empty_test_db):
     post_data = {
         "name": "Test Palette",
-        "palette": ["#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000"]
+        "palette": [
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000",
+        ],
     }
     resp = client.post("/neo_pixel/palettes/", json=post_data)
     assert resp.status_code == 200
     expected_data = {
         "id": 1,
         "name": "Test Palette",
-        "palette": ["#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000", "#000000"]
+        "palette": [
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000",
+            "#000000",
+        ],
     }
     assert resp.json() == expected_data
 
@@ -283,7 +319,17 @@ def test_create_palette(empty_test_db):
 def test_create_palette_duplicate_value_fails(populated_test_db):
     post_data = {
         "name": "Non-unique Palette",
-        "palette": ["#000102", "#030405", "#060708", "#090a0b", "#0c0d0e", "#0f1011", "#121314", "#151617", "#18191a"]
+        "palette": [
+            "#000102",
+            "#030405",
+            "#060708",
+            "#090a0b",
+            "#0c0d0e",
+            "#0f1011",
+            "#121314",
+            "#151617",
+            "#18191a",
+        ],
     }
     resp = client.post("/neo_pixel/palettes/", json=post_data)
     assert resp.status_code == 500
@@ -293,7 +339,17 @@ def test_create_palette_duplicate_value_fails(populated_test_db):
 def test_create_palette_duplicate_name_fails(populated_test_db):
     post_data = {
         "name": "Test Palette",
-        "palette": ["#000102", "#030405", "#060708", "#090a0b", "#0c0d0e", "#0f1011", "#121314", "#151617", "#18191a"]
+        "palette": [
+            "#000102",
+            "#030405",
+            "#060708",
+            "#090a0b",
+            "#0c0d0e",
+            "#0f1011",
+            "#121314",
+            "#151617",
+            "#18191a",
+        ],
     }
     resp = client.post("/neo_pixel/palettes/", json=post_data)
     assert resp.status_code == 500

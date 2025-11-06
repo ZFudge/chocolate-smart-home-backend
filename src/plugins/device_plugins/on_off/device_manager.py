@@ -19,8 +19,16 @@ class OnOffDeviceManager(BaseDeviceManager):
     def get_devices_by_mqtt_id(self, mqtt_id: int | List[int]) -> OnOff:
         db: Session = db_session.get()
         if isinstance(mqtt_id, list):
-            return db.query(OnOff).filter(OnOff.device.has(models.Device.mqtt_id.in_(mqtt_id))).all()
-        return db.query(OnOff).filter(OnOff.device.has(models.Device.mqtt_id == mqtt_id)).one()
+            return (
+                db.query(OnOff)
+                .filter(OnOff.device.has(models.Device.mqtt_id.in_(mqtt_id)))
+                .all()
+            )
+        return (
+            db.query(OnOff)
+            .filter(OnOff.device.has(models.Device.mqtt_id == mqtt_id))
+            .one()
+        )
 
     def create_device(self, on_off_device: OnOffDeviceReceived) -> OnOff:
         logger.info('Creating device "%s"' % on_off_device)

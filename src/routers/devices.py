@@ -52,12 +52,13 @@ async def put_device_tags(device_mqtt_id: int, tag_ids: schemas.TagIds):
         return JSONResponse(
             status_code=202,
             content={
-                "detail": "Some tag ids were added. Of the given tag ids, %s, the following were not added: %s" % (
+                "detail": "Some tag ids were added. Of the given tag ids, %s, the following were not added: %s"
+                % (
                     tag_ids.ids,
-                    list(set(tag_ids.ids) - set([tag.id for tag in device.tags]))
+                    list(set(tag_ids.ids) - set([tag.id for tag in device.tags])),
                 ),
                 "device": schema_utils.to_schema(device).model_dump(),
-            }
+            },
         )
     return schema_utils.to_schema(device)
 

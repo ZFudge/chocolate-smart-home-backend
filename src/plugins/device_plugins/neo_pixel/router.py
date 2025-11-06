@@ -13,7 +13,13 @@ from .crud import (
     publish_message,
 )
 from .model import NeoPixel
-from .schemas import CreateHexPaletteSchema, HexPaletteSchema, NeoPixelDevice, NeoPixelDevices, NeoPixelOptions
+from .schemas import (
+    CreateHexPaletteSchema,
+    HexPaletteSchema,
+    NeoPixelDevice,
+    NeoPixelDevices,
+    NeoPixelOptions,
+)
 from .utils import byte_palettes_to_hex_palette_schemas, to_neo_pixel_schema
 
 

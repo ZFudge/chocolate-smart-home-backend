@@ -1,5 +1,7 @@
 # seed data for virtual clients, to simulate neo pixel controllers during development
 
+import re
+
 from src.plugins.device_plugins.neo_pixel.utils import convert_9_hex_to_27_byte_str
 
 
@@ -110,3 +112,8 @@ def translate_vc_dict_to_mqtt_msg(seed: dict) -> str:
     msg_values = map(str, msg_values)
 
     return ",".join(msg_values)
+
+
+def parse_payload(payload: str) -> dict:
+    key, value = re.split("=|;", payload)[:2]
+    return key, value

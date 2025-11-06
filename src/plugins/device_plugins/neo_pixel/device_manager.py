@@ -25,8 +25,16 @@ class NeoPixelDeviceManager(BaseDeviceManager):
     def get_devices_by_mqtt_id(self, mqtt_id: int | List[int]) -> NeoPixel:
         db: Session = db_session.get()
         if isinstance(mqtt_id, list):
-            return db.query(NeoPixel).filter(NeoPixel.device.has(models.Device.mqtt_id.in_(mqtt_id))).all()
-        return db.query(NeoPixel).filter(NeoPixel.device.has(models.Device.mqtt_id == mqtt_id)).one()
+            return (
+                db.query(NeoPixel)
+                .filter(NeoPixel.device.has(models.Device.mqtt_id.in_(mqtt_id)))
+                .all()
+            )
+        return (
+            db.query(NeoPixel)
+            .filter(NeoPixel.device.has(models.Device.mqtt_id == mqtt_id))
+            .one()
+        )
 
     def create_device(self, incoming_neo_pixel: NeoPixelDeviceReceived) -> NeoPixel:
         logger.info('Creating Neo Pixel device "%s"' % incoming_neo_pixel)
@@ -44,9 +52,7 @@ class NeoPixelDeviceManager(BaseDeviceManager):
         )
         if incoming_neo_pixel.pir is not None:
             new_db_neo_pixel.armed = incoming_neo_pixel.pir.armed
-            new_db_neo_pixel.timeout = (
-                incoming_neo_pixel.pir.timeout
-            )
+            new_db_neo_pixel.timeout = incoming_neo_pixel.pir.timeout
 
         db.add(new_db_neo_pixel)
 

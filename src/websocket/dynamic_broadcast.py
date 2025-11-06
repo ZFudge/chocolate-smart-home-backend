@@ -9,6 +9,7 @@ from src.websocket.connection_manager import manager
 
 logger = logging.getLogger()
 
+
 async def dynamic_broadcast(device: models_Device):
     if not manager.active_connections or not device or not device.device_type_id:
         return
@@ -26,7 +27,9 @@ async def dynamic_broadcast(device: models_Device):
 
     if hasattr(DuplexMessenger, "serialize_db_objects"):
         device_db_object = DeviceManager().get_devices_by_mqtt_id(device.mqtt_id)
-        await manager.broadcast(DuplexMessenger().serialize_db_objects(device_db_object))
+        await manager.broadcast(
+            DuplexMessenger().serialize_db_objects(device_db_object)
+        )
     else:
         device_db_object = DeviceManager().get_devices_by_mqtt_id(device.mqtt_id)
         await manager.broadcast(DuplexMessenger().serialize(device_db_object))

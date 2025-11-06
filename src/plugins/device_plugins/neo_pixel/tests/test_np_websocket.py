@@ -98,7 +98,9 @@ async def test_np_ws_msg__duplex_messenger__compose_msg__multiple_ids():
 
 
 @pytest.mark.asyncio
-async def test_np_ws_msg__scheduled_palette_rotation__compose_msg_not_called__update_server_side_values_called(empty_test_db):
+async def test_np_ws_msg__scheduled_palette_rotation__compose_msg_not_called__update_server_side_values_called(
+    empty_test_db,
+):
     incoming_data_dict = {
         "device_type_name": "neo_pixel",
         "mqtt_id": 1,
@@ -136,7 +138,13 @@ async def test_np_ws_msg__scheduled_palette_rotation__twinkle(populated_test_db)
 
     await handle_incoming_websocket_message(incoming_data_dict)
 
-    assert populated_test_db.query(NeoPixel).filter(NeoPixel.device.has(Device.mqtt_id == 123)).one().scheduled_palette_rotation is True
+    assert (
+        populated_test_db.query(NeoPixel)
+        .filter(NeoPixel.device.has(Device.mqtt_id == 123))
+        .one()
+        .scheduled_palette_rotation
+        is True
+    )
     incoming_data_dict = {
         "device_type_name": "neo_pixel",
         "mqtt_id": 123,
@@ -146,4 +154,10 @@ async def test_np_ws_msg__scheduled_palette_rotation__twinkle(populated_test_db)
 
     await handle_incoming_websocket_message(incoming_data_dict)
 
-    assert populated_test_db.query(NeoPixel).filter(NeoPixel.device.has(Device.mqtt_id == 123)).one().scheduled_palette_rotation is True
+    assert (
+        populated_test_db.query(NeoPixel)
+        .filter(NeoPixel.device.has(Device.mqtt_id == 123))
+        .one()
+        .scheduled_palette_rotation
+        is True
+    )

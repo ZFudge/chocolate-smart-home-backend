@@ -61,7 +61,9 @@ device_mqtt_ids_and_tag_ids = (
 
 for device_mqtt_id, tag_ids in device_mqtt_ids_and_tag_ids:
     try:
-        logger.info(f"Adding tags to virtual client device: {device_mqtt_id=} {tag_ids=}")
+        logger.info(
+            f"Adding tags to virtual client device: {device_mqtt_id=} {tag_ids=}"
+        )
         put_device_tags(device_mqtt_id, tag_ids)
     except IntegrityError as e:
         logger.error(f"Error putting virtual client device tags: {e}")

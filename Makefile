@@ -11,7 +11,7 @@ MQTT_IMAGE := eclipse-mosquitto:2.0.20
 MQTT_VOLUME_PATH := $(shell pwd)/mosquitto.conf:/mosquitto/config/mosquitto.conf
 
 POSTGRES_CONTAINER_NAME := csm-postgres-db-dev
-POSTGRES_VOLUME_NAME := csm-postgres-vol
+POSTGRES_VOLUME_NAME := csm-postgres-vol-0
 POSTGRES_IMAGE := postgres:12.18-bullseye
 
 TEST_DB_NAME := testdb
@@ -40,7 +40,7 @@ help:
 
 .PHONY: build
 build:
-	@docker-compose build
+	@docker compose build
 
 network:
 	@docker network create -d bridge $(NETWORK_NAME) \
@@ -57,8 +57,10 @@ mqtt: network
 		-p 1883:1883 \
 		-p 9001:9001 \
 		-v $(MQTT_VOLUME_PATH) \
-		$(MQTT_IMAGE)
-
+		$(MQTT_IMAGE) \
+		2> ${TRASH_PATH} || true
+	@docker start mqtt \
+		2> ${TRASH_PATH} || true
 
 mqttlogs:
 	@docker exec -it mqtt /bin/sh -c 'tail -50 -f /mosquitto/log/mosquitto.log'
@@ -67,7 +69,7 @@ cleanmqtt:
 	@docker stop mqtt 2> ${TRASH_PATH} || true
 	@docker rm mqtt 2> ${TRASH_PATH} || true
 
-up:
+up: mqtt
 	@docker-compose up -d
 
 _testuser:
@@ -83,16 +85,17 @@ testdb: _testuser
 run: up testdb
 
 clean:
-	@docker-compose down
+	@docker compose down
 
 rmdbvolume:
 	@docker volume rm $(POSTGRES_VOLUME_NAME)
 
 attach:
-	@docker-compose logs --follow $(APP_CONTAINER_NAME)
+	@docker compose logs --follow $(APP_CONTAINER_NAME)
 
 shell:
-	@docker-compose exec -it $(APP_CONTAINER_NAME) sh
+	@docker exec -it \
+		$(APP_CONTAINER_NAME) ash -l
 
 test: testdb
 	@docker exec -it $(APP_CONTAINER_NAME) sh -c 'pipenv run pytest -vv'
