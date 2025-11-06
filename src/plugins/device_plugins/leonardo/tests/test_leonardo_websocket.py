@@ -1,5 +1,5 @@
-from unittest.mock import patch
 import pytest
+from unittest.mock import patch
 
 from src.routers.websocket import handle_incoming_websocket_message
 
