@@ -1,7 +1,7 @@
 import logging
 from time import sleep
 
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from src.crud import create_tag, put_device_tags
 from src.mqtt.client import MQTTClient
@@ -65,5 +65,5 @@ for device_mqtt_id, tag_ids in device_mqtt_ids_and_tag_ids:
             f"Adding tags to virtual client device: {device_mqtt_id=} {tag_ids=}"
         )
         put_device_tags(device_mqtt_id, tag_ids)
-    except IntegrityError as e:
+    except (IntegrityError, NoResultFound) as e:
         logger.error(f"Error putting virtual client device tags: {e}")

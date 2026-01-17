@@ -61,7 +61,8 @@ def discover_and_import_device_plugin_modules():
                 db_seeding_module = importlib.import_module(db_seeding_module_name)
                 db_seeding_module.seed_db()
             except ImportError as e:
-                logger.error(f"Error importing db_seeding module for {name}: {e}")
+                logger.warning(f"Unable to import db_seeding module for {name}: "
+                                "%s. Skipping db seeding.", e)
 
 
 DEFAULT_PLUGIN = {

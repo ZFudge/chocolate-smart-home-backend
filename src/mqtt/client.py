@@ -1,14 +1,13 @@
 import logging
 import os
 import socket
-import threading
 import time
 from typing import Callable, List
 
 from paho.mqtt import MQTTException, client as mqtt
 
 import src.mqtt.topics as topics
-from src.mqtt.handler import MQTTMessageHandler
+from src.mqtt.handler import mqtt_message_handler
 
 
 logger = logging.getLogger("mqtt")
@@ -20,12 +19,10 @@ DEFAULT_MQTT_PORT = 1883
 class MQTTClient:
     _instance = None
     _initialized = False
-    _lock = threading.Lock()
 
     def __new__(cls, *args, **kwargs):
-        with cls._lock:
-            if cls._instance is None:
-                cls._instance = super().__new__(cls)
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
         return cls._instance
 
     def __init__(
@@ -35,29 +32,28 @@ class MQTTClient:
         port: int = DEFAULT_MQTT_PORT,
         client_id_prefix: str = "",
         subscription_topics: List[str] = (topics.RECEIVE_DEVICE_DATA,),
-        message_handler: Callable = MQTTMessageHandler().device_data_received,
+        message_handler: Callable | None = None,
     ):
-        with self._lock:
-            if self._initialized:
-                return
+        if self._initialized:
+            return
 
-            client_id = client_id_prefix + os.environ.get(
-                "MQTT_CLIENT_ID", "CSM-FASTAPI-SERVER"
-            )
-            logger.info(
-                "Initializing MQTT client with client_id %s, host %s, and port %s"
-                % (client_id, host, port)
-            )
-            self.subscription_topics = subscription_topics
-            self.message_handler = message_handler
-            self._client = mqtt.Client(
-                mqtt.CallbackAPIVersion.VERSION2, client_id=client_id
-            )
-            self._host = host
-            self._port = port
-            self._initialized = True
+        client_id = client_id_prefix + os.environ.get(
+            "MQTT_CLIENT_ID", "CSM-FASTAPI-SERVER"
+        )
+        logger.info(
+            "Initializing MQTT client with client_id %s, host %s, and port %s"
+            % (client_id, host, port)
+        )
+        self.subscription_topics = subscription_topics
+        self.message_handler = message_handler if message_handler is not None else mqtt_message_handler
+        self._client = mqtt.Client(
+            mqtt.CallbackAPIVersion.VERSION2, client_id=client_id
+        )
+        self._host = host
+        self._port = port
+        self._initialized = True
 
-    def subscribe_all(self, *, topics: List[str], handler: Callable) -> None:
+    def subscribe_all(self) -> None:
         for topic_for_sub in self.subscription_topics:
             self._client.subscribe(topic_for_sub)
             self._client.message_callback_add(topic_for_sub, self.message_handler)
@@ -77,9 +73,7 @@ class MQTTClient:
             return
 
         self._client.loop_start()
-        self.subscribe_all(
-            topics=self.subscription_topics, handler=self.message_handler
-        )
+        self.subscribe_all()
 
     def is_connected(self):
         return self._client.is_connected()
