@@ -13,7 +13,6 @@ def test_to_on_off_schema(populated_test_db):
         on=True,
         device=schemas.Device(
             id=1,
-            online=True,
             reboots=0,
             remote_name="Test On Device - 1",
             mqtt_id=123,
@@ -32,7 +31,6 @@ def test_to_on_off_schema_no_tag(populated_test_db):
         on=False,
         device=schemas.Device(
             id=2,
-            online=True,
             reboots=0,
             remote_name="Test Off Device - 2",
             mqtt_id=456,

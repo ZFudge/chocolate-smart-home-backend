@@ -1,7 +1,12 @@
 import pytest
+from datetime import datetime as dt
 
 from src import models
 from src.plugins.device_plugins.on_off.model import OnOff
+
+
+OLDER_DATE = dt.fromisoformat("2025-01-01 00:00:00.000000")
+NEWER_DATE = dt.fromisoformat("2025-01-02 00:00:00.000000")
 
 
 @pytest.fixture
@@ -23,17 +28,19 @@ def populated_test_db(empty_test_db):
     device__id_1 = models.Device(
         mqtt_id=123,
         name="Test On Device",
-        online=True,
         remote_name="Test On Device - 1",
         device_type=device_type,
         tags=[tag],
+        last_seen=NEWER_DATE,
+        last_update_sent=OLDER_DATE,
     )
     device__id_2 = models.Device(
         mqtt_id=456,
         name="Test Off Device",
-        online=True,
         remote_name="Test Off Device - 2",
         device_type=device_type,
+        last_seen=OLDER_DATE,
+        last_update_sent=NEWER_DATE,
     )
 
     on_device__id_1 = OnOff(on=True, device=device__id_1)

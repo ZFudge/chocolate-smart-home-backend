@@ -55,7 +55,6 @@ def test_get_neo_pixel_devices(populated_test_db):
                     },
                 ],
                 "remote_name": "Test Neo Pixel Device - 1",
-                "online": True,
                 "reboots": 0,
             },
         },
@@ -90,7 +89,6 @@ def test_get_neo_pixel_devices(populated_test_db):
                 },
                 "tags": [],
                 "remote_name": "Test Neo Pixel Device - 2",
-                "online": True,
                 "reboots": 0,
             },
         },
@@ -135,7 +133,6 @@ def test_get_neo_pixel_device(populated_test_db):
             "mqtt_id": 123,
             "name": "Test Neo Pixel Device One",
             "remote_name": "Test Neo Pixel Device - 1",
-            "online": True,
             "reboots": 0,
             "device_type": {
                 "id": 1,
@@ -235,7 +232,6 @@ def test_update_neo_pixel_device_name(populated_test_db):
         "id": 1,
         "mqtt_id": 123,
         "name": "Updated Neo Pixel Device Name",
-        "online": True,
         "reboots": 0,
         "remote_name": "Test Neo Pixel Device - 1",
         "tags": [

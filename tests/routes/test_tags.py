@@ -142,7 +142,6 @@ def test_put_device_tags(populated_test_db):
             "name": "TEST_DEVICE_TYPE_NAME_1",
         },
         "mqtt_id": 123,
-        "online": True,
         "reboots": 0,
         "remote_name": "Remote Name 1 - 1",
     }
@@ -162,7 +161,6 @@ def test_put_device_tags_no_tags_none_ids_value(populated_test_db):
             "name": "TEST_DEVICE_TYPE_NAME_1",
         },
         "mqtt_id": 123,
-        "online": True,
         "reboots": 0,
         "remote_name": "Remote Name 1 - 1",
     }
@@ -182,7 +180,6 @@ def test_put_device_tags_no_tags_empty_ids_value(populated_test_db):
             "name": "TEST_DEVICE_TYPE_NAME_1",
         },
         "mqtt_id": 123,
-        "online": True,
         "reboots": 0,
         "remote_name": "Remote Name 1 - 1",
     }
@@ -215,7 +212,6 @@ def test_put_device_tags_partial_success_202(populated_test_db):
             "mqtt_id": 123,
             "remote_name": "Remote Name 1 - 1",
             "name": "Test Device Name 1",
-            "online": True,
             "reboots": 0,
             "device_type": {
                 "id": 1,

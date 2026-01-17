@@ -1,7 +1,12 @@
 import pytest
+from datetime import datetime as dt
 
 from src import models
 from src.plugins.device_plugins.neo_pixel.model import NeoPixel, Palette
+
+
+OLDER_DATE = dt.fromisoformat("2025-01-01 00:00:00.000000")
+NEWER_DATE = dt.fromisoformat("2025-01-02 00:00:00.000000")
 
 
 @pytest.fixture
@@ -22,20 +27,22 @@ def populated_test_db(empty_test_db):
     tag = models.Tag(name="NeoPixel Tag")
 
     device__id_1 = models.Device(
-        online=True,
         remote_name="Test Neo Pixel Device - 1",
         mqtt_id=123,
         device_type=device_type,
         name="Test Neo Pixel Device One",
+        last_seen=NEWER_DATE,
+        last_update_sent=OLDER_DATE,
     )
     device__id_1.tags.append(tag)
 
     device__id_2 = models.Device(
-        online=True,
         remote_name="Test Neo Pixel Device - 2",
         mqtt_id=456,
         device_type=device_type,
         name="Test Neo Pixel Device Two",
+        last_seen=NEWER_DATE,
+        last_update_sent=OLDER_DATE,
     )
 
     neo_pixel_device__id_1 = NeoPixel(

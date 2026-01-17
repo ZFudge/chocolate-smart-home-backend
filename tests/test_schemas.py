@@ -25,7 +25,6 @@ def test_device_to_schema_empty_tag(populated_test_db):
     device = populated_test_db.query(models.Device).filter(models.Device.id == 2).one()
     expected_schema = schemas.Device(
         id=2,
-        online=False,
         reboots=0,
         remote_name="Remote Name 2 - 2",
         mqtt_id=456,

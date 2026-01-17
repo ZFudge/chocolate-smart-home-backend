@@ -28,7 +28,6 @@ def test_get_devices_data(populated_test_db):
             "mqtt_id": 123,
             "remote_name": "Remote Name 1 - 1",
             "name": "Test Device Name 1",
-            "online": True,
             "reboots": 0,
             "device_type": {
                 "name": "TEST_DEVICE_TYPE_NAME_1",
@@ -51,7 +50,6 @@ def test_get_devices_data(populated_test_db):
             "remote_name": "Remote Name 2 - 2",
             "name": "Test Device Name 2",
             "tags": [],
-            "online": False,
             "reboots": 0,
             "device_type": {
                 "name": "TEST_DEVICE_TYPE_NAME_2",
@@ -72,7 +70,6 @@ def test_get_device_data_by_id(populated_test_db):
         "mqtt_id": 123,
         "remote_name": "Remote Name 1 - 1",
         "name": "Test Device Name 1",
-        "online": True,
         "reboots": 0,
         "device_type": {
             "id": 1,
@@ -129,7 +126,6 @@ def test_add_device_tag(populated_test_db):
         "mqtt_id": 123,
         "remote_name": "Remote Name 1 - 1",
         "name": "Test Device Name 1",
-        "online": True,
         "reboots": 0,
         "device_type": {
             "id": 1,
@@ -162,7 +158,6 @@ def test_update_device_name(populated_test_db):
         "id": 1,
         "mqtt_id": 123,
         "name": "Updated Device Name",
-        "online": True,
         "reboots": 0,
         "remote_name": "Remote Name 1 - 1",
         "tags": [

@@ -334,11 +334,9 @@ def test_serilize_msg():
             "#151617",
             "#18191a",
         ),
-        "online": True,
+        "online": False,
         "armed": True,
         "timeout": 172,
-        # "reboots": 0,
-        # "online": True,
     }
 
     assert NeoPixelDuplexMessenger().serialize(neo_pixel_device) == expected_dict

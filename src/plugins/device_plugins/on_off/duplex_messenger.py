@@ -77,6 +77,7 @@ class OnOffDuplexMessenger(BaseDuplexMessenger):
                 remote_name=db_on_off_device.device.remote_name,
                 name=db_on_off_device.device.name,
                 last_seen=str(db_on_off_device.device.last_seen),
+                last_update_sent=str(db_on_off_device.device.last_update_sent),
             )
             if db_on_off_device.device.tags:
                 device.tags = [

@@ -15,7 +15,6 @@ class DeviceBase(BaseModel):
     name: str
     device_type: DeviceType
     tags: List[Tag] | None
-    online: bool
     reboots: int
 
     @field_validator("tags", mode="before")
@@ -48,6 +47,7 @@ class DeviceReceived(BaseModel):
 
 class DeviceFrontend(DeviceReceived):
     last_seen: str | None = None
+    last_update_sent: str | None = None
     tags: List[Tag] | None = None
 
 
