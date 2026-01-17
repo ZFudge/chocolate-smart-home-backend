@@ -1,4 +1,5 @@
 from contextvars import ContextVar
+from datetime import datetime as dt
 
 import pytest
 from sqlalchemy.orm import Session, sessionmaker
@@ -7,6 +8,10 @@ from src import models
 from src.database import Base
 from src.dependencies import db_session, engine, get_db
 from src.main import app
+
+
+OLDER_DATE = dt.fromisoformat("2025-01-01 00:00:00.000000")
+NEWER_DATE = dt.fromisoformat("2025-01-02 00:00:00.000000")
 
 
 def db_closure():
@@ -68,7 +73,8 @@ def populated_test_db(empty_test_db):
         name="Test Device Name 1",
         device_type=type_1,
         tags=[tag_1, tag_2],
-        online=True,
+        last_seen=NEWER_DATE,
+        last_update_sent=OLDER_DATE,
     )
 
     device_2 = models.Device(
@@ -76,7 +82,8 @@ def populated_test_db(empty_test_db):
         remote_name="Remote Name 2 - 2",
         name="Test Device Name 2",
         device_type=type_2,
-        online=False,
+        last_seen=OLDER_DATE,
+        last_update_sent=NEWER_DATE,
     )
 
     test_db.add(type_1)

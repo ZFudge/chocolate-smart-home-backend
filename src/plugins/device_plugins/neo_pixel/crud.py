@@ -5,6 +5,7 @@ from sqlalchemy.exc import NoResultFound, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from src import dependencies
+from src.crud import devices as devices_crud
 from src.mqtt import mqtt_client_ctx, topics
 from .duplex_messenger import NeoPixelDuplexMessenger
 from .model import NeoPixel, Palette
@@ -38,6 +39,7 @@ def get_neo_pixel_device_by_device_id(neo_pixel_device_id: int) -> NeoPixel:
 
 def publish_message(*, neo_pixel_device_id: int, data: dict):
     topic: str = NEO_PIXEL_SEND_TOPIC_TEMPLATE.format(device_id=neo_pixel_device_id)
+    devices_crud.update_last_update_sent_if_exists(neo_pixel_device_id)
     outgoing_msg: str = NeoPixelDuplexMessenger().compose_msg(data)
     mqtt_client_ctx.get().publish(topic=topic, message=outgoing_msg)
 

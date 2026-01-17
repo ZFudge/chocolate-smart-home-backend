@@ -10,7 +10,7 @@ from src.plugins.discovered_plugins import (
 from src.routers import APP_ROUTERS
 
 logger = logging.getLogger(__name__)
-
+logger.setLevel(logging.DEBUG)
 
 app = FastAPI()
 

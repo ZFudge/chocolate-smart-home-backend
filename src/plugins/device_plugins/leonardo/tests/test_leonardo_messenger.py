@@ -6,8 +6,8 @@ from src.schemas import DeviceReceived
 
 def test_leonardo_serialize():
     expected_serialized_data_dict = {
-        "online": True,
         "mqtt_id": 123,
+        "online": False,
         "name": None,
         "device_type_name": "leonardo",
         "remote_name": "Remote Name - uid",

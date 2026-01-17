@@ -78,7 +78,7 @@ def test_message_handler_fails_on_missing_values(populated_test_db, caplog):
 def test_on_off_serialize():
     expected_serialized_data_dict = {
         "on": True,
-        "online": True,
+        "online": False,
         "mqtt_id": 123,
         "name": None,
         "device_type_name": "on_off",

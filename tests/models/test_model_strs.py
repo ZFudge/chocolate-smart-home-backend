@@ -6,7 +6,7 @@ def test_device_model_str(populated_test_db):
         populated_test_db.query(models.Device).filter(models.Device.id == 1).one()
     )
     expected_str_1 = (
-        "Device(id=1, mqtt_id=123, online=True, last_seen=None, reboots=0, remote_name=Remote Name 1 - 1, name=Test Device Name 1, device_type_id=1)\n"
+        "Device(id=1, mqtt_id=123, last_seen=2025-01-02 00:00:00, last_update_sent=2025-01-01 00:00:00, reboots=0, remote_name=Remote Name 1 - 1, name=Test Device Name 1, device_type_id=1)\n"
         "DeviceType(id=1, name=TEST_DEVICE_TYPE_NAME_1)\n"
         "[Tag(id=1, name=Main Tag), Tag(id=2, name=Other Tag)]"
     )
@@ -17,7 +17,7 @@ def test_device_model_str(populated_test_db):
         populated_test_db.query(models.Device).filter(models.Device.id == 2).one()
     )
     expected_str_2 = (
-        "Device(id=2, mqtt_id=456, online=False, last_seen=None, reboots=0, remote_name=Remote Name 2 - 2, name=Test Device Name 2, device_type_id=2)\n"
+        "Device(id=2, mqtt_id=456, last_seen=2025-01-01 00:00:00, last_update_sent=2025-01-02 00:00:00, reboots=0, remote_name=Remote Name 2 - 2, name=Test Device Name 2, device_type_id=2)\n"
         "DeviceType(id=2, name=TEST_DEVICE_TYPE_NAME_2)\n"
         "Tag=None"
     )

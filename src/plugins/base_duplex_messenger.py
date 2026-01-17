@@ -34,7 +34,14 @@ class BaseDuplexMessenger:
     def serialize(data: schemas.DeviceFrontend) -> dict:
         """Serialize device data for broadcast through webocket."""
         data = data.model_dump()
-        data["online"] = True
+        last_seen = data.get("last_seen", "")
+        last_update_sent = data.get("last_update_sent", "")
+        if last_seen and last_update_sent:
+            data["online"] = last_seen > last_update_sent
+        elif last_seen:
+            data["online"] = None
+        else:
+            data["online"] = False
         return data
 
     @staticmethod

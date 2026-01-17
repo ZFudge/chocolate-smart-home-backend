@@ -15,8 +15,8 @@ class Device(Base, ModelStrFormatter):
     id = Column(Integer, primary_key=True)
     mqtt_id = Column(Integer, unique=True)
 
-    online = Column(Boolean, default=False)
     last_seen = Column(DateTime, default=None)
+    last_update_sent = Column(DateTime, default=None)
     reboots = Column(Integer, default=0)
 
     remote_name = Column(String)

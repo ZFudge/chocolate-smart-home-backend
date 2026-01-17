@@ -95,6 +95,7 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
                 remote_name=db_neo_pixel.device.remote_name,
                 name=db_neo_pixel.device.name,
                 last_seen=str(db_neo_pixel.device.last_seen),
+                last_update_sent=str(db_neo_pixel.device.last_update_sent),
             )
             if db_neo_pixel.device.tags:
                 device.tags = [

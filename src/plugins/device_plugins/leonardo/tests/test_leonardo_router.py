@@ -30,7 +30,6 @@ def test_get_leonardo_device(populated_test_db):
                 "name": "Leonardo Client 1 Tag",
             },
         ],
-        "online": True,
         "reboots": 0,
     }
 

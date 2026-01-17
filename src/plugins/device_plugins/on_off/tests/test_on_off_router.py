@@ -31,7 +31,6 @@ def test_get_on_off_devices(populated_test_db):
                         "name": "OnOff Tag",
                     },
                 ],
-                "online": True,
                 "reboots": 0,
             },
         },
@@ -48,7 +47,6 @@ def test_get_on_off_devices(populated_test_db):
                     "name": "on_off",
                 },
                 "tags": [],
-                "online": True,
                 "reboots": 0,
             },
         },
@@ -82,7 +80,6 @@ def test_get_on_off_device(populated_test_db):
                     "name": "OnOff Tag",
                 },
             ],
-            "online": True,
             "reboots": 0,
         },
     }

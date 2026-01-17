@@ -38,10 +38,10 @@ def delete_device(device_id: int):
         raise HTTPException(status_code=500, detail=detail)
 
 
-@device_router.put("/{device_mqtt_id}/tags", response_model=schemas.Device)
-async def put_device_tags(device_mqtt_id: int, tag_ids: schemas.TagIds):
+@device_router.put("/{mqtt_id}/tags", response_model=schemas.Device)
+async def put_device_tags(mqtt_id: int, tag_ids: schemas.TagIds):
     try:
-        device: models_Device = crud.put_device_tags(device_mqtt_id, tag_ids.ids)
+        device: models_Device = crud.put_device_tags(mqtt_id, tag_ids.ids)
     except NoResultFound as e:
         (detail,) = e.args
         raise HTTPException(status_code=500, detail=detail)
@@ -94,10 +94,10 @@ def broadcast_request_devices_state():
         raise HTTPException(status_code=500, detail=detail)
 
 
-@device_router.post("/{device_mqtt_id}/name", response_model=schemas.Device)
-async def update_device_name(device_mqtt_id: int, name: schemas.UpdateDeviceName):
+@device_router.post("/{mqtt_id}/name", response_model=schemas.Device)
+async def update_device_name(mqtt_id: int, name: schemas.UpdateDeviceName):
     try:
-        updated_device = crud.update_device_name(device_mqtt_id, name.name)
+        updated_device = crud.update_device_name(mqtt_id, name.name)
     except NoResultFound as e:
         (detail,) = e.args
         raise HTTPException(status_code=500, detail=detail)

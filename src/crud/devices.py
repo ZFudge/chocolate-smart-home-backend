@@ -1,7 +1,8 @@
+import datetime as dt
 import logging
 from typing import List
 
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import NoResultFound, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from src import dependencies, models
@@ -70,24 +71,24 @@ def get_tags_by_ids(tag_ids: List[int | str]) -> List[models.Tag]:
 
 
 def put_device_tags(
-    device_mqtt_id: int, tag_ids: List[int | str] | None
+    mqtt_id: int, tag_ids: List[int | str] | None
 ) -> models.Device:
     logger.info(
-        f"Putting tags for device with mqtt id {device_mqtt_id} with tag ids {tag_ids}"
+        f"Putting tags for device with mqtt id {mqtt_id} with tag ids {tag_ids}"
     )
     if tag_ids is None:
         tag_ids = []
     logger.info(
         'Adding Tag(s) id(s) of %s to Device with mqtt id of "%s"'
-        % (tag_ids, device_mqtt_id)
+        % (tag_ids, mqtt_id)
     )
     db: Session = dependencies.db_session.get()
     try:
-        device = get_devices_by_mqtt_id(device_mqtt_id)
+        device = get_devices_by_mqtt_id(mqtt_id)
     except NoResultFound as e:
         msg = "Failed to add Tag id(s) of %s to " "Device of mqtt id %s - %s" % (
             tag_ids,
-            device_mqtt_id,
+            mqtt_id,
             e.args[0],
         )
         logger.error(msg)
@@ -103,7 +104,7 @@ def put_device_tags(
                 "Device of mqtt id %s - No Tag object(s) with id(s) %s found."
                 % (
                     tag_ids,
-                    device_mqtt_id,
+                    mqtt_id,
                     tag_ids,
                 )
             )
@@ -181,16 +182,16 @@ def remove_device_tag(device_id: int, tag_id: int) -> models.Device:
     return device
 
 
-def update_device_name(device_mqtt_id: int, device_name: str) -> models.Device:
+def update_device_name(mqtt_id: int, device_name: str) -> models.Device:
     logger.info(
-        f"Updating device name for device with mqtt id {device_mqtt_id} to {device_name}"
+        f"Updating device name for device with mqtt id {mqtt_id} to {device_name}"
     )
     db: Session = dependencies.db_session.get()
     try:
-        device = get_devices_by_mqtt_id(device_mqtt_id)
+        device = get_devices_by_mqtt_id(mqtt_id)
     except NoResultFound as e:
         msg = "Failed to update device name for " "Device with mqtt id of %s - %s" % (
-            device_mqtt_id,
+            mqtt_id,
             e.args[0],
         )
         logger.error(msg)
@@ -200,3 +201,16 @@ def update_device_name(device_mqtt_id: int, device_name: str) -> models.Device:
     db.commit()
     db.refresh(device)
     return device
+
+
+def update_last_update_sent_if_exists(mqtt_id: int):
+    db: Session = dependencies.db_session.get()
+    try:
+        device = db.query(models.Device).filter(models.Device.mqtt_id == mqtt_id).one()
+        device.last_update_sent = dt.datetime.now()
+        db.add(device)
+        db.commit()
+    except (SQLAlchemyError, NoResultFound) as e:
+        (detail,) = e.args
+        db.rollback()
+        logger.error("Failed to update last update sent for Device with an id of %s: %s" % (mqtt_id, detail))

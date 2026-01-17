@@ -27,7 +27,6 @@ class BaseDeviceManager:
         truncated_remote_name = device.remote_name.split(" - ")[0]
 
         db_device = models.Device(
-            online=True,
             mqtt_id=device.mqtt_id,
             remote_name=device.remote_name,
             name=truncated_remote_name,
@@ -67,9 +66,7 @@ class BaseDeviceManager:
         db_device.remote_name = device.remote_name
 
         db_device.device_type = device_type
-        db_device.online = True
         db_device.last_seen = dt.datetime.now()
-
         db.add(db_device)
 
         try:
