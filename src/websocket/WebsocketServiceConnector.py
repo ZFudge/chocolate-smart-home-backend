@@ -9,11 +9,13 @@ from pydantic import ValidationError
 import websockets
 
 from src.SingletonMeta import SingletonMeta
+from src.crud import devices as devices_crud
 from src.plugins.discovered_plugins import get_plugin_by_device_type
 from src.schemas.websocket_msg import WebsocketMessage
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
 
 SECRET = os.getenv("WEBSOCKET_SECRET", "")
 WS_SERVICE_URL = f"ws://csm-ws-service:8050/ws/{SECRET}"
@@ -22,14 +24,14 @@ WS_SERVICE_URL = f"ws://csm-ws-service:8050/ws/{SECRET}"
 class WebsocketServiceConnector(metaclass=SingletonMeta):
     MAX_CONNECTION_ATTEMPTS: int = 10
     CONNECTION_ATTEMPT_DELAY: int = 7
-    mqtt_client = None
+    _mqtt_client = None
     _event_loop = None
 
     def __init__(self, mqtt_client=None):
         self.ws_service_connection: WebSocket | None = None
         self.connection_attempts = 0
-        if mqtt_client is not None and WebsocketServiceConnector.mqtt_client is None:# and isinstance(mqtt_client, MQTTClient):
-            WebsocketServiceConnector.mqtt_client = mqtt_client
+        if mqtt_client is not None and WebsocketServiceConnector._mqtt_client is None:
+            WebsocketServiceConnector._mqtt_client = mqtt_client
     
     @classmethod
     def set_event_loop(cls, loop):
@@ -61,7 +63,7 @@ class WebsocketServiceConnector(metaclass=SingletonMeta):
                     logger.info("Received data from websocket service: %s" % websocket_service_data_str)
                     websocket_service_data = json.loads(websocket_service_data_str)
                     if websocket_service_data.get("action") == "request_all_devices_data":
-                        WebsocketServiceConnector.mqtt_client.request_all_devices_data()
+                        WebsocketServiceConnector._mqtt_client.request_all_devices_data()
                     else:
                         await self.handle_incoming_websocket_message(websocket_service_data)
         except ConnectionRefusedError:
@@ -77,7 +79,7 @@ class WebsocketServiceConnector(metaclass=SingletonMeta):
         Attempts to connect to the websocket service after a connection error or closed connection.
         """
         self.connection_attempts += 1
-        if self.connection_attempts >= WebsocketServiceConnector.MAX_CONNECTION_ATTEMPTS:
+        if self.connection_attempts_exceeded():
             logger.error("Max connection attempts reached. Exiting.")
             return
         logger.info("Waiting %s seconds to retry connection..." % WebsocketServiceConnector.CONNECTION_ATTEMPT_DELAY)
@@ -120,6 +122,7 @@ class WebsocketServiceConnector(metaclass=SingletonMeta):
             return
         DuplexMessenger = device_plugin["DuplexMessenger"]
 
+        mqtt_ids = ws_msg.get_mqtt_ids()
         # Some values are only used server side, so we need to update the server side values
         if (
             hasattr(DeviceManager, "SERVER_SIDE_VALUES")
@@ -128,7 +131,7 @@ class WebsocketServiceConnector(metaclass=SingletonMeta):
             # update device objects in the db with server side values
             logger.info("Updating server side values for Neo Pixel device %s" % ws_msg)
             DeviceManager().update_server_side_values(ws_msg)
-            np_db_objects = DeviceManager().get_devices_by_mqtt_id(ws_msg.get_mqtt_ids())
+            np_db_objects = DeviceManager().get_devices_by_mqtt_id(mqtt_ids)
             fe_data = DuplexMessenger().serialize_db_objects(np_db_objects)
             await self.send_message_to_websocket_service(fe_data)
             return
@@ -148,7 +151,11 @@ class WebsocketServiceConnector(metaclass=SingletonMeta):
             logger.info(
                 "Publishing outgoing data to MQTT: %s, %s" % (complete_topics, outgoing_msg)
             )
-            WebsocketServiceConnector.mqtt_client.publish_all(topics=complete_topics, message=outgoing_msg)
+            mqtt_client = WebsocketServiceConnector._mqtt_client
+            if mqtt_client is not None:
+                mqtt_client.publish_all(topics=complete_topics, message=outgoing_msg)
+            for mqtt_id in mqtt_ids:
+                devices_crud.update_last_update_sent_if_exists(mqtt_id)
 
     def connection_attempts_exceeded(self):
         return self.connection_attempts >= WebsocketServiceConnector.MAX_CONNECTION_ATTEMPTS

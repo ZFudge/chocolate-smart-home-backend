@@ -39,7 +39,10 @@ class BaseDuplexMessenger:
         if last_seen and last_update_sent:
             data["online"] = last_seen > last_update_sent
         elif last_seen:
-            data["online"] = None
+            if last_update_sent is None:
+                data["online"] = True
+            else:
+                data["online"] = None
         else:
             data["online"] = False
         return data
@@ -51,8 +54,7 @@ class BaseDuplexMessenger:
 
     @staticmethod
     def get_topics(ws_msg: schemas.WebsocketMessage) -> Iterable[str]:
-        """Accepts data from websocket and returns list of topics to broadcast this data to.
-        Still returns a list of topics, even if the data contains only one id."""
+        """Accepts data from websocket and returns list of topics to broadcast this data to."""
         format_topic_by_device_id: Callable = topics.get_format_topic_by_device_id(
             ws_msg.device_type_name
         )

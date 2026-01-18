@@ -1,7 +1,7 @@
 from unittest.mock import patch
 import pytest
 
-from src.routers.websocket import handle_incoming_websocket_message
+from src.websocket.WebsocketServiceConnector import WebsocketServiceConnector as WSConnector
 
 
 @pytest.mark.asyncio
@@ -18,7 +18,7 @@ async def test_on_off_ws_to_duplex_messenger__compose_msg():
             "src.plugins.device_plugins.on_off.duplex_messenger.OnOffDuplexMessenger.compose_msg"
         ) as compose_msg,
     ):
-        await handle_incoming_websocket_message(incoming_data_dict)
+        await WSConnector().handle_incoming_websocket_message(incoming_data_dict)
         compose_msg.assert_called_once_with(
             {
                 "on": False,
@@ -35,5 +35,5 @@ async def test_on_off_ws_msg_publish_through_mqtt():
         "value": True,
     }
     with patch("src.mqtt.client.MQTTClient.publish") as publish:
-        await handle_incoming_websocket_message(incoming_data_dict)
+        await WSConnector().handle_incoming_websocket_message(incoming_data_dict)
         publish.assert_called_once_with(topic="/on_off/1/", message="1")

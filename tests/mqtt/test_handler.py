@@ -4,17 +4,16 @@ from unittest.mock import call, patch
 from sqlalchemy.exc import NoResultFound
 from paho.mqtt.client import MQTTMessage
 
-import src.mqtt.handler as mqtt_handler
+from src.mqtt.handler import mqtt_message_handler
 
 
 LOGGER = logging.getLogger(__name__)
 
 
-def test_device_data_received_results(empty_test_db):
-    handler = mqtt_handler.MQTTMessageHandler()
+def test_mqtt_message_handler_results(empty_test_db):
     msg = MQTTMessage(b"test_topic")
     msg.payload = b"1,DEVICE_TYPE,Remote Name - unique identifier"
-    device = handler.device_data_received(0, None, msg)
+    device = mqtt_message_handler(None, None, msg)
 
     assert device.mqtt_id == 1
     assert device.device_type.name == "DEVICE_TYPE"
@@ -32,7 +31,7 @@ def test_plugin_method_calls(empty_test_db):
             "src.mqtt.handler.get_devices_by_mqtt_id", side_effect=NoResultFound
         ) as get_device,
     ):
-        mqtt_handler.MQTTMessageHandler().device_data_received(0, None, msg)
+        mqtt_message_handler(0, None, msg)
 
         get_plugin.assert_called_once_with("UNKNOWN_DEVICE_TYPE")
         get_plugin.return_value["DuplexMessenger"]().parse_msg.assert_called_once_with(
@@ -46,7 +45,7 @@ def test_plugin_method_calls(empty_test_db):
         get_device.assert_called_once_with("1")
 
         get_device.side_effect = lambda *x: None
-        mqtt_handler.MQTTMessageHandler().device_data_received(0, None, msg)
+        mqtt_message_handler(0, None, msg)
 
         assert get_plugin.return_value[
             "DuplexMessenger"
@@ -61,7 +60,7 @@ def test_plugin_method_calls(empty_test_db):
             "DeviceManager"
         ]().update_server_side_values.assert_not_called()
 
-        mqtt_handler.MQTTMessageHandler().device_data_received(0, None, msg)
+        mqtt_message_handler(0, None, msg)
 
         assert get_plugin.return_value[
             "DuplexMessenger"
@@ -85,7 +84,7 @@ def test_empty_payload():
             "src.mqtt.handler.get_devices_by_mqtt_id", side_effect=NoResultFound
         ) as get_device,
     ):
-        mqtt_handler.MQTTMessageHandler().device_data_received(0, None, msg)
+        mqtt_message_handler(0, None, msg)
         get_plugin.assert_not_called()
         get_device.assert_not_called()
 
@@ -99,5 +98,5 @@ def test_too_short_msg(empty_test_db, caplog):
     )
 
     caplog.set_level(logging.INFO)
-    mqtt_handler.MQTTMessageHandler().device_data_received(0, None, msg)
+    mqtt_message_handler(0, None, msg)
     assert expected_exc_text in caplog.text

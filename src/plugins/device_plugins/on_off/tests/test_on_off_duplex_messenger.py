@@ -1,7 +1,7 @@
 import logging
 from paho.mqtt.client import MQTTMessage
 
-from src.mqtt.handler import MQTTMessageHandler
+from src.mqtt.handler import mqtt_message_handler
 from src.plugins.device_plugins.on_off.duplex_messenger import (
     OnOffDuplexMessenger,
 )
@@ -20,7 +20,7 @@ def test_turn_off_message(populated_test_db):
     message = MQTTMessage(b"test_topic")
     message.payload = b"123,on_off,Remote Name - uid,0"
 
-    on_off_device = MQTTMessageHandler().device_data_received(0, None, message)
+    on_off_device = mqtt_message_handler(None, None, message)
     device = on_off_device.device
 
     assert device.id == 1
@@ -29,12 +29,12 @@ def test_turn_off_message(populated_test_db):
     assert on_off_device.on is False
 
     message.payload = b"123,on_off,Remote Name - uid,1"
-    on_off_device = MQTTMessageHandler().device_data_received(0, None, message)
+    on_off_device = mqtt_message_handler(None, None, message)
     assert on_off_device.on is True
     assert on_off_device.device is device
 
     message.payload = b"123,on_off,Remote Name - uid,0"
-    on_off_device = MQTTMessageHandler().device_data_received(0, None, message)
+    on_off_device = mqtt_message_handler(None, None, message)
     assert on_off_device.on is False
     assert on_off_device.device is device
 
@@ -45,7 +45,7 @@ def test_turn_on_message(populated_test_db):
     message = MQTTMessage(b"test_topic")
     message.payload = b"456,on_off,Remote Name - uid,1"
 
-    on_off_device = MQTTMessageHandler().device_data_received(0, None, message)
+    on_off_device = mqtt_message_handler(None, None, message)
     device = on_off_device.device
 
     assert device.id == 2
@@ -54,11 +54,11 @@ def test_turn_on_message(populated_test_db):
     assert on_off_device.on is True
 
     message.payload = b"456,on_off,Remote Name - uid,0"
-    on_off_device = MQTTMessageHandler().device_data_received(0, None, message)
+    on_off_device = mqtt_message_handler(None, None, message)
     assert on_off_device.on is False
 
     message.payload = b"456,on_off,Remote Name - uid,1"
-    on_off_device = MQTTMessageHandler().device_data_received(0, None, message)
+    on_off_device = mqtt_message_handler(None, None, message)
     assert on_off_device.on is True
 
 
@@ -69,7 +69,7 @@ def test_message_handler_fails_on_missing_values(populated_test_db, caplog):
     message.payload = b"111,on_off,Remote Name 40 - uid"
 
     caplog.set_level(logging.INFO)
-    MQTTMessageHandler().device_data_received(0, None, message)
+    mqtt_message_handler(None, None, message)
 
     expected_exc_text = "Not enough comma-separated values in message.payload. payload='111,on_off,Remote Name 40 - uid'."
     assert expected_exc_text in caplog.text

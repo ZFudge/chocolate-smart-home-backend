@@ -89,13 +89,16 @@ class NeoPixelDuplexMessenger(BaseDuplexMessenger):
         serialized_data = []
 
         for db_neo_pixel in data:
+            last_update_sent = db_neo_pixel.device.last_update_sent
+            if last_update_sent is not None:
+                last_update_sent = str(last_update_sent)
             device = np_schemas.DeviceFrontend(
                 mqtt_id=db_neo_pixel.device.mqtt_id,
                 device_type_name="neo_pixel",
                 remote_name=db_neo_pixel.device.remote_name,
                 name=db_neo_pixel.device.name,
                 last_seen=str(db_neo_pixel.device.last_seen),
-                last_update_sent=str(db_neo_pixel.device.last_update_sent),
+                last_update_sent=last_update_sent,
             )
             if db_neo_pixel.device.tags:
                 device.tags = [

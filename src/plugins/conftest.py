@@ -4,9 +4,19 @@ from sqlalchemy.orm import Session, sessionmaker
 import pytest
 
 from src import models
+from src.SingletonMeta import SingletonMeta
 from src.database import Base
 from src.dependencies import db_session, engine, get_db
 from src.main import app
+from src.mqtt import get_mqtt_client
+from src.websocket.WebsocketServiceConnector import WebsocketServiceConnector
+
+
+@pytest.fixture(autouse=True)
+def wsc_mqtt_injection_fixture():
+    SingletonMeta._SINGLETONS = {}
+    WebsocketServiceConnector._mqtt_client = get_mqtt_client()
+    yield
 
 
 def db_closure():

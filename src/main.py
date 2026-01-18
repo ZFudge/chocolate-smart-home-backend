@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
@@ -14,9 +15,19 @@ from src.websocket.WebsocketServiceConnector import WebsocketServiceConnector
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-app = FastAPI()
 
 mqtt_client = get_mqtt_client()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Initialize websocket service connection on startup."""
+    # Store the event loop reference for thread-safe coroutine execution
+    WebsocketServiceConnector.set_event_loop(asyncio.get_event_loop())
+    # Start the websocket service connection task
+    asyncio.create_task(WebsocketServiceConnector(mqtt_client).connect_to_websocket_service())
+    yield
+
+app = FastAPI(lifespan=lifespan)
 
 # Wait for the MQTT client to connect
 while not mqtt_client.is_connected():
@@ -32,11 +43,3 @@ logger.info("Including routers...")
 # With plugins imported, their endpoints can be included.
 for router in APP_ROUTERS + tuple(PLUGIN_ROUTERS):
     app.include_router(router)
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize websocket service connection on startup."""
-    # Store the event loop reference for thread-safe coroutine execution
-    WebsocketServiceConnector.set_event_loop(asyncio.get_running_loop())
-    # Start the websocket service connection task
-    asyncio.create_task(WebsocketServiceConnector(mqtt_client).connect_to_websocket_service())

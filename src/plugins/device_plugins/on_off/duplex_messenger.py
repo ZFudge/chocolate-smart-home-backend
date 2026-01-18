@@ -71,13 +71,16 @@ class OnOffDuplexMessenger(BaseDuplexMessenger):
         serialized_data = []
 
         for db_on_off_device in data:
+            last_update_sent = db_on_off_device.device.last_update_sent
+            if last_update_sent is not None:
+                last_update_sent = str(last_update_sent)
             device = DeviceFrontend(
                 mqtt_id=db_on_off_device.device.mqtt_id,
                 device_type_name="on_off",
                 remote_name=db_on_off_device.device.remote_name,
                 name=db_on_off_device.device.name,
                 last_seen=str(db_on_off_device.device.last_seen),
-                last_update_sent=str(db_on_off_device.device.last_update_sent),
+                last_update_sent=last_update_sent,
             )
             if db_on_off_device.device.tags:
                 device.tags = [
