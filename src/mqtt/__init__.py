@@ -1,16 +1,15 @@
 from contextvars import ContextVar
-import os
-from typing import Optional
+from typing import Any, Optional
 
-from .client import DEFAULT_MQTT_HOST, MQTTClient
+from .client import MQTTClient
 
 mqtt_client_ctx: ContextVar[Optional[MQTTClient]] = ContextVar("mqtt_client_ctx")
 
 
-def get_mqtt_client() -> MQTTClient:
+def get_mqtt_client(**kwargs: Any) -> MQTTClient:
     try:
         return mqtt_client_ctx.get()
     except LookupError:
-        client = MQTTClient(host=os.environ.get("MQTT_HOST", DEFAULT_MQTT_HOST))
+        client = MQTTClient(**kwargs)
         mqtt_client_ctx.set(client)
         return client

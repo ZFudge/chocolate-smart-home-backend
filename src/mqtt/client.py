@@ -8,35 +8,25 @@ from paho.mqtt import MQTTException, client as mqtt
 
 import src.mqtt.topics as topics
 from src.mqtt.handler import mqtt_message_handler
+from src.SingletonMeta import SingletonMeta
 
 
 logger = logging.getLogger("mqtt")
 
-DEFAULT_MQTT_HOST = "127.0.0.1"
+DEFAULT_MQTT_HOST = "mqtt"
 DEFAULT_MQTT_PORT = 1883
 
 
-class MQTTClient:
-    _instance = None
-    _initialized = False
-
-    def __new__(cls, *args, **kwargs):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance
-
+class MQTTClient(metaclass=SingletonMeta):
     def __init__(
         self,
         *,
+        client_id_prefix: str = "",
         host: str = DEFAULT_MQTT_HOST,
         port: int = DEFAULT_MQTT_PORT,
-        client_id_prefix: str = "",
         subscription_topics: List[str] = (topics.RECEIVE_DEVICE_DATA,),
         message_handler: Callable | None = None,
     ):
-        if self._initialized:
-            return
-
         client_id = client_id_prefix + os.environ.get(
             "MQTT_CLIENT_ID", "CSM-FASTAPI-SERVER"
         )
@@ -51,7 +41,6 @@ class MQTTClient:
         )
         self._host = host
         self._port = port
-        self._initialized = True
 
     def subscribe_all(self) -> None:
         for topic_for_sub in self.subscription_topics:

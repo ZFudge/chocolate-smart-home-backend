@@ -4,7 +4,7 @@ from time import sleep
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from src.crud import create_tag, put_device_tags
-from src.mqtt.client import MQTTClient
+from src.mqtt import get_mqtt_client
 from src.plugins.discover_virtual_clients import discover_virtual_clients
 from src.schemas import TagBase
 
@@ -13,9 +13,7 @@ logger.setLevel(logging.INFO)
 
 
 # Create a MQTT client for the virtual clients
-vcs_mqtt_client = MQTTClient(
-    host="mqtt",
-    port=1883,
+vcs_mqtt_client = get_mqtt_client(
     client_id_prefix="virtual_client_",
     subscription_topics=[],
     message_handler=lambda _: None,
