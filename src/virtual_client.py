@@ -1,10 +1,11 @@
 import logging
+import os
 from time import sleep
 
 from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from src.crud import create_tag, put_device_tags
-from src.mqtt.client import MQTTClient
+from src.mqtt import get_mqtt_client
 from src.plugins.discover_virtual_clients import discover_virtual_clients
 from src.schemas import TagBase
 
@@ -13,9 +14,7 @@ logger.setLevel(logging.INFO)
 
 
 # Create a MQTT client for the virtual clients
-vcs_mqtt_client = MQTTClient(
-    host="mqtt",
-    port=1883,
+vcs_mqtt_client = get_mqtt_client(
     client_id_prefix="virtual_client_",
     subscription_topics=[],
     message_handler=lambda _: None,
@@ -25,6 +24,7 @@ vcs_mqtt_client = MQTTClient(
 while not vcs_mqtt_client.is_connected():
     logger.info("Waiting for the initial MQTT client connection...")
     vcs_mqtt_client.connect()
+
 
 # Discover virtual clients
 logger.info("Discovering virtual clients...")
@@ -41,6 +41,21 @@ for tag_name in tag_names:
 
 tag_ids = [tag.id for tag in tags]
 logger.info(f"{tag_ids=}")
+
+
+csm_server_is_online = False
+def handle_vcs_client_id_message(_client, _userdata, message):
+    global csm_server_is_online
+    csm_server_is_online = True
+# Wait for the CSM server to be online
+vcs_client_id = vcs_mqtt_client._client._client_id.decode()
+csm_server_client_id = os.environ.get("MQTT_CLIENT_ID", "CSM-FASTAPI-SERVER")
+vcs_mqtt_client.subscribe(topic=vcs_client_id, handler=handle_vcs_client_id_message)
+while not csm_server_is_online:
+    logger.info("Validating the CSM server's connection to the MQTT broker...")
+    vcs_mqtt_client.publish(topic=csm_server_client_id, message=vcs_client_id)
+    sleep(5)
+
 
 vcs_mqtt_client.request_all_devices_data()
 

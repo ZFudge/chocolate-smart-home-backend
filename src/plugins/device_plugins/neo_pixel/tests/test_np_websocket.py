@@ -5,7 +5,7 @@ from sqlalchemy.exc import NoResultFound
 
 from src.models.device import Device
 from src.plugins.device_plugins.neo_pixel.model import NeoPixel
-from src.routers.websocket import handle_incoming_websocket_message
+from src.websocket.WebsocketServiceConnector import WebsocketServiceConnector as WSConnector
 from src.schemas.websocket_msg import WebsocketMessage
 
 
@@ -24,7 +24,7 @@ async def test_np_ws_msg__mqtt_publish():
         ) as update_server_side_values,
         patch("src.mqtt.client.MQTTClient.publish") as publish,
     ):
-        await handle_incoming_websocket_message(incoming_data_dict)
+        await WSConnector().handle_incoming_websocket_message(incoming_data_dict)
         publish.assert_called_once_with(
             topic="/neo_pixel/1/", message="brightness=255;"
         )
@@ -46,7 +46,7 @@ async def test_np_ws_to__duplex_messenger__compose_msg():
             "src.plugins.device_plugins.neo_pixel.duplex_messenger.NeoPixelDuplexMessenger.compose_msg"
         ) as compose_msg,
     ):
-        await handle_incoming_websocket_message(incoming_data_dict)
+        await WSConnector().handle_incoming_websocket_message(incoming_data_dict)
         compose_msg.assert_called_once_with(
             {
                 "brightness": 255,
@@ -64,7 +64,7 @@ async def test_np_ws_msg__mqtt_publish__multiple_ids():
     }
 
     with patch("src.mqtt.client.MQTTClient.publish") as publish:
-        await handle_incoming_websocket_message(incoming_data_dict)
+        await WSConnector().handle_incoming_websocket_message(incoming_data_dict)
         expected_msg = "twinkle=0;"
         assert publish.call_args_list == [
             call(topic="/neo_pixel/1/", message=expected_msg),
@@ -89,7 +89,7 @@ async def test_np_ws_msg__duplex_messenger__compose_msg__multiple_ids():
             "src.plugins.device_plugins.neo_pixel.duplex_messenger.NeoPixelDuplexMessenger.compose_msg"
         ) as compose_msg,
     ):
-        await handle_incoming_websocket_message(incoming_data_dict)
+        await WSConnector().handle_incoming_websocket_message(incoming_data_dict)
         compose_msg.assert_called_once_with(
             {
                 "twinkle": True,
@@ -118,7 +118,7 @@ async def test_np_ws_msg__scheduled_palette_rotation__compose_msg_not_called__up
     ):
         try:
             # This should raise a NoResultFound error because we don't have a populated database
-            await handle_incoming_websocket_message(incoming_data_dict)
+            await WSConnector().handle_incoming_websocket_message(incoming_data_dict)
         except NoResultFound:
             pass
         compose_msg.assert_not_called()
@@ -136,7 +136,7 @@ async def test_np_ws_msg__scheduled_palette_rotation__twinkle(populated_test_db)
         "value": True,
     }
 
-    await handle_incoming_websocket_message(incoming_data_dict)
+    await WSConnector().handle_incoming_websocket_message(incoming_data_dict)
 
     assert (
         populated_test_db.query(NeoPixel)
@@ -152,7 +152,7 @@ async def test_np_ws_msg__scheduled_palette_rotation__twinkle(populated_test_db)
         "value": True,
     }
 
-    await handle_incoming_websocket_message(incoming_data_dict)
+    await WSConnector().handle_incoming_websocket_message(incoming_data_dict)
 
     assert (
         populated_test_db.query(NeoPixel)

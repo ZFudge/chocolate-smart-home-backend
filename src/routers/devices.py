@@ -5,8 +5,8 @@ from paho.mqtt import MQTTException
 from sqlalchemy.exc import NoResultFound
 from starlette.responses import JSONResponse
 
-from src import crud, mqtt, schemas
 import src.schemas.utils as schema_utils
+from src import crud, mqtt, schemas
 from src.models import Device as models_Device
 from src.websocket.dynamic_broadcast import dynamic_broadcast
 
@@ -88,7 +88,7 @@ def remove_device_tag(device_id: int, tag_id: int):
 )
 def broadcast_request_devices_state():
     try:
-        mqtt.mqtt_client_ctx.get().request_all_devices_data()
+        mqtt.get_mqtt_client().request_all_devices_data()
     except MQTTException as e:
         (detail,) = e.args
         raise HTTPException(status_code=500, detail=detail)

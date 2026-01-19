@@ -8,35 +8,25 @@ from paho.mqtt import MQTTException, client as mqtt
 
 import src.mqtt.topics as topics
 from src.mqtt.handler import mqtt_message_handler
+from src.SingletonMeta import SingletonMeta
 
 
 logger = logging.getLogger("mqtt")
 
-DEFAULT_MQTT_HOST = "127.0.0.1"
+DEFAULT_MQTT_HOST = "mqtt"
 DEFAULT_MQTT_PORT = 1883
 
 
-class MQTTClient:
-    _instance = None
-    _initialized = False
-
-    def __new__(cls, *args, **kwargs):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance
-
+class MQTTClient(metaclass=SingletonMeta):
     def __init__(
         self,
         *,
+        client_id_prefix: str = "",
         host: str = DEFAULT_MQTT_HOST,
         port: int = DEFAULT_MQTT_PORT,
-        client_id_prefix: str = "",
         subscription_topics: List[str] = (topics.RECEIVE_DEVICE_DATA,),
         message_handler: Callable | None = None,
     ):
-        if self._initialized:
-            return
-
         client_id = client_id_prefix + os.environ.get(
             "MQTT_CLIENT_ID", "CSM-FASTAPI-SERVER"
         )
@@ -51,7 +41,6 @@ class MQTTClient:
         )
         self._host = host
         self._port = port
-        self._initialized = True
 
     def subscribe_all(self) -> None:
         for topic_for_sub in self.subscription_topics:
@@ -74,6 +63,29 @@ class MQTTClient:
 
         self._client.loop_start()
         self.subscribe_all()
+        self.subscribe_client_id()
+
+    def subscribe_client_id(self):
+        """
+        Subscribing to this client's own client id, as a topic, allows for
+        other clients, such as the virtual clients server, to validate that
+        this client is connected to the mqtt broker, assuming that:
+        1. the incoming message payload is the other client's client id, so
+           that an appropriate response can be sent back to the other client
+        2. the other client is subscribed to its own client id as a topic, so
+           that it may receive the response.
+        All of this is handled in MQTTClient.handle_client_id_message.
+        """
+        logger.info(f"Subscribing to client id: {self._client._client_id.decode()}")
+        self.subscribe(
+            topic=self._client._client_id.decode(),
+            handler=self.handle_client_id_message,
+        )
+
+    def handle_client_id_message(self, _client, _userdata, message):
+        logger.info("Received message: %s" % message.payload.decode())
+        other_client_client_id = message.payload.decode()
+        self.publish(topic=other_client_client_id, message=self._client._client_id.decode())
 
     def is_connected(self):
         return self._client.is_connected()

@@ -2,7 +2,7 @@ import logging
 from paho.mqtt.client import MQTTMessage
 
 from src import schemas
-from src.mqtt.handler import MQTTMessageHandler
+from src.mqtt.handler import mqtt_message_handler
 from src.plugins.device_plugins.neo_pixel.duplex_messenger import (
     NeoPixelDuplexMessenger,
 )
@@ -16,7 +16,7 @@ def test_incoming_msg_device_unseen_device(populated_test_db):
     message = MQTTMessage(b"test_topic")
 
     message.payload = b"789,neo_pixel,Remote Name - uid,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
-    neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
+    neo_pixel_device = mqtt_message_handler(None, None, message)
     device = neo_pixel_device.device
 
     assert device.id == 3
@@ -25,7 +25,7 @@ def test_incoming_msg_device_unseen_device(populated_test_db):
     assert device.remote_name == "Remote Name - uid"
 
     message.payload = b"789,neo_pixel,New Remote Name - uid,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
-    neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
+    neo_pixel_device = mqtt_message_handler(None, None, message)
     device = neo_pixel_device.device
 
     assert device.remote_name == "New Remote Name - uid"
@@ -40,7 +40,7 @@ def test_message_handler_fails_on_missing_values(populated_test_db, caplog):
 
     caplog.set_level(logging.INFO)
 
-    MQTTMessageHandler().device_data_received(0, None, message)
+    mqtt_message_handler(None, None, message)
 
     expected_exc_text = "Controller palette message must be 27 comma-separated byte strings long, but iteration interrupted early:"
     assert expected_exc_text in caplog.text
@@ -50,11 +50,11 @@ def test_incoming_msg_on(populated_test_db):
     message = MQTTMessage(b"test_topic")
 
     message.payload = b"789,neo_pixel,Remote Name - uid,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
-    neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
+    neo_pixel_device = mqtt_message_handler(None, None, message)
     assert neo_pixel_device.on is True
 
     message.payload = b"789,neo_pixel,Remote Name - uid,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
-    neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
+    neo_pixel_device = mqtt_message_handler(None, None, message)
     assert neo_pixel_device.on is False
 
 
@@ -62,11 +62,11 @@ def test_incoming_msg_twinkle(populated_test_db):
     message = MQTTMessage(b"test_topic")
 
     message.payload = b"789,neo_pixel,Remote Name - uid,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
-    neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
+    neo_pixel_device = mqtt_message_handler(None, None, message)
     assert neo_pixel_device.twinkle is True
 
     message.payload = b"789,neo_pixel,Remote Name - uid,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
-    neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
+    neo_pixel_device = mqtt_message_handler(None, None, message)
     assert neo_pixel_device.twinkle is False
 
 
@@ -74,11 +74,11 @@ def test_incoming_msg_transform(populated_test_db):
     message = MQTTMessage(b"test_topic")
 
     message.payload = b"789,neo_pixel,Remote Name - uid,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
-    neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
+    neo_pixel_device = mqtt_message_handler(None, None, message)
     assert neo_pixel_device.transform is True
 
     message.payload = b"789,neo_pixel,Remote Name - uid,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
-    neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
+    neo_pixel_device = mqtt_message_handler(None, None, message)
     assert neo_pixel_device.transform is False
 
 
@@ -86,15 +86,15 @@ def test_incoming_msg_ms(populated_test_db):
     message = MQTTMessage(b"test_topic")
 
     message.payload = b"789,neo_pixel,Remote Name - uid,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
-    neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
+    neo_pixel_device = mqtt_message_handler(None, None, message)
     assert neo_pixel_device.ms == 7
 
     message.payload = b"789,neo_pixel,Remote Name - uid,0,93,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
-    neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
+    neo_pixel_device = mqtt_message_handler(None, None, message)
     assert neo_pixel_device.ms == 93
 
     message.payload = b"789,neo_pixel,Remote Name - uid,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
-    neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
+    neo_pixel_device = mqtt_message_handler(None, None, message)
     assert neo_pixel_device.ms == 0
 
 
@@ -102,15 +102,15 @@ def test_incoming_msg_brightness(populated_test_db):
     message = MQTTMessage(b"test_topic")
 
     message.payload = b"789,neo_pixel,Remote Name - uid,0,0,255,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
-    neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
+    neo_pixel_device = mqtt_message_handler(None, None, message)
     assert neo_pixel_device.brightness == 255
 
     message.payload = b"789,neo_pixel,Remote Name - uid,0,0,110,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
-    neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
+    neo_pixel_device = mqtt_message_handler(None, None, message)
     assert neo_pixel_device.brightness == 110
 
     message.payload = b"789,neo_pixel,Remote Name - uid,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
-    neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
+    neo_pixel_device = mqtt_message_handler(None, None, message)
     assert neo_pixel_device.brightness == 0
 
 
@@ -118,7 +118,7 @@ def test_incoming_msg_pir_enabled(populated_test_db):
     message = MQTTMessage(b"test_topic")
 
     message.payload = b"789,neo_pixel,Remote Name - uid,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
-    neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
+    neo_pixel_device = mqtt_message_handler(None, None, message)
     assert neo_pixel_device.armed is not None
     assert neo_pixel_device.timeout is not None
 
@@ -127,11 +127,11 @@ def test_incoming_msg_pir__armed(populated_test_db):
     message = MQTTMessage(b"test_topic")
 
     message.payload = b"789,neo_pixel,Remote Name - uid,48,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
-    neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
+    neo_pixel_device = mqtt_message_handler(None, None, message)
     assert neo_pixel_device.armed is True
 
     message.payload = b"789,neo_pixel,Remote Name - uid,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
-    neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
+    neo_pixel_device = mqtt_message_handler(None, None, message)
     assert neo_pixel_device.armed is False
 
 
@@ -139,15 +139,15 @@ def test_incoming_msg_pir__timeout(populated_test_db):
     message = MQTTMessage(b"test_topic")
 
     message.payload = b"789,neo_pixel,Remote Name - uid,16,0,0,123,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
-    neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
+    neo_pixel_device = mqtt_message_handler(None, None, message)
     assert neo_pixel_device.timeout == 123
 
     message.payload = b"789,neo_pixel,Remote Name - uid,16,0,0,234,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
-    neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
+    neo_pixel_device = mqtt_message_handler(None, None, message)
     assert neo_pixel_device.timeout == 234
 
     message.payload = b"789,neo_pixel,Remote Name - uid,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
-    neo_pixel_device = MQTTMessageHandler().device_data_received(0, None, message)
+    neo_pixel_device = mqtt_message_handler(None, None, message)
     assert neo_pixel_device.timeout == 0
 
 
