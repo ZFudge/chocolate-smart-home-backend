@@ -31,6 +31,8 @@ async def lifespan(app: FastAPI):
     # Start the websocket service connection task
     asyncio.create_task(wsc.connect_to_websocket_service())
     yield
+    mqtt_client.disconnect()
+    await wsc.disconnect()
 
 
 app = FastAPI(lifespan=lifespan)

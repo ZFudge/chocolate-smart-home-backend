@@ -4,9 +4,9 @@ import os
 import time
 from typing import Iterable
 
+import websockets
 from fastapi import WebSocket
 from pydantic import ValidationError
-import websockets
 
 from src.SingletonMeta import SingletonMeta
 from src.crud import devices as devices_crud
@@ -159,3 +159,10 @@ class WebsocketServiceConnector(metaclass=SingletonMeta):
 
     def connection_attempts_exceeded(self):
         return self.connection_attempts >= WebsocketServiceConnector.MAX_CONNECTION_ATTEMPTS
+
+    async def disconnect(self):
+        if self.ws_service_connection:
+            logger.info("Closing websocket service connection...")
+            await self.ws_service_connection.close()
+            logger.info("Websocket service connection closed")
+        self.ws_service_connection = None

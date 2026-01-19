@@ -63,6 +63,29 @@ class MQTTClient(metaclass=SingletonMeta):
 
         self._client.loop_start()
         self.subscribe_all()
+        self.subscribe_client_id()
+
+    def subscribe_client_id(self):
+        """
+        Subscribing to this client's own client id, as a topic, allows for
+        other clients, such as the virtual clients server, to validate that
+        this client is connected to the mqtt broker, assuming that:
+        1. the incoming message payload is the other client's client id, so
+           that an appropriate response can be sent back to the other client
+        2. the other client is subscribed to its own client id as a topic, so
+           that it may receive the response.
+        All of this is handled in MQTTClient.handle_client_id_message.
+        """
+        logger.info(f"Subscribing to client id: {self._client._client_id.decode()}")
+        self.subscribe(
+            topic=self._client._client_id.decode(),
+            handler=self.handle_client_id_message,
+        )
+
+    def handle_client_id_message(self, _client, _userdata, message):
+        logger.info("Received message: %s" % message.payload.decode())
+        other_client_client_id = message.payload.decode()
+        self.publish(topic=other_client_client_id, message=self._client._client_id.decode())
 
     def is_connected(self):
         return self._client.is_connected()
