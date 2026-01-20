@@ -3,7 +3,7 @@ import logging
 from src.plugins.base_duplex_messenger import (
     BaseDuplexMessenger,
 )
-from src.schemas import DeviceReceived, DeviceFrontend
+from src.schemas import DeviceReceived
 from src.models import Device as models_Device
 
 
@@ -33,15 +33,8 @@ class LeonardoDuplexMessenger(BaseDuplexMessenger):
 
     def serialize_db_obj(self, db_leonardo_device: models_Device) -> dict:
         """Serialize device data for broadcast through webocket."""
-        return super().serialize(
-            DeviceFrontend(
-                mqtt_id=db_leonardo_device.mqtt_id,
-                device_type_name="leonardo",
-                remote_name=db_leonardo_device.remote_name,
-                name=db_leonardo_device.name,
-                last_seen=str(db_leonardo_device.last_seen),
-            )
-        )
+        fe_device = self.get_device_frontend(db_leonardo_device, "leonardo")
+        return super().serialize(fe_device)
 
 
 # Alias messenger for use in ..discovered_plugins.DISCOVERED_PLUGINS["leonardo"] dict.

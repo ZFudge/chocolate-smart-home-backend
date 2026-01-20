@@ -5,8 +5,6 @@ import logging
 from src.plugins.base_duplex_messenger import (
     BaseDuplexMessenger,
 )
-from src.schemas.device import DeviceFrontend
-from src.schemas.tag import Tag
 from .schemas import OnOffDeviceFrontend, OnOffDeviceReceived
 
 
@@ -71,25 +69,9 @@ class OnOffDuplexMessenger(BaseDuplexMessenger):
         serialized_data = []
 
         for db_on_off_device in data:
-            last_update_sent = db_on_off_device.device.last_update_sent
-            if last_update_sent is not None:
-                last_update_sent = str(last_update_sent)
-            device = DeviceFrontend(
-                mqtt_id=db_on_off_device.device.mqtt_id,
-                device_type_name="on_off",
-                remote_name=db_on_off_device.device.remote_name,
-                name=db_on_off_device.device.name,
-                last_seen=str(db_on_off_device.device.last_seen),
-                last_update_sent=last_update_sent,
-            )
-            if db_on_off_device.device.tags:
-                device.tags = [
-                    Tag(id=tag.id, name=tag.name)
-                    for tag in db_on_off_device.device.tags
-                ]
-
+            fe_device = self.get_device_frontend(db_on_off_device.device, "on_off")
             on_off_data = OnOffDeviceFrontend(
-                device=device,
+                device=fe_device,
                 on=db_on_off_device.on,
             )
             serialized_data.append(self.serialize(on_off_data))

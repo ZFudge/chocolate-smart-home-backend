@@ -1,10 +1,11 @@
 import pytest
 
+from src.models import Device as models_Device
 from src.plugins.base_duplex_messenger import (
     BaseDuplexMessenger,
     DefaultDuplexMessenger,
 )
-from src.schemas import DeviceReceived, WebsocketMessage
+from src.schemas import DeviceReceived, Tag, WebsocketMessage
 
 
 def test_parse_msg():
@@ -124,4 +125,19 @@ def test_get_topics():
     assert list(topics) == [
         "/TEST_DEVICE_TYPE_NAME/456/",
         "/TEST_DEVICE_TYPE_NAME/789/",
+    ]
+
+def test_base_duplex_messenger_get_device_frontend(populated_test_db):
+    db_device = populated_test_db.query(models_Device).first()
+    last_seen = db_device.last_seen
+    last_update_sent = db_device.last_update_sent
+    fe_device = BaseDuplexMessenger().get_device_frontend(db_device, db_device.device_type.name)
+    assert fe_device.mqtt_id == db_device.mqtt_id
+    assert fe_device.device_type_name == db_device.device_type.name
+    assert fe_device.remote_name == db_device.remote_name
+    assert fe_device.name == db_device.name
+    assert fe_device.last_seen == str(last_seen)
+    assert fe_device.last_update_sent == str(last_update_sent)
+    assert fe_device.tags == [
+        Tag(id=tag.id, name=tag.name) for tag in db_device.tags
     ]
