@@ -3,6 +3,8 @@ from typing import Callable, Dict, Iterable, Tuple
 
 from src.mqtt import topics
 import src.schemas as schemas
+from src.schemas import DeviceFrontend, Tag
+from src.models import Device as models_Device
 
 
 logger = logging.getLogger()
@@ -64,6 +66,25 @@ class BaseDuplexMessenger:
     def _compose_param(key: str, val: str) -> str:
         return f"&{key}={val}"
 
+    @staticmethod
+    def get_device_frontend(db_device: models_Device, device_type_name: str) -> DeviceFrontend:
+        last_update_sent = db_device.last_update_sent
+        if last_update_sent is not None:
+            last_update_sent = str(last_update_sent)
+        device = DeviceFrontend(
+            mqtt_id=db_device.mqtt_id,
+            device_type_name=device_type_name,
+            remote_name=db_device.remote_name,
+            name=db_device.name,
+            last_seen=str(db_device.last_seen),
+            last_update_sent=last_update_sent,
+        )
+        if db_device.tags:
+            device.tags = [
+                Tag(id=tag.id, name=tag.name)
+                for tag in db_device.tags
+            ]
+        return device
 
 class DefaultDuplexMessenger(BaseDuplexMessenger):
     def parse_msg(self, raw_msg: str) -> Dict:

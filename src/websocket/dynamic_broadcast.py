@@ -26,11 +26,11 @@ async def dynamic_broadcast(device: models_Device):
     DuplexMessenger: Callable = device_plugin["DuplexMessenger"]
     DeviceManager: Callable = device_plugin["DeviceManager"]
 
+    device_db_object = DeviceManager().get_devices_by_mqtt_id(device.mqtt_id)
     if hasattr(DuplexMessenger, "serialize_db_objects"):
-        device_db_object = DeviceManager().get_devices_by_mqtt_id(device.mqtt_id)
-        await WSC().send_message_to_websocket_service(
-            DuplexMessenger().serialize_db_objects(device_db_object)
-        )
+        data = DuplexMessenger().serialize_db_objects(device_db_object)
+    elif hasattr(DuplexMessenger, "serialize_db_obj"):
+        data = DuplexMessenger().serialize_db_obj(device_db_object)
     else:
-        device_db_object = DeviceManager().get_devices_by_mqtt_id(device.mqtt_id)
-        await WSC().send_message_to_websocket_service(DuplexMessenger().serialize(device_db_object))
+        data = DuplexMessenger().serialize(device_db_object)
+    await WSC().send_message_to_websocket_service(data)
