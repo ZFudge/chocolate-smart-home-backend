@@ -5,7 +5,6 @@ from typing import Callable, List
 from pydantic import ValidationError
 
 from src.plugins.base_duplex_messenger import BaseDuplexMessenger
-from src.schemas.tag import Tag
 import src.plugins.device_plugins.neo_pixel.schemas as np_schemas
 import src.plugins.device_plugins.neo_pixel.utils as utils
 from src.plugins.device_plugins.neo_pixel.schemas import NeoPixelDeviceFrontend
