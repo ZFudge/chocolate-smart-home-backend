@@ -3,8 +3,11 @@ from src import crud, schemas
 def test_get_tags(populated_test_db):
     tags = crud.get_tags()
     assert len(tags) == 3
+    assert tags[0].id == 1
     assert tags[0].name == "Main Tag"
+    assert tags[1].id == 2
     assert tags[1].name == "Other Tag"
+    assert tags[2].id == 3
     assert tags[2].name == "Third Tag"
 
 def test_get_tag_by_id(populated_test_db):

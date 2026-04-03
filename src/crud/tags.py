@@ -1,5 +1,5 @@
 import logging
-from typing import List, Tuple
+from typing import Tuple
 
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
@@ -12,13 +12,13 @@ from src.dependencies import db_session
 logger = logging.getLogger()
 
 
-def get_tags() -> List[TagModel]:
-    return db_session.get().query(TagModel).all()
+def get_tags() -> Tuple[TagModel]:
+    return tuple(db_session.get().query(TagModel).all())
 
 def get_tag_by_id(tag_id: int) -> TagModel | None:
     return db_session.get().query(TagModel).filter(TagModel.id == tag_id).one_or_none()
 
-def get_tags_by_ids(tag_ids: List[int]) -> Tuple[TagModel, ...]:
+def get_tags_by_ids(tag_ids: Tuple[int, ...]) -> Tuple[TagModel, ...]:
     return tuple(map(get_tag_by_id, tag_ids))
 
 def get_tag_by_name(tag_name: str) -> TagModel | None:

@@ -1,6 +1,6 @@
 import datetime as dt
 import logging
-from typing import List
+from typing import Tuple
 
 from sqlalchemy.exc import NoResultFound, SQLAlchemyError
 from sqlalchemy.orm import Session
@@ -14,8 +14,8 @@ from src.dependencies import db_session
 logger = logging.getLogger()
 
 
-def get_all_devices_data() -> List[DeviceModel]:
-    return db_session.get().query(DeviceModel).all()
+def get_devices() -> Tuple[DeviceModel]:
+    return tuple(db_session.get().query(DeviceModel).all())
 
 def get_device_by_id(mqtt_id: int) -> DeviceModel | None:
     return (
@@ -32,7 +32,7 @@ def delete_device(mqtt_id: int) -> None:
 
     device = get_device_by_id(mqtt_id)
     if device is None:
-        msg = "Device deletion failed. No Device with an mqtt id of %s found." % mqtt_id
+        msg = "Failed to delete device with mqtt id %s. No Device object with an mqtt id of %s found." % (mqtt_id, mqtt_id)
         logger.error(msg)
         raise NoResultFound(msg)
 
@@ -47,7 +47,10 @@ def delete_device(mqtt_id: int) -> None:
 def patch_device(patch_device: DevicePatch) -> DeviceModel:
     device = get_device_by_id(patch_device.mqtt_id)
     if device is None:
-        msg = f"Failed to patch device with mqtt id {patch_device.mqtt_id} - No Device object with an mqtt id of {patch_device.mqtt_id} found."
+        msg = (
+            f"Failed to patch device with mqtt id {patch_device.mqtt_id}. "
+            f"No Device object with an mqtt id of {patch_device.mqtt_id} found."
+        )
         logger.error(msg)
         raise NoResultFound(msg)
 

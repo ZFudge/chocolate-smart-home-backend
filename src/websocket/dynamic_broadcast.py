@@ -34,3 +34,9 @@ async def dynamic_broadcast(device: models_Device):
     else:
         data = DuplexMessenger().serialize(device_db_object)
     await WSC().send_message_to_websocket_service(data)
+
+async def broadcast_deleted_device(mqtt_id: int):
+    if not WSC().ws_service_connection:
+        return
+    logger.info(f"Broadcasting deleted device {mqtt_id}")
+    await WSC().send_message_to_websocket_service({"mqtt_id": mqtt_id, "deleted": True})

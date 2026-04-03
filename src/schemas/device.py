@@ -46,7 +46,7 @@ class DeviceReceived(BaseModel):
     name: str | None = None
 
 
-class DeviceFrontend(DeviceBase):
+class DeviceFrontend(DeviceId, DeviceBase):
     device_type_name: str
     tags: List[int] | None = None
     last_seen: str | None = None
