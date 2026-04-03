@@ -65,7 +65,7 @@ def delete_tag(tag_id: int) -> None:
     logger.info('Deleting tag of id "%s"' % tag_id)
     db: Session = db_session.get()
 
-    tag = get_tag_by_id(tag_id)
+    tag: TagModel | None = get_tag_by_id(tag_id)
     if tag is None:
         msg = f"Failed to delete Tag with id of {tag_id}. No Tag object with an id of {tag_id} found."
         logger.error(msg)

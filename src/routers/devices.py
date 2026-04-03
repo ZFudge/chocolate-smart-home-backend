@@ -1,3 +1,4 @@
+import asyncio
 from typing import Tuple
 
 from fastapi import APIRouter, HTTPException
@@ -27,7 +28,6 @@ def get_devices():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e.args[0]))
 
-
 @device_router.get("/{mqtt_id}", response_model=schemas.DeviceFrontend | None)
 def get_device_by_id(mqtt_id: int):
     try:
@@ -47,21 +47,19 @@ def get_device_by_id(mqtt_id: int):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e.args[0]))
 
-
 @device_router.delete("/{device_id}", response_model=None, status_code=204)
 async def delete_device(device_id: int):
     try:
         crud.delete_device(device_id)
-        await broadcast_deleted_device(device_id)
+        asyncio.create_task(broadcast_deleted_device(device_id))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e.args[0]))
-
 
 @device_router.patch("/", response_model=schemas.DeviceFrontend)
 async def patch_device(patch_device: schemas.DevicePatch):
     try:
         patched_device = crud.patch_device(patch_device)
-        await dynamic_broadcast(patched_device)
+        asyncio.create_task(dynamic_broadcast(patched_device))
         return schemas.DeviceFrontend(
             mqtt_id=patched_device.mqtt_id,
             remote_name=patched_device.remote_name,
