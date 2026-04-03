@@ -78,7 +78,7 @@ def populated_test_db(empty_test_db):
     )
 
     device_2 = models.Device(
-        mqtt_id=456,
+        mqtt_id=234,
         remote_name="Remote Name 2 - 2",
         name="Test Device Name 2",
         device_type=type_2,

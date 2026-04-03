@@ -1,112 +1,73 @@
 from typing import Tuple
 
 from fastapi import APIRouter, HTTPException
-from paho.mqtt import MQTTException
-from sqlalchemy.exc import NoResultFound
-from starlette.responses import JSONResponse
 
-import src.schemas.utils as schema_utils
-from src import crud, mqtt, schemas
-from src.models import Device as models_Device
-from src.websocket.dynamic_broadcast import dynamic_broadcast
+from src import crud, schemas
+from src.websocket.dynamic_broadcast import broadcast_deleted_device, dynamic_broadcast
 
-device_router = APIRouter(prefix="/device")
+device_router = APIRouter(prefix="/devices")
 
 
 @device_router.get("/", response_model=Tuple[schemas.Device, ...])
-def get_devices_data():
-    devices_data = crud.get_all_devices_data()
-    return tuple(map(schema_utils.to_schema, devices_data))
-
-
-@device_router.get("/{device_id}", response_model=schemas.Device)
-def get_device_data(device_id: int):
+def get_devices():
     try:
-        device = crud.get_device_by_device_id(device_id)
-        return schema_utils.to_schema(device)
-    except NoResultFound:
-        detail = f"No Device with an id of {device_id} found."
-        raise HTTPException(status_code=404, detail=detail)
+        return tuple([
+            schemas.DeviceFrontend(
+                mqtt_id=device.mqtt_id,
+                remote_name=device.remote_name,
+                name=device.name,
+                device_type_name=device.device_type.name,
+                tags=[tag.id for tag in device.tags] if device.tags else None,
+                reboots=device.reboots,
+                last_seen=str(device.last_seen) if device.last_seen else None,
+                last_update_sent=str(device.last_update_sent) if device.last_update_sent else None,
+            )
+            for device in crud.get_devices() if device is not None
+        ])
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e.args[0]))
+
+
+@device_router.get("/{mqtt_id}", response_model=schemas.DeviceFrontend | None)
+def get_device_by_id(mqtt_id: int):
+    try:
+        device = crud.get_device_by_id(mqtt_id)
+        if device is None:
+            return None
+        return schemas.DeviceFrontend(
+            mqtt_id=mqtt_id,
+            remote_name=device.remote_name,
+            name=device.name,
+            device_type_name=device.device_type.name,
+            tags=[tag.id for tag in device.tags] if device.tags else None,
+            reboots=device.reboots,
+            last_seen=str(device.last_seen) if device.last_seen else None,
+            last_update_sent=str(device.last_update_sent) if device.last_update_sent else None,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e.args[0]))
 
 
 @device_router.delete("/{device_id}", response_model=None, status_code=204)
-def delete_device(device_id: int):
+async def delete_device(device_id: int):
     try:
         crud.delete_device(device_id)
-    except NoResultFound as e:
-        (detail,) = e.args
-        raise HTTPException(status_code=500, detail=detail)
+        await broadcast_deleted_device(device_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e.args[0]))
 
 
-@device_router.put("/{mqtt_id}/tags", response_model=schemas.Device)
-async def put_device_tags(mqtt_id: int, tag_ids: schemas.TagIds):
+@device_router.patch("/", response_model=schemas.DeviceFrontend)
+async def patch_device(patch_device: schemas.DevicePatch):
     try:
-        device: models_Device = crud.put_device_tags(mqtt_id, tag_ids.ids)
-    except NoResultFound as e:
-        (detail,) = e.args
-        raise HTTPException(status_code=500, detail=detail)
-
-    await dynamic_broadcast(device)
-
-    if tag_ids.ids and len(device.tags) < len(tag_ids.ids):
-        return JSONResponse(
-            status_code=202,
-            content={
-                "detail": "Some tag ids were added. Of the given tag ids, %s, the following were not added: %s"
-                % (
-                    tag_ids.ids,
-                    list(set(tag_ids.ids) - set([tag.id for tag in device.tags])),
-                ),
-                "device": schema_utils.to_schema(device).model_dump(),
-            },
+        patched_device = crud.patch_device(patch_device)
+        await dynamic_broadcast(patched_device)
+        return schemas.DeviceFrontend(
+            mqtt_id=patched_device.mqtt_id,
+            remote_name=patched_device.remote_name,
+            name=patched_device.name,
+            device_type_name=patched_device.device_type.name,
+            tags=[tag.id for tag in patched_device.tags] if patched_device.tags else None,
         )
-    return schema_utils.to_schema(device)
-
-
-@device_router.post("/tag/{device_id}/{tag_id}", response_model=schemas.Device)
-def add_device_tag(device_id: int, tag_id: int):
-    try:
-        device = crud.add_device_tag(device_id, tag_id)
-    except NoResultFound as e:
-        (detail,) = e.args
-        raise HTTPException(status_code=500, detail=detail)
-    return schema_utils.to_schema(device)
-
-
-@device_router.delete("/tag/{device_id}/{tag_id}", response_model=schemas.DeviceBase)
-def remove_device_tag(device_id: int, tag_id: int):
-    try:
-        updated_device = crud.remove_device_tag(device_id, tag_id)
-    except NoResultFound as e:
-        (detail,) = e.args
-        raise HTTPException(status_code=500, detail=detail)
-    return schema_utils.to_schema(updated_device)
-
-
-@device_router.head(
-    "/broadcast_request_devices_state/", response_model=None, status_code=204
-)
-def broadcast_request_devices_state():
-    try:
-        mqtt.get_mqtt_client().request_all_devices_data()
-    except MQTTException as e:
-        (detail,) = e.args
-        raise HTTPException(status_code=500, detail=detail)
-
-
-@device_router.post("/{mqtt_id}/name", response_model=schemas.Device)
-async def update_device_name(mqtt_id: int, name: schemas.UpdateDeviceName):
-    try:
-        updated_device = crud.update_device_name(mqtt_id, name.name)
-    except NoResultFound as e:
-        (detail,) = e.args
-        raise HTTPException(status_code=500, detail=detail)
-
-    await dynamic_broadcast(updated_device)
-
-    return schema_utils.to_schema(updated_device)
-
-
-@device_router.get("/health/check/", response_model=dict[str, str], status_code=200)
-def health() -> dict:
-    return {"status": "ok"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e.args[0]))

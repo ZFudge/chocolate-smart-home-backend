@@ -1,7 +1,6 @@
 from typing import Tuple
 
 from fastapi import APIRouter, HTTPException
-from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from src import crud, schemas
 
@@ -10,42 +9,48 @@ tags_router = APIRouter(prefix="/tags")
 
 
 @tags_router.get("/", response_model=Tuple[schemas.Tag, ...])
-def get_tags_data():
-    tags_data = crud.get_tags()
-    return tuple(map(schemas.to_schema, tags_data))
+def get_tags():
+    try:
+        return tuple([
+            schemas.Tag(id=tag.id, name=tag.name)
+            for tag in crud.get_tags() if tag is not None
+        ])
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-@tags_router.get("/{tag_id}", response_model=schemas.Tag)
-def get_tag_data(tag_id: int):
+@tags_router.get("/{tag_id}", response_model=schemas.Tag | None)
+def get_tag_by_id(tag_id: int):
     try:
         tag = crud.get_tag_by_id(tag_id)
-        return schemas.to_schema(tag)
-    except NoResultFound:
-        detail = f"No Tag with an id of {tag_id} found."
-        raise HTTPException(status_code=404, detail=detail)
+        return schemas.Tag(id=tag.id, name=tag.name) if tag else None
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=e.args[0])
 
 
 @tags_router.post("/", response_model=schemas.Tag)
-def create_tag(tag_data: schemas.TagBase):
+def create_tag(new_tag: schemas.TagBase):
     try:
-        tag = crud.create_tag(tag_data)
-        return schemas.to_schema(tag)
-    except IntegrityError as e:
-        raise HTTPException(status_code=500, detail=e.orig.diag.message_detail)
+        tag = crud.create_tag(new_tag.name)
+        if tag is None:
+            raise HTTPException(status_code=500, detail="Failed to create tag.")
+        return schemas.Tag(id=tag.id, name=tag.name)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e.args[0]))
 
 
-@tags_router.put("/{tag_id}", response_model=schemas.Tag)
-def put_tag(tag_id: int, tag: schemas.TagBase):
+@tags_router.patch("/", response_model=schemas.Tag)
+def patch_tag(patch_tag: schemas.TagPatch):
     try:
-        updated_tag = crud.put_tag(tag_id, tag.name)
+        updated_tag = crud.patch_tag(patch_tag)
         return schemas.Tag(id=updated_tag.id, name=updated_tag.name)
-    except NoResultFound as e:
-        raise HTTPException(status_code=500, detail=e.args[0])
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e.args[0]))
 
 
 @tags_router.delete("/{tag_id}", response_model=None, status_code=204)
 def delete_tag(tag_id: int):
     try:
         crud.delete_tag(tag_id)
-    except NoResultFound as e:
-        raise HTTPException(status_code=500, detail=e.args[0])
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e.args[0]))

@@ -2,21 +2,19 @@ import logging
 
 from functools import singledispatch
 
-from sqlalchemy.orm import Session
-
-from src import models
+from src.models import DeviceType as DeviceTypeModel
 from src.dependencies import db_session
-import src.schemas as schemas
 
 
 logger = logging.getLogger()
 
 
 @singledispatch
-def create_device_type(db: Session, device_type_name: str) -> models.DeviceType:
+def create_device_type(device_type_name: str) -> DeviceTypeModel:
     logger.info('Creating device_type "%s"' % device_type_name)
 
-    device_type = models.DeviceType(name=device_type_name)
+    device_type = DeviceTypeModel(name=device_type_name)
+    db = db_session.get()
     db.add(device_type)
 
     try:
@@ -28,21 +26,6 @@ def create_device_type(db: Session, device_type_name: str) -> models.DeviceType:
     db.refresh(device_type)
     return device_type
 
+def get_device_type_by_name(device_type_name: str) -> DeviceTypeModel:
+    return db_session.get().query(DeviceTypeModel).filter(DeviceTypeModel.name == device_type_name).one_or_none()
 
-@create_device_type.register
-def _(device_type_name: str) -> models.DeviceType:
-    return create_device_type(db_session.get(), device_type_name)
-
-
-def get_new_or_existing_device_type_by_name(
-    device_type_name: schemas.DeviceTypeBase,
-) -> models.DeviceType:
-    db: Session = db_session.get()
-    device_type = (
-        db.query(models.DeviceType)
-        .filter(models.DeviceType.name == device_type_name)
-        .first()
-    )
-    if device_type is None:
-        return create_device_type(device_type_name)
-    return device_type

@@ -3,20 +3,21 @@ from .device import (
     DeviceBase,
     DeviceFrontend,
     DeviceId,
+    DevicePatch,
     DeviceReceived,
     DeviceUpdate,
     UpdateDeviceName,
 )
 from .device_type import DeviceType, DeviceTypeBase
-from .tag import Tag, TagBase, TagId, TagIds
+from .tag import Tag, TagBase, TagId, TagIds, TagPatch
 from .websocket_msg import WebsocketMessage
-from .utils import to_schema
 
 __all__ = [
     "Device",
     "DeviceBase",
-    "DeviceId",
     "DeviceFrontend",
+    "DeviceId",
+    "DevicePatch",
     "DeviceReceived",
     "DeviceType",
     "DeviceTypeBase",
@@ -25,7 +26,7 @@ __all__ = [
     "TagBase",
     "TagId",
     "TagIds",
+    "TagPatch",
     "UpdateDeviceName",
     "WebsocketMessage",
-    "to_schema",
 ]

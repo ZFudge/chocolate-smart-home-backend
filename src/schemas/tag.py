@@ -22,4 +22,7 @@ class TagCreate(TagBase):
     pass
 
 
-__all__ = ["Tag", "TagBase", "TagCreate", "TagIds"]
+class TagPatch(TagId, TagBase):
+    pass
+
+__all__ = ["Tag", "TagBase", "TagCreate", "TagIds", "TagPatch"]

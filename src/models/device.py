@@ -12,8 +12,7 @@ from .tag import Tag
 class Device(Base, ModelStrFormatter):
     __tablename__ = "devices"
 
-    id = Column(Integer, primary_key=True)
-    mqtt_id = Column(Integer, unique=True)
+    mqtt_id = Column(Integer, primary_key=True)
 
     last_seen = Column(DateTime, default=None)
     last_update_sent = Column(DateTime, default=None)

@@ -2,20 +2,21 @@ from pydantic import BaseModel, field_validator
 from typing import List
 
 from src.schemas.device_type import DeviceType
-from src.schemas.tag import Tag
 
 
 class DeviceId(BaseModel):
-    id: int
+    mqtt_id: int
 
 
 class DeviceBase(BaseModel):
-    mqtt_id: str | int
     remote_name: str
     name: str
-    device_type: DeviceType
-    tags: List[Tag] | None
     reboots: int
+
+
+class DeviceWithTagsAndDeviceType(BaseModel):
+    tags: List[int] | None
+    device_type: DeviceType
 
     @field_validator("tags", mode="before")
     @classmethod
@@ -25,7 +26,7 @@ class DeviceBase(BaseModel):
         return v
 
 
-class Device(DeviceId, DeviceBase):
+class Device(DeviceId, DeviceWithTagsAndDeviceType):
     pass
 
 
@@ -45,16 +46,24 @@ class DeviceReceived(BaseModel):
     name: str | None = None
 
 
-class DeviceFrontend(DeviceReceived):
+class DeviceFrontend(DeviceBase):
+    device_type_name: str
+    tags: List[int] | None = None
     last_seen: str | None = None
     last_update_sent: str | None = None
-    tags: List[Tag] | None = None
+
+
+class DevicePatch(BaseModel):
+    mqtt_id: int
+    tags: List[int] | None = None
+    name: str | None = None
 
 
 __all__ = [
-    "DeviceBase",
     "Device",
+    "DeviceBase",
+    "DeviceFrontend",
+    "DevicePatch",
     "DeviceReceived",
     "DeviceUpdate",
-    "DeviceFrontend",
 ]

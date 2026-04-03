@@ -30,24 +30,24 @@ plugin_router = APIRouter(prefix="/neo_pixel")
 @plugin_router.get("/")
 def get_devices() -> Tuple[NeoPixelDevice, ...]:
     try:
-        return tuple(map(to_neo_pixel_schema, get_all_neo_pixel_devices_data()))
-    except SQLAlchemyError as e:
-        (detail,) = e.args
-        logger.error(detail)
-        raise HTTPException(status_code=404, detail=detail)
+        return tuple(
+            to_neo_pixel_schema(device) for device in get_all_neo_pixel_devices_data() if device is not None
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @plugin_router.get("/{neo_pixel_device_id}")
-def get_device(neo_pixel_device_id: int) -> NeoPixelDevice:
+def get_device(neo_pixel_device_id: int) -> NeoPixelDevice | None:
     try:
         neo_pixel_device: NeoPixel = get_neo_pixel_device_by_device_id(
             neo_pixel_device_id
         )
-    except SQLAlchemyError as e:
-        (detail,) = e.args
-        logger.error(detail)
-        raise HTTPException(status_code=404, detail=detail)
-    return to_neo_pixel_schema(neo_pixel_device)
+        if neo_pixel_device is None:
+            return
+        return to_neo_pixel_schema(neo_pixel_device)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @plugin_router.post("/", response_model=None, status_code=204)
