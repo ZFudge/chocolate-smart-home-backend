@@ -10,7 +10,6 @@ from .device import (
 )
 from .device_type import DeviceType, DeviceTypeBase
 from .tag import Tag, TagBase, TagId, TagIds, TagPatch
-from .websocket_msg import WebsocketMessage
 
 __all__ = [
     "Device",
@@ -28,5 +27,4 @@ __all__ = [
     "TagIds",
     "TagPatch",
     "UpdateDeviceName",
-    "WebsocketMessage",
 ]

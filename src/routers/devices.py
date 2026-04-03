@@ -1,4 +1,4 @@
-import asyncio
+# import asyncio
 import logging
 from typing import Tuple
 
@@ -6,7 +6,7 @@ from fastapi import APIRouter, HTTPException
 from sqlalchemy.exc import NoResultFound
 
 from src import crud, schemas
-from src.websocket.dynamic_broadcast import broadcast_deleted_device, dynamic_broadcast
+# from src.websocket.dynamic_broadcast import broadcast_deleted_device, dynamic_broadcast
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +68,7 @@ def get_device_by_id(mqtt_id: int):
 async def delete_device(mqtt_id: int):
     try:
         crud.delete_device(mqtt_id)
-        asyncio.create_task(broadcast_deleted_device(mqtt_id))
+        # asyncio.create_task(broadcast_deleted_device(mqtt_id))
     except NoResultFound as e:
         raise HTTPException(status_code=500, detail=str(e.args[0]))
     except Exception as e:
@@ -80,7 +80,7 @@ async def delete_device(mqtt_id: int):
 async def patch_device(patch_device: schemas.DevicePatch):
     try:
         patched_device = crud.patch_device(patch_device)
-        asyncio.create_task(dynamic_broadcast(patched_device))
+        # asyncio.create_task(dynamic_broadcast(patched_device))
         return schemas.DeviceFrontend(
             mqtt_id=patched_device.mqtt_id,
             remote_name=patched_device.remote_name,
