@@ -15,14 +15,20 @@ logger = logging.getLogger()
 def get_tags() -> Tuple[TagModel]:
     return tuple(db_session.get().query(TagModel).all())
 
+
 def get_tag_by_id(tag_id: int) -> TagModel | None:
     return db_session.get().query(TagModel).filter(TagModel.id == tag_id).one_or_none()
+
 
 def get_tags_by_ids(tag_ids: Tuple[int, ...]) -> Tuple[TagModel, ...]:
     return tuple(map(get_tag_by_id, tag_ids))
 
+
 def get_tag_by_name(tag_name: str) -> TagModel | None:
-    return db_session.get().query(TagModel).filter(TagModel.name == tag_name).one_or_none()
+    return (
+        db_session.get().query(TagModel).filter(TagModel.name == tag_name).one_or_none()
+    )
+
 
 def create_tag(tag_name: str) -> TagModel:
     db: Session = db_session.get()
@@ -39,8 +45,11 @@ def create_tag(tag_name: str) -> TagModel:
     db.refresh(new_tag)
     return new_tag
 
+
 def patch_tag(patch_tag: schemas.TagPatch) -> TagModel:
-    logger.info('Updating tag of id %s and name of "%s' % (patch_tag.id, patch_tag.name))
+    logger.info(
+        'Updating tag of id %s and name of "%s' % (patch_tag.id, patch_tag.name)
+    )
     db: Session = db_session.get()
 
     tag_obj = get_tag_by_id(patch_tag.id)
@@ -59,6 +68,7 @@ def patch_tag(patch_tag: schemas.TagPatch) -> TagModel:
 
     db.refresh(tag_obj)
     return tag_obj
+
 
 def delete_tag(tag_id: int) -> None:
     """Remove Tag object from any associated Devices, and delete the Tag object"""

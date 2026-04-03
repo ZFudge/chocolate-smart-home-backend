@@ -5,9 +5,11 @@ from src import mqtt
 
 misc_router = APIRouter()
 
+
 @misc_router.get("/health/check/", response_model=dict[str, str], status_code=200)
 def health() -> dict:
     return {"status": "ok"}
+
 
 @misc_router.head(
     "/broadcast_request_devices_state/", response_model=None, status_code=204

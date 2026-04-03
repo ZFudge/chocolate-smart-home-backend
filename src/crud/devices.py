@@ -17,6 +17,7 @@ logger = logging.getLogger()
 def get_devices() -> Tuple[DeviceModel]:
     return tuple(db_session.get().query(DeviceModel).all())
 
+
 def get_device_by_id(mqtt_id: int) -> DeviceModel | None:
     return (
         db_session.get()
@@ -25,14 +26,18 @@ def get_device_by_id(mqtt_id: int) -> DeviceModel | None:
         .one_or_none()
     )
 
+
 def delete_device(mqtt_id: int) -> None:
     """Dynamically delete row of any device model."""
-    logger.info(f'Deleting Device with mqtt id of {mqtt_id}')
+    logger.info(f"Deleting Device with mqtt id of {mqtt_id}")
     db: Session = db_session.get()
 
     device = get_device_by_id(mqtt_id)
     if device is None:
-        msg = "Failed to delete device with mqtt id %s. No Device object with an mqtt id of %s found." % (mqtt_id, mqtt_id)
+        msg = (
+            "Failed to delete device with mqtt id %s. No Device object with an mqtt id of %s found."
+            % (mqtt_id, mqtt_id)
+        )
         logger.error(msg)
         raise NoResultFound(msg)
 
@@ -43,6 +48,7 @@ def delete_device(mqtt_id: int) -> None:
     except:
         db.rollback()
         raise
+
 
 def patch_device(patch_device: DevicePatch) -> DeviceModel:
     device = get_device_by_id(patch_device.mqtt_id)
@@ -70,6 +76,7 @@ def patch_device(patch_device: DevicePatch) -> DeviceModel:
     db.refresh(device)
     return device
 
+
 def update_last_update_sent_if_exists(mqtt_id: int):
     db: Session = db_session.get()
     try:
@@ -82,4 +89,7 @@ def update_last_update_sent_if_exists(mqtt_id: int):
     except (SQLAlchemyError, NoResultFound) as e:
         (detail,) = e.args
         db.rollback()
-        logger.error("Failed to update last update sent for Device with an id of %s: %s" % (mqtt_id, detail))
+        logger.error(
+            "Failed to update last update sent for Device with an id of %s: %s"
+            % (mqtt_id, detail)
+        )

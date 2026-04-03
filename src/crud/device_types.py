@@ -26,6 +26,11 @@ def create_device_type(device_type_name: str) -> DeviceTypeModel:
     db.refresh(device_type)
     return device_type
 
-def get_device_type_by_name(device_type_name: str) -> DeviceTypeModel:
-    return db_session.get().query(DeviceTypeModel).filter(DeviceTypeModel.name == device_type_name).one_or_none()
 
+def get_device_type_by_name(device_type_name: str) -> DeviceTypeModel:
+    return (
+        db_session.get()
+        .query(DeviceTypeModel)
+        .filter(DeviceTypeModel.name == device_type_name)
+        .one_or_none()
+    )
