@@ -5,7 +5,6 @@ from sqlalchemy.orm import relationship, Mapped
 
 from src.database import Base
 from .device_tags import device_tags
-from .model_str_formatter import ModelStrFormatter
 from .tag import Tag
 
 
