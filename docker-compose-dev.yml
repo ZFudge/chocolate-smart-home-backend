@@ -1,0 +1,88 @@
+networks:
+  csm-backend-network-dev:
+    name: csm-backend-network-dev
+
+volumes:
+  csm-postgres-vol-dev:
+    name: csm-postgres-vol-dev
+
+x-common-attrs: &common-attrs
+  env_file: .env
+  networks:
+    - csm-backend-network-dev
+  environment:
+    MQTT_HOST: csm-mqtt-dev
+    MQTT_CLIENT_ID: CSM-FASTAPI-SERVER-DEV
+
+services:
+  csm-mqtt-dev:
+    << : *common-attrs
+    image: eclipse-mosquitto:2.0.20
+    container_name: csm-mqtt-dev
+    ports:
+      - 1883:1883
+      - 9001:9001
+    volumes:
+      - type: bind
+        source: ./mosquitto.conf
+        target: /mosquitto/config/mosquitto.conf
+      - type: bind
+        source: /tmp/logs/
+        target: /mosquitto/log/
+      - type: bind
+        source: ./mqtt_healthcheck.sh
+        target: /usr/local/bin/healthcheck.sh
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "/usr/local/bin/healthcheck.sh"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+  csm-postgres-db-dev:
+    << : *common-attrs
+    image: postgres:12.18-bullseye
+    container_name: csm-postgres-db-dev
+    ports:
+      - 15432:5432
+    volumes:
+      - csm-postgres-vol-dev:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  csm-backend-dev:
+    << : *common-attrs
+    build: .
+    image: csm-backend
+    container_name: csm-backend-dev
+    develop:
+      watch:
+        - action: sync
+          path: ./
+          target: /backend/
+    ports:
+      - 8000:8000
+    volumes:
+      - type: bind
+        source: ./
+        target: /backend/
+      - type: bind
+        source: /tmp/logs/
+        target: /var/logs/csm/
+      - type: bind
+        source: ./csm.sh
+        target: /etc/profile.d/csm.sh
+    depends_on:
+      csm-postgres-db-dev:
+        condition: service_healthy
+      csm-mqtt-dev:
+        condition: service_healthy
+    command: [
+      "pipenv", "run", "uvicorn", "src.main:app",
+      "--host", "0.0.0.0",
+      "--reload",
+      "--log-level", "debug",
+      "--log-config", "logs.ini"
+    ]

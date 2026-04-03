@@ -24,53 +24,23 @@ help:
 	@echo ""
 	@echo "Targets:"
 	@echo "  help                         Print this help message"
-	@echo "  network                      Create $(NETWORK_NAME) network"
-	@echo "  cleannetwork                 Remove $(NETWORK_NAME) network"
-	@echo "  mqtt                         Run mqtt container"
-	@echo "  cleanmqtt                    Remove mqtt container from docker network and delete container"
 	@echo "  build                        Build the app image"
-	@echo "  run                          Run the app with app database and testing database"
-	@echo "  clean                        Stop the app"
+	@echo "  dev                          Run the app in development mode"
+	@echo "  devclean                     Stop the app in development mode"
+	@echo "  devlogs                      Follow the logs of the app in development mode"
 	@echo "  test                         Run tests in $(APP_CONTAINER_NAME) container using pipenv and pytest"
 	@echo "  broadcast                    Broadcast request for all device states"
-	@echo "  attach                       Attach session to $(APP_CONTAINER_NAME) output"
 	@echo "  shell                        Open shell in $(APP_CONTAINER_NAME) container"
+	@echo "  virtual_clients              Run virtual clients"
 	@echo ""
 
 
 .PHONY: build
 build:
-	@docker compose build
-
-network:
-	@docker network create -d bridge $(NETWORK_NAME) \
-		2> ${TRASH_PATH} || true
-
-cleannetwork: cleanmqtt
-	@docker network rm $(NETWORK_NAME) \
-		2> ${TRASH_PATH}
-
-mqtt: network
-	@docker run -it -d \
-		--name=mqtt \
-		--network=$(NETWORK_NAME) \
-		-p 1883:1883 \
-		-p 9001:9001 \
-		-v $(MQTT_VOLUME_PATH) \
-		$(MQTT_IMAGE) \
-		2> ${TRASH_PATH} || true
-	@docker start mqtt \
-		2> ${TRASH_PATH} || true
+	@docker compose -f docker-compose-dev.yml build
 
 mqttlogs:
-	@docker exec -it mqtt /bin/sh -c 'tail -50 -f /mosquitto/log/mosquitto.log'
-
-cleanmqtt:
-	@docker stop mqtt 2> ${TRASH_PATH} || true
-	@docker rm mqtt 2> ${TRASH_PATH} || true
-
-up: mqtt
-	@docker-compose up -d
+	@docker compose -f docker-compose-dev.yml logs -f csm-mqtt-dev
 
 _testuser:
 	@echo "Creating test user if one does not exist. Errors about user already existing are expected."
@@ -82,25 +52,28 @@ testdb: _testuser
 	@docker exec -it $(POSTGRES_CONTAINER_NAME) /bin/bash -c \
 		"psql -c 'CREATE DATABASE testdb OWNER testuser;' csm" || true
 
-run: up testdb
+devclean:
+	@docker compose -f docker-compose-dev.yml down
 
-clean:
-	@docker compose down
+devlogs:
+	@docker compose -f docker-compose-dev.yml logs -f
+
+dev:
+	@docker compose -f docker-compose-dev.yml up -d
+	@make testdb
+	@make devlogs
 
 rmdbvolume:
 	@docker volume rm $(POSTGRES_VOLUME_NAME)
 
-attach:
-	@docker compose logs --follow $(APP_CONTAINER_NAME)
-
 shell:
-	@docker exec -it \
-		$(APP_CONTAINER_NAME) ash -l
+	@docker compose -f docker-compose-dev.yml exec csm-backend-dev ash -l || \
+	docker run -it --rm -v $(shell pwd):/backend \
+      -v $(shell pwd)/csm.sh:/etc/profile.d/csm.sh \
+      -w /backend csm-backend:latest ash -l
 
 test: testdb
-	@docker exec -it $(APP_CONTAINER_NAME) sh -c 'pipenv run pytest -vv'
-
-testing: test
+	@docker compose -f docker-compose-dev.yml exec csm-backend-dev sh -c 'pipenv run pytest -vv'
 
 broadcast:
 	@curl --head http://localhost:8000/device/broadcast_request_devices_state/
