@@ -4,15 +4,18 @@ from src.main import app
 
 client = TestClient(app)
 
+
 def test_empty_get_devices(empty_test_db):
     resp = client.get("/devices/")
     assert resp.status_code == 200
     assert resp.json() == []
 
+
 def test_nonexistent_get_device(empty_test_db):
     resp = client.get("/devices/1")
     assert resp.status_code == 200
     assert resp.json() is None
+
 
 def test_get_devices(populated_test_db):
     resp = client.get("/devices")
@@ -40,6 +43,7 @@ def test_get_devices(populated_test_db):
         },
     ]
 
+
 def test_get_device_data_by_id(populated_test_db):
     resp = client.get("/devices/123")
     assert resp.status_code == 200
@@ -54,12 +58,14 @@ def test_get_device_data_by_id(populated_test_db):
         "last_update_sent": "2025-01-01 00:00:00",
     }
 
+
 def test_delete_device_request(populated_test_db):
     resp = client.delete("/devices/123")
     assert resp.status_code == 204
     resp = client.get("/devices/123")
     assert resp.status_code == 200
     assert resp.json() is None
+
 
 def test_delete_device_duplicate_deletion_fails(populated_test_db):
     resp = client.delete("/devices/123")
@@ -72,6 +78,7 @@ def test_delete_device_duplicate_deletion_fails(populated_test_db):
         )
     }
 
+
 def test_delete_device_fails_on_invalid_device_id(populated_test_db):
     resp = client.delete("/devices/777")
     assert resp.status_code == 500
@@ -82,11 +89,15 @@ def test_delete_device_fails_on_invalid_device_id(populated_test_db):
         )
     }
 
+
 def test_patch_device_name_request(populated_test_db):
-    resp = client.patch("/devices", json={
-        "mqtt_id": 123,
-        "name": "Updated Device Name",
-    })
+    resp = client.patch(
+        "/devices",
+        json={
+            "mqtt_id": 123,
+            "name": "Updated Device Name",
+        },
+    )
     assert resp.status_code == 200
     assert resp.json() == {
         "mqtt_id": 123,
@@ -100,11 +111,15 @@ def test_patch_device_name_request(populated_test_db):
     }
     assert resp.json() == client.get("/devices/123").json()
 
+
 def test_patch_device_tags_request(populated_test_db):
-    resp = client.patch("/devices", json={
-        "mqtt_id": 123,
-        "tags": [3],
-    })
+    resp = client.patch(
+        "/devices",
+        json={
+            "mqtt_id": 123,
+            "tags": [3],
+        },
+    )
     assert resp.status_code == 200
     assert resp.json() == {
         "mqtt_id": 123,
@@ -118,12 +133,16 @@ def test_patch_device_tags_request(populated_test_db):
     }
     assert resp.json() == client.get("/devices/123").json()
 
+
 def test_patch_both_name_and_tags_request(populated_test_db):
-    resp = client.patch("/devices", json={
-        "mqtt_id": 123,
-        "tags": [3],
-        "name": "Updated Device Name",
-    })
+    resp = client.patch(
+        "/devices",
+        json={
+            "mqtt_id": 123,
+            "tags": [3],
+            "name": "Updated Device Name",
+        },
+    )
     assert resp.status_code == 200
     assert resp.json() == {
         "mqtt_id": 123,
@@ -137,12 +156,16 @@ def test_patch_both_name_and_tags_request(populated_test_db):
     }
     assert resp.json() == client.get("/devices/123").json()
 
+
 def test_patch_device_fails_on_invalid_device_id(populated_test_db):
-    resp = client.patch("/devices", json={
-        "mqtt_id": 777,
-        "tags": [3],
-        "name": "Updated Device Name",
-    })
+    resp = client.patch(
+        "/devices",
+        json={
+            "mqtt_id": 777,
+            "tags": [3],
+            "name": "Updated Device Name",
+        },
+    )
     assert resp.status_code == 500
     assert resp.json() == {
         "detail": (

@@ -11,6 +11,7 @@ def test_get_tags_empty(empty_test_db):
     assert resp.status_code == 200
     assert resp.json() == []
 
+
 def test_get_tags(populated_test_db):
     resp = client.get("/tags")
     assert resp.status_code == 200
@@ -29,10 +30,12 @@ def test_get_tags(populated_test_db):
         },
     ]
 
+
 def test_get_tag_does_not_exist(empty_test_db):
     resp = client.get("/tags/1")
     assert resp.status_code == 200
     assert resp.json() is None
+
 
 def test_get_tag(populated_test_db):
     resp = client.get("/tags/1")
@@ -42,6 +45,7 @@ def test_get_tag(populated_test_db):
         "name": "Main Tag",
     }
 
+
 def test_create_tag(empty_test_db):
     resp = client.post("/tags/", json={"name": "New Tag"})
     assert resp.status_code == 200
@@ -49,6 +53,7 @@ def test_create_tag(empty_test_db):
         "id": 1,
         "name": "New Tag",
     }
+
 
 def test_create_duplicate_tag_fails(empty_test_db):
     resp = client.post("/tags/", json={"name": "New Tag"})
@@ -58,20 +63,23 @@ def test_create_duplicate_tag_fails(empty_test_db):
         "detail": 'Tag with name "New Tag" already exists.',
     }
 
+
 def test_delete_tag(populated_test_db):
     resp = client.delete("/tags/1")
     assert resp.status_code == 204
     assert client.get("/tags/1").json() is None
+
 
 def test_delete_tag_fails_on_invalid_tag_id(populated_test_db):
     resp = client.delete("/tags/1234")
     assert resp.status_code == 500
     assert resp.json() == {
         "detail": (
-            'Failed to delete Tag with id of 1234. '
-            'No Tag object with an id of 1234 found.'
+            "Failed to delete Tag with id of 1234. "
+            "No Tag object with an id of 1234 found."
         )
     }
+
 
 def test_delete_tag_duplicate_deletion_fails(populated_test_db):
     resp = client.delete("/tags/1")
@@ -79,13 +87,13 @@ def test_delete_tag_duplicate_deletion_fails(populated_test_db):
     assert resp.status_code == 500
     assert resp.json() == {
         "detail": (
-            "Failed to delete Tag with id of 1. "
-            "No Tag object with an id of 1 found."
+            "Failed to delete Tag with id of 1. " "No Tag object with an id of 1 found."
         )
     }
 
+
 def test_patch_tag_name_request(populated_test_db):
-    resp = client.patch("/tags", json={ "id": 1, "name": "Updated Tag Name"})
+    resp = client.patch("/tags", json={"id": 1, "name": "Updated Tag Name"})
     assert resp.status_code == 200
     assert resp.json() == {
         "id": 1,
@@ -93,8 +101,9 @@ def test_patch_tag_name_request(populated_test_db):
     }
     assert resp.json() == client.get("/tags/1").json()
 
+
 def test_patch_tag_name_fail(empty_test_db):
-    resp = client.patch("/tags", json={ "id": 1, "name": "Updated Tag Name"})
+    resp = client.patch("/tags", json={"id": 1, "name": "Updated Tag Name"})
     assert resp.status_code == 500
     assert resp.json() == {
         "detail": "Tag update failed. No Tag object with an id of 1 found.",

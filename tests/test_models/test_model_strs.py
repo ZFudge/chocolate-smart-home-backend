@@ -3,26 +3,40 @@ from src import models
 
 def test_device_model_str(populated_test_db):
     device_1 = (
-        populated_test_db.query(models.Device).filter(models.Device.id == 1).one()
+        populated_test_db.query(models.Device)
+        .filter(models.Device.mqtt_id == 123)
+        .one()
     )
-    expected_str_1 = (
-        "Device(id=1, mqtt_id=123, last_seen=2025-01-02 00:00:00, last_update_sent=2025-01-01 00:00:00, reboots=0, remote_name=Remote Name 1 - 1, name=Test Device Name 1, device_type_id=1)\n"
-        "DeviceType(id=1, name=TEST_DEVICE_TYPE_NAME_1)\n"
-        "[Tag(id=1, name=Main Tag), Tag(id=2, name=Other Tag)]"
+    assert str(device_1) == (
+        "Device("
+        "mqtt_id=123, "
+        "last_seen=2025-01-02 00:00:00, "
+        "last_update_sent=2025-01-01 00:00:00, "
+        "reboots=0, "
+        "remote_name=Remote Name 1 - 1, "
+        "name=Test Device Name 1, "
+        "device_type_name=TEST_DEVICE_TYPE_NAME_1, "
+        "tags=[Main Tag, Other Tag])"
     )
-    assert str(device_1) == expected_str_1
-    assert repr(device_1) == expected_str_1
+    assert repr(device_1) == str(device_1)
 
     device_2 = (
-        populated_test_db.query(models.Device).filter(models.Device.id == 2).one()
+        populated_test_db.query(models.Device)
+        .filter(models.Device.mqtt_id == 234)
+        .one()
     )
-    expected_str_2 = (
-        "Device(id=2, mqtt_id=456, last_seen=2025-01-01 00:00:00, last_update_sent=2025-01-02 00:00:00, reboots=0, remote_name=Remote Name 2 - 2, name=Test Device Name 2, device_type_id=2)\n"
-        "DeviceType(id=2, name=TEST_DEVICE_TYPE_NAME_2)\n"
-        "Tag=None"
+    assert str(device_2) == (
+        "Device("
+        "mqtt_id=234, "
+        "last_seen=2025-01-01 00:00:00, "
+        "last_update_sent=2025-01-02 00:00:00, "
+        "reboots=0, "
+        "remote_name=Remote Name 2 - 2, "
+        "name=Test Device Name 2, "
+        "device_type_name=TEST_DEVICE_TYPE_NAME_2, "
+        "tags=null)"
     )
-    assert str(device_2) == expected_str_2
-    assert repr(device_2) == expected_str_2
+    assert repr(device_2) == str(device_2)
 
 
 def test_device_type_model_str(populated_test_db):

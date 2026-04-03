@@ -16,6 +16,7 @@ def db_closure():
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
     db: Session | None = None
+
     def db_func():
         nonlocal db
         if db is None:
@@ -24,7 +25,9 @@ def db_closure():
             yield db
         finally:
             db.close()
+
     return db_func
+
 
 @pytest.fixture(autouse=True)
 def clear_test_db():
@@ -40,6 +43,7 @@ def clear_test_db():
     except ProgrammingError:
         pass
 
+
 @pytest.fixture
 def empty_test_db():
     override_get_db = db_closure()
@@ -52,6 +56,7 @@ def empty_test_db():
     app.dependency_overrides[db_session] = override_db_session
 
     yield db_session.get()
+
 
 @pytest.fixture
 def populated_test_db(empty_test_db):

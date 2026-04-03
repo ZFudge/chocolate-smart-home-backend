@@ -9,7 +9,7 @@ from .model_str_formatter import ModelStrFormatter
 from .tag import Tag
 
 
-class Device(Base, ModelStrFormatter):
+class Device(Base):
     __tablename__ = "devices"
 
     mqtt_id = Column(Integer, primary_key=True)
@@ -29,14 +29,20 @@ class Device(Base, ModelStrFormatter):
     )
 
     def __str__(self):
-        """Return ModelStrFormatter.__str__ result of both the Device object and
-        its corresponding DeviceType object."""
-        attrs = [
-            super().__str__(),
-            str(self.device_type),
-            str(self.tags) if self.tags else "Tag=None",
-        ]
-        return "\n".join(attrs)
+        return (
+            f"Device("
+            f"mqtt_id={self.mqtt_id}, "
+            f"last_seen={self.last_seen}, "
+            f"last_update_sent={self.last_update_sent}, "
+            f"reboots={self.reboots}, "
+            f"remote_name={self.remote_name}, "
+            f"name={self.name}, "
+            f"device_type_name={self.device_type.name}, "
+            f'tags={(f'[{", ".join([tag.name for tag in self.tags])}]') if self.tags else "null"})'
+        )
+
+    def __repr__(self):
+        return str(self)
 
     class Config:
         from_attributes = True

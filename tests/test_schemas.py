@@ -12,7 +12,7 @@ def test_device_to_schema_with_tags(populated_test_db):
         name="Test Device Name 1",
         remote_name="Remote Name 1 - 1",
         device_type=schemas.DeviceType(id=1, name="TEST_DEVICE_TYPE_NAME_1"),
-        tags=[1,2],
+        tags=[1, 2],
     )
 
     assert to_schema(device) == expected_schema

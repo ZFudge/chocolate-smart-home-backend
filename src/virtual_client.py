@@ -44,9 +44,13 @@ logger.info(f"{tag_ids=}")
 
 
 csm_server_is_online = False
+
+
 def handle_vcs_client_id_message(_client, _userdata, message):
     global csm_server_is_online
     csm_server_is_online = True
+
+
 # Wait for the CSM server to be online
 vcs_client_id = vcs_mqtt_client._client._client_id.decode()
 csm_server_client_id = os.environ.get("MQTT_CLIENT_ID", "CSM-FASTAPI-SERVER")
