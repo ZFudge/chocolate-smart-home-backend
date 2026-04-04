@@ -79,7 +79,7 @@ def test_delete_device_duplicate_deletion_fails(populated_test_db):
     }
 
 
-def test_delete_device_fails_on_invalid_device_id(populated_test_db):
+def test_delete_device_fails_on_invalid_mqtt_id(populated_test_db):
     resp = client.delete("/devices/777")
     assert resp.status_code == 500
     assert resp.json() == {
@@ -157,7 +157,7 @@ def test_patch_both_name_and_tags_request(populated_test_db):
     assert resp.json() == client.get("/devices/123").json()
 
 
-def test_patch_device_fails_on_invalid_device_id(populated_test_db):
+def test_patch_device_fails_on_invalid_mqtt_id(populated_test_db):
     resp = client.patch(
         "/devices",
         json={

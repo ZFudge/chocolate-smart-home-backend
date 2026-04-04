@@ -1,4 +1,4 @@
-from typing import Any, Mapping, Type, Dict
+from typing import Any, Dict, Mapping, Type
 
 import pydantic
 from sqlalchemy.orm import collections
