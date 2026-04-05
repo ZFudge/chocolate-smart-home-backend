@@ -58,7 +58,7 @@ devclean:
 devlogs:
 	@docker compose -f docker-compose-dev.yml logs -f
 
-dev:
+dev: devclean
 	@docker compose -f docker-compose-dev.yml up -d
 	@make testdb
 	@make devlogs

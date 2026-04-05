@@ -15,6 +15,6 @@ class Tag(Base, ModelStrFormatter):
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
 
-    devices: Mapped[List[Device]] = relationship(
+    devices: Mapped[List[Device]] = relationship(  # noqa: F821
         secondary=device_tags, back_populates="tags"
     )

@@ -1,14 +1,24 @@
 from contextvars import ContextVar
 from datetime import datetime as dt
+from unittest.mock import Mock
 
 import pytest
-from sqlalchemy.exc import ProgrammingError
+from sqlalchemy.exc import ProgrammingError, InternalError
 from sqlalchemy.orm import Session, sessionmaker
+from paho.mqtt.client import MQTT_ERR_SUCCESS
 
 from src import models
 from src.database import Base
 from src.dependencies import db_session, engine, get_db
 from src.main import app
+from src.mqtt.client import MQTTClient
+from src.SingletonMeta import SingletonMeta
+
+
+@pytest.fixture(scope="function", autouse=True)
+def singleton_instance_cleanup():
+    SingletonMeta._SINGLETONS = {}
+    yield
 
 
 def db_closure():
@@ -35,12 +45,11 @@ def clear_test_db():
     try:
         db_session.get().query(models.device_tags).delete()
         db_session.get().query(models.Device).delete()
-        db_session.get().query(models.DeviceType).delete()
         db_session.get().query(models.Tag).delete()
-        db_session.get().commit()
+        db_session.get().query(models.DeviceType).delete()
         db_session.get().commit()
         Base.metadata.drop_all(bind=engine)
-    except ProgrammingError:
+    except (ProgrammingError, InternalError):
         pass
 
 
@@ -102,3 +111,14 @@ def populated_test_db(empty_test_db):
     test_db.commit()
 
     yield test_db
+
+
+@pytest.fixture
+def mqtt_client():
+    mqtt_client = MQTTClient(host="127.0.0.1")
+    disconnect = mqtt_client._client.disconnect
+    mqtt_client._client = Mock()
+    mqtt_client._client.publish.return_value = (MQTT_ERR_SUCCESS, None)
+    mqtt_client.connect()
+    yield mqtt_client
+    disconnect()

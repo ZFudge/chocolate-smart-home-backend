@@ -1,13 +1,8 @@
 from fastapi import APIRouter, HTTPException
 from paho.mqtt import MQTTException
-
+from src.mqtt.context import get_mqtt_client
 
 misc_router = APIRouter()
-
-
-@misc_router.get("/health/check/", response_model=dict[str, str], status_code=200)
-def health() -> dict:
-    return {"status": "ok"}
 
 
 @misc_router.head(
@@ -15,8 +10,7 @@ def health() -> dict:
 )
 def broadcast_request_devices_state():
     try:
-        # mqtt.get_mqtt_client().request_all_devices_data()
-        pass
+        get_mqtt_client().request_all_devices_data()
     except MQTTException as e:
         (detail,) = e.args
         raise HTTPException(status_code=500, detail=detail)
