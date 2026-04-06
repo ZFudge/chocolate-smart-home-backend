@@ -33,7 +33,9 @@ def get_tag_by_id(tag_id: int):
         return schemas.Tag(id=tag.id, name=tag.name) if tag else None
     except Exception as e:
         logger.error("Error getting tag by id %s: %s", tag_id, e)
-        raise HTTPException(status_code=500, detail="Failed to get tag by id.")
+        raise HTTPException(
+            status_code=500, detail="Failed to get tag by id %s." % tag_id
+        )
 
 
 @tags_router.post("/", response_model=schemas.Tag)
@@ -41,7 +43,7 @@ def create_tag(new_tag: schemas.TagBase):
     try:
         tag = crud.create_tag(new_tag.name)
         if tag is None:
-            raise HTTPException(status_code=500, detail="Failed to create tag.")
+            raise ValueError
         return schemas.Tag(id=tag.id, name=tag.name)
     except IntegrityError:
         raise HTTPException(
@@ -49,7 +51,10 @@ def create_tag(new_tag: schemas.TagBase):
         )
     except Exception as e:
         logger.error("Error creating tag %s: %s", new_tag.name, e)
-        raise HTTPException(status_code=500, detail="Failed to create tag.")
+        raise HTTPException(
+            status_code=500,
+            detail='Failed to create tag with name of "%s".' % new_tag.name,
+        )
 
 
 @tags_router.patch("/", response_model=schemas.Tag)
@@ -61,7 +66,9 @@ def patch_tag(patch_tag: schemas.TagPatch):
         raise HTTPException(status_code=500, detail=str(e.args[0]))
     except Exception as e:
         logger.error("Error patching tag %s: %s", patch_tag.id, e)
-        raise HTTPException(status_code=500, detail="Failed to patch tag.")
+        raise HTTPException(
+            status_code=500, detail="Failed to patch tag of id %s." % patch_tag.id
+        )
 
 
 @tags_router.delete("/{tag_id}", response_model=None, status_code=204)
@@ -72,4 +79,6 @@ def delete_tag(tag_id: int):
         raise HTTPException(status_code=500, detail=str(e.args[0]))
     except Exception as e:
         logger.error("Error deleting tag %s: %s", tag_id, e)
-        raise HTTPException(status_code=500, detail="Failed to delete tag.")
+        raise HTTPException(
+            status_code=500, detail="Failed to delete tag of id %s." % tag_id
+        )

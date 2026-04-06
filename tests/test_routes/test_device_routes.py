@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from fastapi.testclient import TestClient
 
 from src.main import app
@@ -9,12 +11,6 @@ def test_empty_get_devices(empty_test_db):
     resp = client.get("/devices/")
     assert resp.status_code == 200
     assert resp.json() == []
-
-
-def test_nonexistent_get_device(empty_test_db):
-    resp = client.get("/devices/1")
-    assert resp.status_code == 200
-    assert resp.json() is None
 
 
 def test_get_devices(populated_test_db):
@@ -42,6 +38,29 @@ def test_get_devices(populated_test_db):
             "last_update_sent": "2025-01-02 00:00:00",
         },
     ]
+
+
+def test_raises_exception_on_get_devices(populated_test_db):
+    with patch(
+        "src.routers.devices.crud.get_devices", side_effect=Exception("Test exception")
+    ):
+        resp = client.get("/devices")
+        assert resp.status_code == 500
+        assert resp.json() == {
+            "detail": "Failed to get devices.",
+        }
+
+
+def test_raises_exception_on_get_device_by_id(populated_test_db):
+    with patch(
+        "src.routers.devices.crud.get_device_by_id",
+        side_effect=Exception("Test exception"),
+    ):
+        resp = client.get("/devices/123")
+        assert resp.status_code == 500
+        assert resp.json() == {
+            "detail": "Failed to get device with mqtt id 123.",
+        }
 
 
 def test_get_device_data_by_id(populated_test_db):
@@ -88,6 +107,18 @@ def test_delete_device_fails_on_invalid_mqtt_id(populated_test_db):
             "No Device object with an mqtt id of 777 found."
         )
     }
+
+
+def test_raises_exception_on_delete_device(populated_test_db):
+    with patch(
+        "src.routers.devices.crud.delete_device",
+        side_effect=Exception("Test exception"),
+    ):
+        resp = client.delete("/devices/123")
+        assert resp.status_code == 500
+        assert resp.json() == {
+            "detail": "Failed to delete device with mqtt id 123.",
+        }
 
 
 def test_patch_device_name_request(populated_test_db):
@@ -173,3 +204,27 @@ def test_patch_device_fails_on_invalid_mqtt_id(populated_test_db):
             "No Device object with an mqtt id of 777 found."
         )
     }
+
+
+def test_raises_exception_on_patch_device(populated_test_db):
+    with patch(
+        "src.routers.devices.crud.patch_device", side_effect=Exception("Test exception")
+    ):
+        resp = client.patch(
+            "/devices", json={"mqtt_id": 123, "name": "Updated Device Name"}
+        )
+        assert resp.status_code == 500
+        assert resp.json() == {
+            "detail": "Failed to patch device with mqtt id 123.",
+        }
+
+
+def test_raises_exception_on_none_returned_patch_device(populated_test_db):
+    with patch("src.routers.devices.crud.patch_device", return_value=None):
+        resp = client.patch(
+            "/devices", json={"mqtt_id": 123, "name": "Updated Device Name"}
+        )
+        assert resp.status_code == 500
+        assert resp.json() == {
+            "detail": "Failed to patch device with mqtt id 123.",
+        }

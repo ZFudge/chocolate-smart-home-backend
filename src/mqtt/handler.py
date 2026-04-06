@@ -23,7 +23,7 @@ def mqtt_message_handler(
     try:
         mqtt_id, device_type_name = payload.split(",")[:2]
     except ValueError:
-        logger.error("Invalid payload: %s" % payload)
+        logger.error('Received invalid payload: "%s"' % payload)
         return
 
     logger.info("MQTT ID: %s, Device Type Name: %s" % (mqtt_id, device_type_name))

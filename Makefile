@@ -75,6 +75,11 @@ test: testdb
 	@docker compose -f docker-compose-dev.yml exec csm-backend-dev ash -l -c \
 	'ruff check /backend && black --check /backend && pytest -vv'
 
+.PHONY: coverage
+coverage: testdb
+	@docker compose -f docker-compose-dev.yml exec csm-backend-dev ash -l -c \
+	'pytest --cov=src --cov-report=term-missing tests/'
+
 .PHONY: black
 black:
 	@docker compose -f docker-compose-dev.yml exec csm-backend-dev ash -l -c \

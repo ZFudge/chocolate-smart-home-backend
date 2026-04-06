@@ -32,7 +32,9 @@ def get_device_by_id(mqtt_id: int):
         return schemas.device_mod_obj_to_frontend_schema(device)
     except Exception as e:
         logger.error("Error getting device with mqtt id %s: %s", mqtt_id, e)
-        raise HTTPException(status_code=500, detail="Failed to get device.")
+        raise HTTPException(
+            status_code=500, detail="Failed to get device with mqtt id %s." % mqtt_id
+        )
 
 
 @device_router.delete("/{mqtt_id}", response_model=None, status_code=204)
@@ -44,13 +46,17 @@ async def delete_device(mqtt_id: int):
         raise HTTPException(status_code=500, detail=str(e.args[0]))
     except Exception as e:
         logger.error("Error deleting device with mqtt id %s: %s", mqtt_id, e)
-        raise HTTPException(status_code=500, detail="Failed to delete device.")
+        raise HTTPException(
+            status_code=500, detail="Failed to delete device with mqtt id %s." % mqtt_id
+        )
 
 
 @device_router.patch("/", response_model=schemas.DeviceFrontend)
 async def patch_device(patch_device: schemas.DevicePatch):
     try:
         patched_device = crud.patch_device(patch_device)
+        if patched_device is None:
+            raise ValueError
         # asyncio.create_task(dynamic_broadcast(patched_device))
         return schemas.device_mod_obj_to_frontend_schema(patched_device)
     except NoResultFound as e:
@@ -59,4 +65,7 @@ async def patch_device(patch_device: schemas.DevicePatch):
         logger.error(
             "Error patching device with mqtt id %s: %s", patch_device.mqtt_id, e
         )
-        raise HTTPException(status_code=500, detail="Failed to patch device.")
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to patch device with mqtt id %s." % patch_device.mqtt_id,
+        )

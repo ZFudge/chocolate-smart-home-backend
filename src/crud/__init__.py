@@ -4,6 +4,7 @@ from src.crud.devices import (
     get_device_by_id,
     get_devices,
     patch_device,
+    update_last_update_sent_if_exists,
 )
 from src.crud.tags import (
     create_tag,
@@ -29,4 +30,5 @@ __all__ = [
     "get_tags",
     "patch_device",
     "patch_tag",
+    "update_last_update_sent_if_exists",
 ]

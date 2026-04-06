@@ -1,3 +1,5 @@
+from datetime import datetime as dt, timedelta
+
 import pytest
 from sqlalchemy.exc import NoResultFound
 
@@ -45,3 +47,18 @@ def test_delete_device(populated_test_db):
 def test_delete_device_fails_on_device_does_not_exists(empty_test_db):
     with pytest.raises(NoResultFound):
         crud.delete_device(mqtt_id=123)
+
+
+def test_update_last_update_sent_if_exists(populated_test_db):
+    assert crud.get_device_by_id(123).last_update_sent == dt.fromisoformat(
+        "2025-01-01 00:00:00.000000"
+    )
+    crud.update_last_update_sent_if_exists(mqtt_id=123)
+    assert crud.get_device_by_id(123).last_update_sent is not None
+    assert crud.get_device_by_id(123).last_update_sent > dt.now() - timedelta(seconds=1)
+    assert crud.get_device_by_id(234).last_update_sent == dt.fromisoformat(
+        "2025-01-02 00:00:00.000000"
+    )
+    crud.update_last_update_sent_if_exists(mqtt_id=234)
+    assert crud.get_device_by_id(234).last_update_sent is not None
+    assert crud.get_device_by_id(234).last_update_sent > dt.now() - timedelta(seconds=1)

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel
 from typing import List
 
 from src.schemas.device_type import DeviceType
@@ -17,13 +17,6 @@ class DeviceBase(BaseModel):
 class DeviceWithTagsAndDeviceType(BaseModel):
     tags: List[int] | None
     device_type: DeviceType
-
-    @field_validator("tags", mode="before")
-    @classmethod
-    def none_to_empty(cls, v: object) -> object:
-        if v is None:
-            return []
-        return v
 
 
 class Device(DeviceId, DeviceWithTagsAndDeviceType):
