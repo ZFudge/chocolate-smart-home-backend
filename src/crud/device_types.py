@@ -27,7 +27,7 @@ def create_device_type(device_type_name: str) -> DeviceTypeModel:
     return device_type
 
 
-def get_device_type_by_name(device_type_name: str) -> DeviceTypeModel:
+def get_device_type_by_name(device_type_name: str) -> DeviceTypeModel | None:
     return (
         db_session.get()
         .query(DeviceTypeModel)
