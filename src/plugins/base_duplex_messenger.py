@@ -1,5 +1,5 @@
 import logging
-from typing import Callable, Dict, Iterable, Tuple
+from typing import Callable, Iterable, Tuple
 
 from src.schemas import (
     device_mod_obj_to_frontend_schema as to_frontend_schema,
@@ -34,23 +34,6 @@ class BaseDuplexMessenger:
             raise StopIteration(
                 f"Not enough comma-separated values in message.payload. payload='{raw_msg}'."
             ) from None
-
-    @staticmethod
-    def serialize(data: DeviceFrontendSchema) -> dict:
-        """Serialize device data for broadcast through webocket."""
-        data = data.model_dump()
-        last_seen = data.get("last_seen", "")
-        last_update_sent = data.get("last_update_sent", "")
-        if last_seen and last_update_sent:
-            data["online"] = last_seen > last_update_sent
-        elif last_seen:
-            if last_update_sent is None:
-                data["online"] = True
-            else:
-                data["online"] = None
-        else:
-            data["online"] = False
-        return data
 
     @staticmethod
     def compose_msg(msg: str, *args, **kwargs):

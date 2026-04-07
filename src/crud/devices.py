@@ -5,13 +5,26 @@ from typing import Tuple
 from sqlalchemy.exc import NoResultFound, SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from src.crud.device_types import get_device_type_by_name, create_device_type
 from src.crud.tags import get_tags_by_ids
-from src.schemas import DevicePatch
-from src.models import Device as DeviceModel
 from src.dependencies import db_session
+from src.models import Device as DeviceModel, DeviceType as DeviceTypeModel
+from src.schemas import DevicePatch, DeviceReceived
 
 
 logger = logging.getLogger()
+
+
+def commit_device(device: DeviceModel) -> DeviceModel:
+    db: Session = db_session.get()
+    db.add(device)
+    try:
+        db.commit()
+    except:
+        db.rollback()
+        raise
+
+    db.refresh(device)
 
 
 def get_devices() -> Tuple[DeviceModel]:
@@ -77,19 +90,73 @@ def patch_device(patch_device: DevicePatch) -> DeviceModel:
     return device
 
 
-def update_last_update_sent_if_exists(mqtt_id: int):
-    db: Session = db_session.get()
+def update_last_update_sent(mqtt_id: int) -> DeviceModel | None:
     try:
         device = get_device_by_id(mqtt_id)
         if device is None:
             raise NoResultFound(f"Device with mqtt id {mqtt_id} not found")
         device.last_update_sent = dt.datetime.now()
-        db.add(device)
-        db.commit()
+        return commit_device(device)
     except (SQLAlchemyError, NoResultFound) as e:
         (detail,) = e.args
-        db.rollback()
         logger.error(
             "Failed to update last update sent for Device with an id of %s: %s"
             % (mqtt_id, detail)
         )
+
+
+def update_last_seen(mqtt_id: int) -> DeviceModel | None:
+    try:
+        device = get_device_by_id(mqtt_id)
+        if device is None:
+            raise NoResultFound(f"Device with mqtt id {mqtt_id} not found")
+        device.last_seen = dt.datetime.now()
+        return commit_device(device)
+    except (SQLAlchemyError, NoResultFound) as e:
+        (detail,) = e.args
+        logger.error(
+            "Failed to update last sent for Device with an id of %s: %s"
+            % (mqtt_id, detail)
+        )
+
+
+def create_device(device: DeviceReceived) -> DeviceModel:
+    logger.info('Creating Base device "%s"' % device)
+    device_type_name: str = device.device_type_name
+    db_device_type: DeviceTypeModel = get_device_type_by_name(
+        device_type_name
+    ) or create_device_type(device_type_name)
+    # TODO: lookup existing device name from previously exported settings
+    truncated_remote_name = device.remote_name.split(" - ")[0]
+
+    device_model = DeviceModel(
+        mqtt_id=device.mqtt_id,
+        remote_name=device.remote_name,
+        name=truncated_remote_name,
+        device_type=db_device_type,
+    )
+    new_device = commit_device(device_model)
+    return new_device
+
+
+def update_device(device: DeviceReceived, *_) -> DeviceModel:
+    logger.info('Updating Base device "%s"' % device)
+    db_device: DeviceModel = get_device_by_id(device.mqtt_id)
+    if db_device is None:
+        raise ValueError(f"Device with mqtt_id {device.mqtt_id} not found")
+
+    if device.device_type_name != db_device.device_type.name:
+        logger.warning(
+            f"Device with mqtt_id {device.mqtt_id} has a different device type: {db_device.device_type.name} -> {device.device_type_name}"
+        )
+        device_type_db: DeviceTypeModel = get_device_type_by_name(
+            device.device_type_name
+        ) or create_device_type(device.device_type_name)
+        db_device.device_type = device_type_db
+
+    if db_device.remote_name != device.remote_name:
+        db_device.reboots += 1
+        db_device.remote_name = device.remote_name
+
+    updated_device = commit_device(db_device)
+    return updated_device

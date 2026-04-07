@@ -1,6 +1,6 @@
 from typing import List
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Column, DateTime, ForeignKey, func, Integer, String
 from sqlalchemy.orm import relationship, Mapped
 
 from src.database import Base
@@ -13,10 +13,6 @@ class Device(Base):
 
     mqtt_id = Column(Integer, primary_key=True)
 
-    last_seen = Column(DateTime, default=None)
-    last_update_sent = Column(DateTime, default=None)
-    reboots = Column(Integer, default=0)
-
     remote_name = Column(String)
     name = Column(String)
 
@@ -26,6 +22,11 @@ class Device(Base):
     tags: Mapped[List[Tag]] = relationship(
         secondary=device_tags, back_populates="devices"
     )
+
+    created_date = Column(DateTime, default=func.now())
+    last_seen = Column(DateTime, default=None)
+    last_update_sent = Column(DateTime, default=None)
+    reboots = Column(Integer, default=0)
 
     def __str__(self):
         return (

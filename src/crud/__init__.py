@@ -1,10 +1,13 @@
 from src.crud.device_types import create_device_type, get_device_type_by_name
 from src.crud.devices import (
+    create_device,
     delete_device,
     get_device_by_id,
     get_devices,
     patch_device,
-    update_last_update_sent_if_exists,
+    update_device,
+    update_last_seen,
+    update_last_update_sent,
 )
 from src.crud.tags import (
     create_tag,
@@ -17,6 +20,7 @@ from src.crud.tags import (
 )
 
 __all__ = [
+    "create_device",
     "create_device_type",
     "create_tag",
     "delete_device",
@@ -30,5 +34,7 @@ __all__ = [
     "get_tags",
     "patch_device",
     "patch_tag",
-    "update_last_update_sent_if_exists",
+    "update_device",
+    "update_last_seen",
+    "update_last_update_sent",
 ]

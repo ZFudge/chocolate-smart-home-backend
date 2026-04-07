@@ -5,10 +5,11 @@ from typing import Dict
 
 import src.plugins.device_plugins
 from src.plugins import iter_nametag
-from src.plugins.base_device_manager import (
-    BaseDeviceManager as DefaultDeviceManager,
+from src.plugins.base_device_manager import BaseDeviceManager
+from src.plugins.base_duplex_messenger import (
+    BaseDuplexMessenger,
+    DefaultDuplexMessenger,
 )
-from src.plugins.base_duplex_messenger import DefaultDuplexMessenger
 
 logger = logging.getLogger()
 
@@ -46,9 +47,16 @@ def discover_and_import_device_plugin_modules():
         PLUGIN_ROUTERS.append(plugin_router)
 
         plugin_name = name.split(".").pop()
+        # Creating dynamic plugin classes in place gives access to the super proxy
+        PluginDuplexMessenger = type(
+            "DuplexMessenger", (BaseDuplexMessenger, DeviceManager), {}
+        )
+        PluginDeviceManager = type(
+            "DeviceManager", (BaseDeviceManager, DuplexMessenger), {}
+        )
         DISCOVERED_PLUGINS[plugin_name] = {
-            "DuplexMessenger": DuplexMessenger,
-            "DeviceManager": DeviceManager,
+            "DuplexMessenger": PluginDuplexMessenger,
+            "DeviceManager": PluginDeviceManager,
         }
 
         # Don't seed db in pytest tests
@@ -70,7 +78,7 @@ def discover_and_import_device_plugin_modules():
 
 DEFAULT_PLUGIN = {
     "DuplexMessenger": DefaultDuplexMessenger,
-    "DeviceManager": DefaultDeviceManager,
+    "DeviceManager": BaseDeviceManager,
 }
 
 

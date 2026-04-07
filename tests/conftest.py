@@ -2,10 +2,11 @@ from contextvars import ContextVar
 from datetime import datetime as dt
 from unittest.mock import Mock
 
-import pytest
-from sqlalchemy.exc import ProgrammingError, InternalError
-from sqlalchemy.orm import Session, sessionmaker
 from paho.mqtt.client import MQTT_ERR_SUCCESS
+from sqlalchemy.exc import InternalError, ProgrammingError
+from sqlalchemy.orm import Session, sessionmaker
+import pytest
+
 
 from src import models
 from src.database import Base
