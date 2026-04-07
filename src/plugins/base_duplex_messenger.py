@@ -14,7 +14,7 @@ from src.mqtt.topics import get_format_topic_by_mqtt_id
 logger = logging.getLogger()
 
 
-class BaseDuplexMessenger:
+class IncomingMessenger:
     @staticmethod
     def parse_msg(raw_msg: str) -> Tuple[DeviceReceivedSchema, Iterable[str]]:
         """Parse message from remote controller."""
@@ -52,9 +52,15 @@ class BaseDuplexMessenger:
     def _compose_param(key: str, val: str) -> str:
         return f"&{key}={val}"
 
+
+class OutgoingMessenger:
     @staticmethod
     def get_device_frontend(db_device: models_Device) -> DeviceFrontendSchema:
         return to_frontend_schema(db_device)
+
+
+class BaseDuplexMessenger(IncomingMessenger, OutgoingMessenger):
+    pass
 
 
 class DefaultDuplexMessenger(BaseDuplexMessenger):

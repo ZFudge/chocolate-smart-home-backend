@@ -1,11 +1,12 @@
 from contextvars import ContextVar
 from datetime import datetime as dt
-from unittest.mock import Mock
+from unittest.mock import Mock, AsyncMock
 
+import pytest
 from paho.mqtt.client import MQTT_ERR_SUCCESS
+from redis.asyncio import Redis
 from sqlalchemy.exc import InternalError, ProgrammingError
 from sqlalchemy.orm import Session, sessionmaker
-import pytest
 
 
 from src import models
@@ -13,6 +14,9 @@ from src.database import Base
 from src.dependencies import db_session, engine, get_db
 from src.main import app
 from src.mqtt.client import MQTTClient
+from src.redis_streams_handler import (
+    RedisStreamsHandlerCSMBackend as RedisStreamsHandler,
+)
 from src.SingletonMeta import SingletonMeta
 
 
@@ -123,3 +127,11 @@ def mqtt_client():
     mqtt_client.connect()
     yield mqtt_client
     disconnect()
+
+
+@pytest.fixture()
+def streams_handler():
+    RedisStreamsHandler().redis_client = AsyncMock(spec=Redis)
+    RedisStreamsHandler().redis_client.xadd = AsyncMock()
+    yield RedisStreamsHandler()
+    RedisStreamsHandler().redis_client = None

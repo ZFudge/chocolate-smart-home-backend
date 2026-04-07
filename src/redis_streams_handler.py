@@ -1,8 +1,10 @@
 import asyncio
+import json
 import logging
 import os
-from redis.asyncio import Redis
 
+from redis.asyncio import Redis
+from src.schemas import DeviceFrontend as DeviceFrontendSchema
 from src.SingletonMeta import SingletonMeta
 
 logger = logging.getLogger(__name__)
@@ -10,7 +12,8 @@ logger.setLevel(logging.DEBUG)
 
 
 class RedisStreamsHandlerCSMBackend(metaclass=SingletonMeta):
-    BACKEND_STREAM_NAME = os.getenv("BACKEND_STREAM_NAME")
+    BACKEND_STREAM_NAME = os.getenv("BACKEND_STREAM_NAME", "BACKEND_STREAM_NAME")
+    WS_STREAM_NAME = os.getenv("WS_STREAM_NAME", "WS_STREAM_NAME")
 
     def __init__(self):
         self.redis_client = Redis(host=os.getenv("REDIS_HOST"), decode_responses=True)
@@ -40,5 +43,12 @@ class RedisStreamsHandlerCSMBackend(metaclass=SingletonMeta):
                 logger.error("Error handling messages: %s" % e)
                 await asyncio.sleep(1)
 
-    async def handle_message(self, move_data: dict):
+    async def handle_message(self, message_data: dict):
         pass
+
+    async def send_to_ws_service(self, device_data: DeviceFrontendSchema):
+        data = device_data.model_dump()
+        message_data = dict(message=json.dumps(data))
+        await self.redis_client.xadd(
+            RedisStreamsHandlerCSMBackend.WS_STREAM_NAME, message_data
+        )

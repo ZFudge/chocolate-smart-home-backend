@@ -16,6 +16,10 @@ logger = logging.getLogger()
 
 DISCOVERED_PLUGINS = {}
 PLUGIN_ROUTERS = []
+DEFAULT_PLUGIN = {
+    "DuplexMessenger": DefaultDuplexMessenger,
+    "DeviceManager": BaseDeviceManager,
+}
 
 
 def discover_and_import_device_plugin_modules():
@@ -30,58 +34,90 @@ def discover_and_import_device_plugin_modules():
            ...
        }"""
     logger.info("Discovering and importing device plugin modules...")
+
     for _finder, name, _ispkg in iter_nametag(src.plugins.device_plugins):
         logger.info(f"importing device plugin module: {name}")
-        device_manager_module_name = f"{name}.device_manager"
-        duplex_messenger_module_name = f"{name}.duplex_messenger"
-        router_module_name = f"{name}.router"
-
-        device_manager_module = importlib.import_module(device_manager_module_name)
-        duplex_messenger_module = importlib.import_module(duplex_messenger_module_name)
-        router_module = importlib.import_module(router_module_name)
-
-        DeviceManager = device_manager_module.DeviceManager
-        DuplexMessenger = duplex_messenger_module.DuplexMessenger
-
-        plugin_router = router_module.plugin_router
-        PLUGIN_ROUTERS.append(plugin_router)
 
         plugin_name = name.split(".").pop()
-        # Creating dynamic plugin classes in place gives access to the super proxy
-        PluginDuplexMessenger = type(
-            "DuplexMessenger", (BaseDuplexMessenger, DeviceManager), {}
-        )
-        PluginDeviceManager = type(
-            "DeviceManager", (BaseDeviceManager, DuplexMessenger), {}
-        )
-        DISCOVERED_PLUGINS[plugin_name] = {
-            "DuplexMessenger": PluginDuplexMessenger,
-            "DeviceManager": PluginDeviceManager,
-        }
+        plugin_dict = {}
+        DISCOVERED_PLUGINS[plugin_name] = plugin_dict
+
+        # Device Manager
+        try:
+            device_manager_module_name = f"{name}.device_manager"
+            device_manager_module = importlib.import_module(device_manager_module_name)
+            DeviceManager = device_manager_module.DeviceManager
+            PluginDeviceManager = type(
+                "DeviceManager", (BaseDeviceManager, DeviceManager), {}
+            )
+            plugin_dict["DeviceManager"] = PluginDeviceManager
+        except ModuleNotFoundError:
+            plugin_dict["DeviceManager"] = BaseDeviceManager
+        except (ImportError, AttributeError):
+            logger.warning(
+                "Unable to import device manager from %s for %s plugin",
+                device_manager_module_name,
+                name,
+            )
+
+        # Duplex Messenger
+        try:
+            duplex_messenger_module_name = f"{name}.duplex_messenger"
+            duplex_messenger_module = importlib.import_module(
+                duplex_messenger_module_name
+            )
+            DuplexMessenger = duplex_messenger_module.DuplexMessenger
+
+            # Creating dynamic plugin classes in place gives access to the super proxy
+            PluginDuplexMessenger = type(
+                "DuplexMessenger", (BaseDuplexMessenger, DuplexMessenger), {}
+            )
+            plugin_dict["DuplexMessenger"] = PluginDuplexMessenger
+        except ModuleNotFoundError:
+            plugin_dict["DuplexMessenger"] = DefaultDuplexMessenger
+        except (ImportError, AttributeError):
+            logger.warning(
+                "Unable to import duplex messenger from %s for %s plugin",
+                duplex_messenger_module_name,
+                name,
+            )
+
+        # Device Router
+        try:
+            router_module_name = f"{name}.router"
+            router_module = importlib.import_module(router_module_name)
+            plugin_router = router_module.plugin_router
+            PLUGIN_ROUTERS.append(plugin_router)
+        except ModuleNotFoundError:
+            pass
+        except (ImportError, AttributeError):
+            logger.warning(
+                "Unable to import router from %s for %s plugin",
+                router_module_name,
+                name,
+            )
 
         # Don't seed db in pytest tests
-        if "PYTEST_VERSION" not in os.environ:
+        if "PYTEST_VERSION" in os.environ:
+            continue
+
+        try:
             db_seeding_module_name = f"{name}.db_seeding"
-            try:
-                logger.info(
-                    f"Attempting import of db_seeding module for {name} at {db_seeding_module_name}"
-                )
-                db_seeding_module = importlib.import_module(db_seeding_module_name)
-                db_seeding_module.seed_db()
-            except ImportError as e:
-                logger.warning(
-                    f"Unable to import db_seeding module for {name}: "
-                    "%s. Skipping db seeding.",
-                    e,
-                )
+            logger.info(
+                f"Attempting import of db_seeding module for {name} at {db_seeding_module_name}"
+            )
+            db_seeding_module = importlib.import_module(db_seeding_module_name)
+            db_seeding_module.seed_db()
+        except ModuleNotFoundError:
+            pass
+        except ImportError:
+            logger.warning(
+                "Unable to import db_seeding from %s for %s plugin",
+                db_seeding_module_name,
+                name,
+            )
 
 
-DEFAULT_PLUGIN = {
-    "DuplexMessenger": DefaultDuplexMessenger,
-    "DeviceManager": BaseDeviceManager,
-}
-
-
-def get_plugin_by_device_type(plugin_name: str) -> Dict:
+def get_plugin_by_device_type_name(plugin_name: str) -> Dict:
     """Return plugin dictionary, using device_type_name/plugin_name as key."""
     return DISCOVERED_PLUGINS.get(plugin_name.lower(), DEFAULT_PLUGIN)

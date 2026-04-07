@@ -6,7 +6,7 @@ from pydantic import ValidationError
 
 from src.crud import get_device_by_id
 from src.models import Device as Device_model
-from src.plugins.discovered_plugins import get_plugin_by_device_type
+from src.plugins.discovered_plugins import get_plugin_by_device_type_name
 from src.schemas.device import DeviceReceived as DeviceReceivedSchema
 
 
@@ -31,7 +31,7 @@ def mqtt_message_handler(
         logger.error('Received invalid payload: "%s"' % payload)
         return
 
-    device_plugin: Dict = get_plugin_by_device_type(device_type_name)
+    device_plugin: Dict = get_plugin_by_device_type_name(device_type_name)
 
     DuplexMessenger: Callable = device_plugin["DuplexMessenger"]
     DeviceManager: Callable = device_plugin["DeviceManager"]
