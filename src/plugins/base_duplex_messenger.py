@@ -8,7 +8,7 @@ from src.schemas import (
     WebsocketMessage as WebsocketMessageSchema,
 )
 from src.models import Device as models_Device
-from src.mqtt.topics import get_format_topic_by_mqtt_id
+from src.pubsub.topics import get_format_topic_by_mqtt_id
 
 
 logger = logging.getLogger()

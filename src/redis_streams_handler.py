@@ -18,6 +18,13 @@ class RedisStreamsHandlerCSMBackend(metaclass=SingletonMeta):
     def __init__(self):
         self.redis_client = Redis(host=os.getenv("REDIS_HOST"), decode_responses=True)
 
+    def is_connected(self):
+        return (
+            hasattr(self, 'redis_client') and
+            isinstance(self.redis_client, Redis) and
+            self.redis_client.connection is not None
+        )
+
     async def handle_reads(self):
         last_id = "$"
         while True:

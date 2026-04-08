@@ -43,6 +43,8 @@ services:
       timeout: 5s
       retries: 3
       start_period: 5s
+    environment:
+      MQTT_CLIENT_ID_SUFFIX: virtual-clients
   csm-postgres-db-dev:
     << : *common-attrs
     image: postgres:12.18-bullseye
