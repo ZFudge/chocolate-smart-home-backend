@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 from paho.mqtt.client import MQTTMessage
 
-from src.mqtt.handler import mqtt_message_handler
+from src.pubsub.handler import mqtt_message_handler
 from src.plugins.discovered_plugins import DEFAULT_PLUGIN
 from src.schemas.device import DeviceReceived
 
@@ -19,7 +19,7 @@ def test_get_plugin_by_device_type_name_called_mqtt_message_handler(
     mqtt_message, empty_test_db
 ):
     with patch(
-        "src.mqtt.handler.get_plugin_by_device_type_name"
+        "src.pubsub.handler.discovered_plugins.get_plugin_by_device_type_name"
     ) as get_plugin_by_device_type_name:
         mqtt_message_handler(None, None, mqtt_message)
         get_plugin_by_device_type_name.assert_called_once_with("test_device_type_name")
@@ -77,7 +77,7 @@ def test_DeviceManager_update_device_called_mqtt_message_handler(
 
 def test_get_device_by_id_called_mqtt_message_handler(mqtt_message, empty_test_db):
     with patch(
-        "src.mqtt.handler.get_device_by_id", return_value=None
+        "src.pubsub.handler.get_device_by_id", return_value=None
     ) as get_device_by_id:
         mqtt_message_handler(None, None, mqtt_message)
         get_device_by_id.assert_called_once_with(123)
@@ -87,9 +87,9 @@ def test_none_payload_mqtt_message_handler(mqtt_message):
     mqtt_message.payload = None
     with (
         patch(
-            "src.mqtt.handler.get_plugin_by_device_type_name"
+            "src.pubsub.handler.discovered_plugins.get_plugin_by_device_type_name"
         ) as get_plugin_by_device_type_name,
-        patch("src.mqtt.handler.get_device_by_id") as get_device_by_id,
+        patch("src.pubsub.handler.get_device_by_id") as get_device_by_id,
     ):
         mqtt_message_handler(None, None, mqtt_message)
         get_plugin_by_device_type_name.assert_not_called()
@@ -100,10 +100,10 @@ def test_invalid_payload_mqtt_message_handler(mqtt_message):
     mqtt_message.payload = b"invalid"
     with (
         patch(
-            "src.mqtt.handler.get_plugin_by_device_type_name"
+            "src.pubsub.handler.discovered_plugins.get_plugin_by_device_type_name"
         ) as get_plugin_by_device_type_name,
-        patch("src.mqtt.handler.logger.error") as mock_logger,
-        patch("src.mqtt.handler.get_device_by_id") as get_device_by_id,
+        patch("src.pubsub.handler.logger.error") as mock_logger,
+        patch("src.pubsub.handler.get_device_by_id") as get_device_by_id,
     ):
         get_device_by_id.assert_not_called()
         mqtt_message_handler(None, None, mqtt_message)

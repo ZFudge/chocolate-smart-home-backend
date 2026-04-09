@@ -1,6 +1,6 @@
 import logging
 
-from src.dependencies import mqtt_client_session 
+from src.dependencies import mqtt_client_session
 
 logger = logging.getLogger("mqtt")
 

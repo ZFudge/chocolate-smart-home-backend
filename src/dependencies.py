@@ -3,11 +3,11 @@ import sys
 from contextvars import ContextVar
 
 from paho.mqtt.client import Client
-import sqlalchemy.exc as exc
 from sqlalchemy.orm import Session
+import sqlalchemy.exc as exc
 
 from src.database import Base, SessionLocal, engine
-from src.mqtt import get_configured_mqtt_client 
+from src.mqtt import get_configured_mqtt_client
 
 
 logger = logging.getLogger()
@@ -58,4 +58,6 @@ def mqtt_client_closure():
 
 get_mqtt_client = mqtt_client_closure()
 
-mqtt_client_session: ContextVar[Client] = ContextVar("mqtt_client_session", default=next(get_mqtt_client()))
+mqtt_client_session: ContextVar[Client] = ContextVar(
+    "mqtt_client_session", default=next(get_mqtt_client())
+)

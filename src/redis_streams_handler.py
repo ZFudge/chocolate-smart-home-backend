@@ -20,9 +20,9 @@ class RedisStreamsHandlerCSMBackend(metaclass=SingletonMeta):
 
     def is_connected(self):
         return (
-            hasattr(self, 'redis_client') and
-            isinstance(self.redis_client, Redis) and
-            self.redis_client.connection is not None
+            hasattr(self, "redis_client")
+            and isinstance(self.redis_client, Redis)
+            and self.redis_client.connection is not None
         )
 
     async def handle_reads(self):

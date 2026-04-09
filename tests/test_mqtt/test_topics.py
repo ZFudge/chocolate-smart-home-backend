@@ -1,4 +1,4 @@
-import src.mqtt.topics as topics
+from src.pubsub import topics
 
 
 def test_callable_return_value_of_get_format_topic_by_mqtt_id():

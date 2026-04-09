@@ -3,7 +3,7 @@ from datetime import datetime as dt
 from unittest.mock import Mock, AsyncMock
 
 import pytest
-from paho.mqtt.client import MQTT_ERR_SUCCESS
+from paho.mqtt.client import CallbackAPIVersion, Client, MQTT_ERR_SUCCESS
 from redis.asyncio import Redis
 from sqlalchemy.exc import InternalError, ProgrammingError
 from sqlalchemy.orm import Session, sessionmaker
@@ -11,9 +11,16 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from src import models
 from src.database import Base
-from src.dependencies import db_session, engine, get_db
+from src.dependencies import (
+    db_session,
+    engine,
+    get_db,
+    get_mqtt_client,
+    mqtt_client_session,
+)
 from src.main import app
-from src.mqtt.client import MQTTClient
+
+# from src.mqtt.client import MQTTClient
 from src.redis_streams_handler import (
     RedisStreamsHandlerCSMBackend as RedisStreamsHandler,
 )
@@ -44,20 +51,6 @@ def db_closure():
     return db_func
 
 
-@pytest.fixture(autouse=True)
-def clear_test_db():
-    yield
-    try:
-        db_session.get().query(models.device_tags).delete()
-        db_session.get().query(models.Device).delete()
-        db_session.get().query(models.Tag).delete()
-        db_session.get().query(models.DeviceType).delete()
-        db_session.get().commit()
-        Base.metadata.drop_all(bind=engine)
-    except (ProgrammingError, InternalError):
-        pass
-
-
 @pytest.fixture
 def empty_test_db():
     override_get_db = db_closure()
@@ -70,6 +63,20 @@ def empty_test_db():
     app.dependency_overrides[db_session] = override_db_session
 
     yield db_session.get()
+
+
+@pytest.fixture(autouse=True)
+def clear_test_db():
+    yield
+    try:
+        db_session.get().query(models.device_tags).delete()
+        db_session.get().query(models.Device).delete()
+        db_session.get().query(models.Tag).delete()
+        db_session.get().query(models.DeviceType).delete()
+        db_session.get().commit()
+        Base.metadata.drop_all(bind=engine)
+    except (ProgrammingError, InternalError):
+        pass
 
 
 @pytest.fixture
@@ -118,20 +125,45 @@ def populated_test_db(empty_test_db):
     yield test_db
 
 
-@pytest.fixture
-def mqtt_client():
-    mqtt_client = MQTTClient(host="127.0.0.1")
-    disconnect = mqtt_client._client.disconnect
-    mqtt_client._client = Mock()
-    mqtt_client._client.publish.return_value = (MQTT_ERR_SUCCESS, None)
-    mqtt_client.connect()
-    yield mqtt_client
-    disconnect()
-
-
 @pytest.fixture()
 def streams_handler():
     RedisStreamsHandler().redis_client = AsyncMock(spec=Redis)
     RedisStreamsHandler().redis_client.xadd = AsyncMock()
     yield RedisStreamsHandler()
     RedisStreamsHandler().redis_client = None
+
+
+def mqtt_client_closure():
+    mqtt_client: Client | None = None
+
+    def mqtt_client_func():
+        nonlocal mqtt_client
+        if mqtt_client is None:
+            mqtt_client = Mock(
+                spec=Client(
+                    CallbackAPIVersion.VERSION2, client_id="testing_mqtt_client"
+                )
+            )
+            mqtt_client.publish.return_value = (MQTT_ERR_SUCCESS, None)
+            mqtt_client.is_connected.return_value = True
+        try:
+            yield mqtt_client
+        finally:
+            mqtt_client.disconnect()
+
+    return mqtt_client_func
+
+
+@pytest.fixture
+def mqtt_client():
+    override_get_mqtt_client = mqtt_client_closure()
+    app.dependency_overrides[get_mqtt_client] = override_get_mqtt_client
+
+    override_mqtt_client_session: ContextVar[Client] = ContextVar(
+        "mqtt_client_session", default=next(override_get_mqtt_client())
+    )
+
+    mqtt_client_session.set(next(override_get_mqtt_client()))
+    app.dependency_overrides[mqtt_client_session] = override_mqtt_client_session
+
+    yield mqtt_client_session.get()

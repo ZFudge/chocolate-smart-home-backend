@@ -1,17 +1,25 @@
 import importlib
 import logging
+import pkgutil
 import os
 from typing import Dict
 
-import src.plugins.device_plugins
-from src.plugins import iter_nametag
-from src.plugins.base_device_manager import BaseDeviceManager
-from src.plugins.base_duplex_messenger import (
+from . import device_plugins
+from .base_device_manager import BaseDeviceManager
+from .base_duplex_messenger import (
     BaseDuplexMessenger,
     DefaultDuplexMessenger,
 )
 
 logger = logging.getLogger()
+
+
+def iter_nametag(ns_pkg):
+    # Specifying the second argument (prefix) to iter_modules makes the
+    # returned name an absolute name instead of a relative one. This allows
+    # import_module to work without having to do additional modification to
+    # the name.
+    return pkgutil.iter_modules(ns_pkg.__path__, ns_pkg.__name__ + ".")
 
 
 DISCOVERED_PLUGINS = {}
@@ -35,7 +43,7 @@ def discover_and_import_device_plugin_modules():
        }"""
     logger.info("Discovering and importing device plugin modules...")
 
-    for _finder, name, _ispkg in iter_nametag(src.plugins.device_plugins):
+    for _finder, name, _ispkg in iter_nametag(device_plugins):
         logger.info(f"importing device plugin module: {name}")
 
         plugin_name = name.split(".").pop()

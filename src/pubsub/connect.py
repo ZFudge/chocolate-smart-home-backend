@@ -40,5 +40,8 @@ def connect_to_mqtt_broker():
                 logger.error("MQTT client loop start failed. Disconnecting... %s" % e)
                 mqtt_client.disconnect()
                 return
-            logger.error("Failed to start MQTT client loop. Reattempting loop start in 15 seconds. %s" % e)
+            logger.error(
+                "Failed to start MQTT client loop. Reattempting loop start in 15 seconds. %s"
+                % e
+            )
             time.sleep(15)

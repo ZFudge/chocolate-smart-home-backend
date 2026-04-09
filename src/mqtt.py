@@ -1,7 +1,7 @@
 import logging
 import os
 
-from paho.mqtt.client import Client, CallbackAPIVersion
+from paho.mqtt.client import CallbackAPIVersion, Client
 
 
 logger = logging.getLogger("mqtt")
