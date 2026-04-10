@@ -1,6 +1,6 @@
 from contextvars import ContextVar
 from datetime import datetime as dt
-from unittest.mock import Mock, AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 from paho.mqtt.client import CallbackAPIVersion, Client, MQTT_ERR_SUCCESS
@@ -16,14 +16,12 @@ from src.dependencies import (
     engine,
     get_db,
     get_mqtt_client,
+    get_redis,
     mqtt_client_session,
+    redis_session,
 )
 from src.main import app
 
-# from src.mqtt.client import MQTTClient
-from src.redis_streams_handler import (
-    RedisStreamsHandlerCSMBackend as RedisStreamsHandler,
-)
 from src.SingletonMeta import SingletonMeta
 
 
@@ -125,14 +123,6 @@ def populated_test_db(empty_test_db):
     yield test_db
 
 
-@pytest.fixture()
-def streams_handler():
-    RedisStreamsHandler().redis_client = AsyncMock(spec=Redis)
-    RedisStreamsHandler().redis_client.xadd = AsyncMock()
-    yield RedisStreamsHandler()
-    RedisStreamsHandler().redis_client = None
-
-
 def mqtt_client_closure():
     mqtt_client: Client | None = None
 
@@ -167,3 +157,32 @@ def mqtt_client():
     app.dependency_overrides[mqtt_client_session] = override_mqtt_client_session
 
     yield mqtt_client_session.get()
+
+
+def redis_closure():
+    redis_client: Redis | None = None
+
+    def redis_client_func():
+        nonlocal redis_client
+        if redis_client is None:
+            redis_client = AsyncMock(spec=Redis)
+            redis_client.xadd = AsyncMock()
+
+        yield redis_client
+
+    return redis_client_func
+
+
+@pytest.fixture
+def redis_client():
+    override_get_redis = redis_closure()
+    app.dependency_overrides[get_redis] = override_get_redis
+
+    override_redis_session: ContextVar[Redis] = ContextVar(
+        "redis_session", default=next(override_get_redis())
+    )
+
+    redis_session.set(next(override_get_redis()))
+    app.dependency_overrides[redis_session] = override_redis_session
+
+    yield redis_session.get()
