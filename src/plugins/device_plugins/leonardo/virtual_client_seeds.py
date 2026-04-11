@@ -12,7 +12,7 @@ seeds = [
 ]
 
 
-def translate_vc_dict_to_mqtt_msg(seed: dict) -> str:
+def compose_state_as_msg(seed: dict) -> str:
     """Mocks the controller state expected by the CSM server"""
     msg_values = [
         # Add configs

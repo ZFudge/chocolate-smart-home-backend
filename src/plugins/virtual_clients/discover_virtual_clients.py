@@ -9,7 +9,7 @@ from src import SingletonMeta
 from src.plugins import device_plugins, utils
 from src.pubsub import topics
 from src.pubsub.comm_funcs import subscribe, publish
-from . import helper_funcs
+from . import defaults, helper_funcs
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 class DiscoverVirtualClients(metaclass=SingletonMeta):
     mqtt_id = 900
     virtual_clients = {}
-    translate_vc_state_to_msg_func_mapping = {}
+    compose_funcs_mapping = {}
 
     def __init__(self) -> None:
         logger.info("Discovering virtual clients...")
@@ -47,9 +47,7 @@ class DiscoverVirtualClients(metaclass=SingletonMeta):
         def publish_all_vc_states(_client, userdata, message):
             # Publish the states of all devices
             for vc_state in cls.virtual_clients.values():
-                translate_func = cls.translate_vc_state_to_msg_func_mapping[
-                    vc_state["device_type_name"]
-                ]
+                translate_func = cls.compose_funcs_mapping[vc_state["device_type_name"]]
                 virtual_state_string = translate_func(vc_state)
                 publish(
                     topic=topics.RECEIVE_DEVICE_DATA,
@@ -61,12 +59,26 @@ class DiscoverVirtualClients(metaclass=SingletonMeta):
     def register_virtual_clients_by_plugin(
         self, vcs_module: ModuleType, short_name: str
     ) -> None:
-        DiscoverVirtualClients.translate_vc_state_to_msg_func_mapping[short_name] = (
-            vcs_module.translate_vc_dict_to_mqtt_msg
-        )
-        data_received_handler = self.get_data_received_handler(
-            parse_payload=vcs_module.parse_payload,
-        )
+        if hasattr(vcs_module, "compose_state_as_msg"):
+            # default translation function handles common configurations
+            def trans_func(msg: str):
+                return ",".join(
+                    [
+                        defaults.default_compose_state_as_msg(msg),
+                        vcs_module.compose_state_as_msg,
+                    ]
+                )
+
+        else:
+            trans_func = defaults.default_compose_state_as_msg
+        DiscoverVirtualClients.compose_funcs_mapping[short_name] = trans_func
+
+        if hasattr(vcs_module, "parse_payload"):
+            parser = vcs_module.parse_payload
+        else:
+            parser = defaults.parse_payload
+        data_received_handler = DiscoverVirtualClients.get_data_received_handler(parser)
+
         format_topic_by_mqtt_id = (
             topics.get_format_topic_by_mqtt_id_using_device_type_name(short_name)
         )
@@ -121,9 +133,7 @@ class DiscoverVirtualClients(metaclass=SingletonMeta):
                 logger.error("Error setting key-value pair: %s=%s: %s", key, value, e)
                 return
 
-            translate_func = cls.translate_vc_state_to_msg_func_mapping.get(
-                device_type_name
-            )
+            translate_func = cls.compose_funcs_mapping.get(device_type_name)
             outgoing_msg = translate_func(vc)
             # reflect virtual client state changes to the CSM server
             logger.info(f"{device_type_name} virtual client message: {outgoing_msg}")

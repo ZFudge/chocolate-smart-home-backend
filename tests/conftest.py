@@ -3,7 +3,7 @@ from datetime import datetime as dt
 from unittest.mock import AsyncMock, Mock
 
 import pytest
-from paho.mqtt.client import CallbackAPIVersion, Client, MQTT_ERR_SUCCESS
+from paho.mqtt.client import CallbackAPIVersion, Client, MQTT_ERR_SUCCESS, MQTTMessage
 from redis.asyncio import Redis
 from sqlalchemy.exc import InternalError, ProgrammingError
 from sqlalchemy.orm import Session, sessionmaker
@@ -157,6 +157,13 @@ def mqtt_client():
     app.dependency_overrides[mqtt_client_session] = override_mqtt_client_session
 
     yield mqtt_client_session.get()
+
+
+@pytest.fixture
+def mqtt_message():
+    message = MQTTMessage()
+    message.payload = b"123,test_device_type_name,test_remote_name"
+    yield message
 
 
 def redis_closure():

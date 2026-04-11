@@ -1,18 +1,8 @@
 from unittest.mock import MagicMock, Mock, patch
 
-import pytest
-from paho.mqtt.client import MQTTMessage
-
 from src.pubsub.handler import mqtt_message_handler
 from src.plugins.discovered_plugins import DEFAULT_PLUGIN
 from src.schemas.device import DeviceReceived
-
-
-@pytest.fixture
-def mqtt_message():
-    message = MQTTMessage()
-    message.payload = b"123,test_device_type_name,test_remote_name"
-    yield message
 
 
 def test_get_plugin_by_device_type_name_called_mqtt_message_handler(

@@ -38,18 +38,18 @@ def test_validate_virtual_client_module_invalid_parse_payload(vcs_module):
     assert not validate_virtual_client_module(vcs_module)
 
 
-def test_validate_virtual_client_module_invalid_translate_vc_dict_to_mqtt_msg(
+def test_validate_virtual_client_module_invalid_compose_state_as_msg(
     vcs_module,
 ):
-    setattr(vcs_module, "translate_vc_dict_to_mqtt_msg", None)
+    setattr(vcs_module, "compose_state_as_msg", None)
     assert not validate_virtual_client_module(vcs_module)
-    setattr(vcs_module, "translate_vc_dict_to_mqtt_msg", 1)
+    setattr(vcs_module, "compose_state_as_msg", 1)
     assert not validate_virtual_client_module(vcs_module)
-    setattr(vcs_module, "translate_vc_dict_to_mqtt_msg", "string")
+    setattr(vcs_module, "compose_state_as_msg", "string")
     assert not validate_virtual_client_module(vcs_module)
-    setattr(vcs_module, "translate_vc_dict_to_mqtt_msg", 1.0)
+    setattr(vcs_module, "compose_state_as_msg", 1.0)
     assert not validate_virtual_client_module(vcs_module)
-    setattr(vcs_module, "translate_vc_dict_to_mqtt_msg", True)
+    setattr(vcs_module, "compose_state_as_msg", True)
     assert not validate_virtual_client_module(vcs_module)
 
 
@@ -60,16 +60,16 @@ def test_validate_virtual_client_module_missing_only_seeds(
     assert not validate_virtual_client_module(vcs_module)
 
 
-def test_validate_virtual_client_module_missing_only_translate_vc_dict_to_mqtt_msg(
+def test_validate_virtual_client_module_still_passes_without_compose_state_as_msg(
     vcs_module,
 ):
-    delattr(vcs_module, "translate_vc_dict_to_mqtt_msg")
-    assert not validate_virtual_client_module(vcs_module)
+    delattr(vcs_module, "compose_state_as_msg")
+    assert validate_virtual_client_module(vcs_module)
 
 
-def test_validate_virtual_client_module_missing_only_parse_payload(vcs_module):
+def test_validate_virtual_client_module_still_passes_without_parse_payload(vcs_module):
     delattr(vcs_module, "parse_payload")
-    assert not validate_virtual_client_module(vcs_module)
+    assert validate_virtual_client_module(vcs_module)
 
 
 def test_import_vcs_module_returns_none_if_module_does_not_exist():

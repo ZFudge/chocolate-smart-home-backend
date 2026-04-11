@@ -1,4 +1,5 @@
 from types import ModuleType
+from typing import Tuple
 
 import pytest
 
@@ -8,7 +9,7 @@ from src.plugins.virtual_clients import DiscoverVirtualClients
 @pytest.fixture(scope="function", autouse=True)
 def DiscoverVirtualClients_cleanup():
     DiscoverVirtualClients.mqtt_id = 900
-    DiscoverVirtualClients.translate_vc_state_to_msg_func_mapping = {}
+    DiscoverVirtualClients.compose_funcs_mapping = {}
     DiscoverVirtualClients.virtual_clients = {}
     yield
 
@@ -24,6 +25,13 @@ def vcs_module():
         name="test_module",
     )
     test_module.seeds = seeds
-    test_module.translate_vc_dict_to_mqtt_msg = lambda _: None
-    test_module.parse_payload = lambda _: None
+
+    def t(seed: dict) -> str:
+        return ""
+
+    def p(payload: str) -> Tuple[None, None]:
+        return payload.split("=")
+
+    test_module.compose_state_as_msg = t
+    test_module.parse_payload = p
     yield test_module

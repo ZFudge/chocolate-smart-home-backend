@@ -1,5 +1,6 @@
 from unittest.mock import call, patch
 
+from src.plugins.virtual_clients.defaults import default_compose_state_as_msg
 from src.plugins.virtual_clients.discover_virtual_clients import DiscoverVirtualClients
 
 
@@ -64,10 +65,7 @@ def test_register_virtual_clients_by_plugin(vcs_module, mqtt_client):
         DiscoverVirtualClients().register_virtual_clients_by_plugin(
             vcs_module, "test_module"
         )
-        assert (
-            "test_module"
-            in DiscoverVirtualClients.translate_vc_state_to_msg_func_mapping
-        )
+        assert "test_module" in DiscoverVirtualClients.compose_funcs_mapping
         assert DiscoverVirtualClients.mqtt_id == 903
         assert 3 == len(DiscoverVirtualClients.virtual_clients)
         subscribe.assert_has_calls(
@@ -76,4 +74,39 @@ def test_register_virtual_clients_by_plugin(vcs_module, mqtt_client):
                 call(topic="/test_module/901/", handler=handler),
                 call(topic="/test_module/902/", handler=handler),
             ]
+        )
+
+
+def test_get_data_received_handler(vcs_module, mqtt_client, mqtt_message):
+    with (
+        patch(
+            "src.plugins.virtual_clients.discover_virtual_clients.DiscoverVirtualClients.__init__",
+            return_value=None,
+        ),
+        patch(
+            "src.plugins.virtual_clients.discover_virtual_clients.publish",
+            return_value=None,
+        ) as publish,
+    ):
+        DiscoverVirtualClients.virtual_clients[123] = {
+            "device_type_name": "cabbage_device_type",
+            "mqtt_id": 123,
+            "name": "cabbage device one",
+            "cabbage": '',
+        }
+        DiscoverVirtualClients.compose_funcs_mapping["cabbage_device_type"] = (
+            default_compose_state_as_msg
+        )
+        data_received_handler = DiscoverVirtualClients.get_data_received_handler(
+            lambda msg: msg.split("=")
+        )
+        mqtt_message.topic = b"/123/cabbage_device_type/"
+        mqtt_message.payload = b"cabbage=99"
+
+        data_received_handler(None, None, mqtt_message)
+
+        assert DiscoverVirtualClients.virtual_clients[123]["cabbage"] == "99"
+        publish.assert_called_once_with(
+            topic="/receive_device_state/",
+            message="123,cabbage_device_type,cabbage device one",
         )
