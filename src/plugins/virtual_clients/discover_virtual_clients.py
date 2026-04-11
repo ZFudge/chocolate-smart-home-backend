@@ -5,9 +5,8 @@ from time import sleep
 from types import ModuleType
 from typing import Callable, Dict
 
-import src.plugins.device_plugins
-from src.dependencies import mqtt_client_session
-from src.plugins.utils import iter_nametag
+from src import SingletonMeta
+from src.plugins import device_plugins, utils
 from src.pubsub import topics
 from src.pubsub.comm_funcs import subscribe, publish
 from . import helper_funcs
@@ -15,7 +14,7 @@ from . import helper_funcs
 logger = logging.getLogger(__name__)
 
 
-class DiscoverVirtualClients:
+class DiscoverVirtualClients(metaclass=SingletonMeta):
     mqtt_id = 900
     virtual_clients = {}
     translate_vc_state_to_msg_func_mapping = {}
@@ -26,11 +25,12 @@ class DiscoverVirtualClients:
         logger.info(
             f"Virtual clients discovered: {list(DiscoverVirtualClients.virtual_clients.keys())}"
         )
-        DiscoverVirtualClients.subscribe_clients()
+        if DiscoverVirtualClients.virtual_clients:
+            DiscoverVirtualClients.subscribe_clients()
 
     def discover_virtual_clients(self) -> None:
         """Discover all virtual clients in the src/plugins/device_plugins/<device_type_name>/virtual_client_seeds.py files."""
-        for _finder, plugin_name, _ispkg in iter_nametag(src.plugins.device_plugins):
+        for _finder, plugin_name, _ispkg in utils.iter_nametag(device_plugins):
             logger.info(f"Checking for virtual clients in {plugin_name} plugin")
             vcs_module_name = f"{plugin_name}.virtual_client_seeds"
             vcs_module = helper_funcs.import_vcs_module(vcs_module_name)
@@ -116,14 +116,14 @@ class DiscoverVirtualClients:
                 return
 
             try:
-                helper_funcs.consume_key_value_pair(vc, key, value)
-            except ValueError as e:
-                logger.error("Error consuming key-value pair: %s=%s: %s", key, value, e)
+                vc[key] = value
+            except Exception as e:
+                logger.error("Error setting key-value pair: %s=%s: %s", key, value, e)
                 return
 
-            translate_func = cls.translate_vc_state_to_msg_func_mapping.get[
+            translate_func = cls.translate_vc_state_to_msg_func_mapping.get(
                 device_type_name
-            ]
+            )
             outgoing_msg = translate_func(vc)
             # reflect virtual client state changes to the CSM server
             logger.info(f"{device_type_name} virtual client message: {outgoing_msg}")

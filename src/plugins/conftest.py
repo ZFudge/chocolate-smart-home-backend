@@ -4,11 +4,10 @@ import pytest
 from sqlalchemy.exc import InternalError, ProgrammingError
 from sqlalchemy.orm import Session, sessionmaker
 
-from src import models
+from src import models, SingletonMeta
 from src.database import Base
 from src.dependencies import db_session, engine, get_db
 from src.main import app
-from src.SingletonMeta import SingletonMeta
 
 
 @pytest.fixture(scope="function", autouse=True)

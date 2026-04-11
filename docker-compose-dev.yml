@@ -91,6 +91,8 @@ services:
       "pipenv", "run", "uvicorn", "src.main:app",
       "--host", "0.0.0.0",
       "--reload",
+      "--reload-exclude", "tests/*",
+      "--reload-exclude", "src/plugins/virtual_clients/*",
       "--log-level", "debug",
       "--log-config", "logs.ini"
     ]
@@ -146,4 +148,3 @@ services:
         condition: service_healthy
     environment:
       MQTT_CLIENT_ID_SUFFIX: virtual-clients
-    restart: always

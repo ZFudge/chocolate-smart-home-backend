@@ -1,7 +1,6 @@
 import importlib
 import logging
 from types import ModuleType
-from typing import Dict
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +11,7 @@ def import_vcs_module(vcs_module_name: str) -> ModuleType | None:
         vcs_module = importlib.import_module(vcs_module_name)
     except ImportError:
         logger.warning("No %s module found", vcs_module_name)
-        return None
+        return
     logger.info("Imported successfully.")
     return vcs_module
 
@@ -23,7 +22,7 @@ def validate_virtual_client_module(vcs_module: ModuleType | None) -> bool:
         return False
 
     if not hasattr(vcs_module, "seeds"):
-        logger.warning(f"No seeds function found in {vcs_module.__name__}")
+        logger.warning(f"No seeds list found in {vcs_module.__name__}")
         return False
     elif not isinstance(vcs_module.seeds, (list, tuple)):
         logger.warning(f"seeds is not an iterable of dicts in {vcs_module.__name__}")
@@ -48,19 +47,3 @@ def validate_virtual_client_module(vcs_module: ModuleType | None) -> bool:
         return False
 
     return True
-
-
-def consume_key_value_pair(vc: Dict, key: str | None, value: str | None):
-    if key is None or value is None:
-        raise ValueError()
-    old_value = vc.get(key)
-
-    if old_value is None:
-        vc[key] = value
-    else:
-        try:
-            vc[key] = type(old_value)(value)
-        except ValueError:
-            raise ValueError(
-                "Invalid value: %s for key: %s: %s", value, key, type(old_value)
-            )

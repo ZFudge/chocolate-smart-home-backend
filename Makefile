@@ -1,7 +1,7 @@
 include $(shell pwd)/.env
 
 TRASH_PATH := /tmp/null
-NETWORK_NAME := csm-network
+NETWORK_NAME := csm-backend-network
 
 APP_IMAGE := csm-backend
 CSM_IMAGE_NAME := csm-backend
@@ -65,8 +65,9 @@ clean: devclean
 
 .PHONY: shell
 shell:
-	@docker compose -f docker-compose-dev.yml exec csm-backend-dev ash -l || \
-	docker run -it --rm -v $(shell pwd):/backend \
+	docker run -it --rm \
+      --network=${NETWORK_NAME}-dev \
+	  -v $(shell pwd):/backend \
       -v $(shell pwd)/csm.sh:/etc/profile.d/csm.sh \
       -w /backend csm-backend:latest ash -l
 
@@ -81,9 +82,9 @@ test: testdb
 
 .PHONY: coverage
 coverage: testdb
-	@docker compose -f docker-compose-dev.yml exec csm-backend-dev ash -l -c \
-	'pytest --cov=src --cov-report=term-missing tests/' || \
-	docker run -it --rm -v $(shell pwd):/backend \
+	@docker run -it --rm \
+      --network=${NETWORK_NAME}-dev \
+	  -v $(shell pwd):/backend \
       -v $(shell pwd)/csm.sh:/etc/profile.d/csm.sh \
       -w /backend csm-backend:latest ash -l -c \
 	'pytest --cov=src --cov-report=term-missing tests/'
@@ -92,7 +93,8 @@ coverage: testdb
 black:
 	@docker compose -f docker-compose-dev.yml exec csm-backend-dev ash -l -c \
 	'black /backend' || \
-	docker run -it --rm -v $(shell pwd):/backend \
+	docker run -it --rm \
+	  -v $(shell pwd):/backend \
       -v $(shell pwd)/csm.sh:/etc/profile.d/csm.sh \
       -w /backend csm-backend:latest ash -l -c \
 	'black /backend'
