@@ -15,7 +15,7 @@ def publish(*, topic: str, message: str = "0", **kwargs) -> None:
     logger.info('Publishing message: "%s" through topic: %s...' % (message, topic))
     mqtt_client = kwargs.get("mqtt_client")
 
-    (rc_update, message_id_update) = mqtt_client.publish(topic=topic, message=message)
+    (rc_update, message_id_update) = mqtt_client.publish(topic, message)
     if rc_update != MQTTErrorCode.MQTT_ERR_SUCCESS:
         err = "Failed! : %s rc_update: %s message_id_update: %s" % (
             message,

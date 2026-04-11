@@ -4,6 +4,8 @@ LABEL org.opencontainers.image.authors="zacheryfudge+docker@gmail.com"
 
 WORKDIR /backend
 
+RUN apk add --no-cache curl
+
 COPY ./Pipfile /backend/
 COPY ./Pipfile.lock /backend/
 

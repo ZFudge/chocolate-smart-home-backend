@@ -22,7 +22,7 @@ async def lifespan(app: FastAPI):
         logger.info("Waiting for the initial MQTT client connection...")
         await asyncio.sleep(3)
         connect_to_mqtt_broker()
-        subscribe(topic=topics.RECEIVE_DEVICE_DATA, handler=mqtt_message_handler)
+    subscribe(topic=topics.RECEIVE_DEVICE_DATA, handler=mqtt_message_handler)
     asyncio.create_task(handle_reads())
     yield
 

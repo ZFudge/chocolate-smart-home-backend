@@ -15,25 +15,21 @@ def test_comm_funcs_publish_all_calls_mqtt_client_publish(mqtt_client):
     )
     mqtt_client.publish.assert_has_calls(
         [
-            call(topic="test_topic_a", message="test_message"),
-            call(topic="test_topic_b", message="test_message"),
-            call(topic="test_topic_c", message="test_message"),
+            call("test_topic_a", "test_message"),
+            call("test_topic_b", "test_message"),
+            call("test_topic_c", "test_message"),
         ]
     )
 
 
 def test_comm_funcs_publish_calls_mqtt_client_publish(mqtt_client):
     publish(topic="test_topic", message="test_message")
-    mqtt_client.publish.assert_called_once_with(
-        topic="test_topic", message="test_message"
-    )
+    mqtt_client.publish.assert_called_once_with("test_topic", "test_message")
 
 
 def test_comm_funcs_request_all_devices_data_calls_publish(mqtt_client):
     request_all_devices_data()
-    mqtt_client.publish.assert_called_once_with(
-        topic="/broadcast_request_devices_state/", message=""
-    )
+    mqtt_client.publish.assert_called_once_with("/broadcast_request_devices_state/", "")
 
 
 def test_comm_funcs_subscribe_calls_mqtt_client_subscribe(mqtt_client):

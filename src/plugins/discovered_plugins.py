@@ -1,6 +1,5 @@
 import importlib
 import logging
-import pkgutil
 import os
 from typing import Dict
 
@@ -10,17 +9,9 @@ from .base_duplex_messenger import (
     BaseDuplexMessenger,
     DefaultDuplexMessenger,
 )
+from .utils import iter_nametag
 
 logger = logging.getLogger()
-
-
-def iter_nametag(ns_pkg):
-    # Specifying the second argument (prefix) to iter_modules makes the
-    # returned name an absolute name instead of a relative one. This allows
-    # import_module to work without having to do additional modification to
-    # the name.
-    return pkgutil.iter_modules(ns_pkg.__path__, ns_pkg.__name__ + ".")
-
 
 DISCOVERED_PLUGINS = {}
 PLUGIN_ROUTERS = []
@@ -75,10 +66,14 @@ def discover_and_import_device_plugin_modules():
                 duplex_messenger_module_name
             )
             DuplexMessenger = duplex_messenger_module.DuplexMessenger
-
+            _BaseDuplexMessenger = BaseDuplexMessenger
+            # if plugin device does not have its own device-specific values to parse,
+            # defer to default duplex messenger to be sure parse_msg returns a device schema
+            if not hasattr(DuplexMessenger, "parse_msg"):
+                _BaseDuplexMessenger = DefaultDuplexMessenger
             # Creating dynamic plugin classes in place gives access to the super proxy
             PluginDuplexMessenger = type(
-                "DuplexMessenger", (BaseDuplexMessenger, DuplexMessenger), {}
+                "DuplexMessenger", (_BaseDuplexMessenger, DuplexMessenger), {}
             )
             plugin_dict["DuplexMessenger"] = PluginDuplexMessenger
         except ModuleNotFoundError:

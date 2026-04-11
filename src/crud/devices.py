@@ -121,7 +121,7 @@ def update_last_seen(mqtt_id: int) -> DeviceModel | None:
 
 
 def create_device(device: DeviceReceived) -> DeviceModel:
-    logger.info('Creating Base device "%s"' % device)
+    logger.info('Creating Base device "%s"' % device.mqtt_id)
     device_type_name: str = device.device_type_name
     db_device_type: DeviceTypeModel = get_device_type_by_name(
         device_type_name

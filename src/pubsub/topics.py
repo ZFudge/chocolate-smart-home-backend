@@ -11,7 +11,7 @@ REQUEST_DEVICE_DATA_TEMPLATE = "/request_device_state/{mqtt_id}/"
 SEND_DEVICE_DATA_TEMPLATE = "/{device_type}/{{mqtt_id}}/"
 
 
-def get_format_topic_by_mqtt_id(
+def get_format_topic_by_mqtt_id_using_device_type_name(
     device_type_name: str,
 ) -> Callable[[int | List[int]], str | List[str]]:
     DEVICE_TOPIC_TEMPLATE = SEND_DEVICE_DATA_TEMPLATE.format(
