@@ -94,6 +94,12 @@ services:
       "--log-level", "debug",
       "--log-config", "logs.ini"
     ]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -i http://localhost:8000/health | grep '200 OK'"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
   csm-redis-dev:
     << : *common-attrs
     image: redis:7.4.1-alpine
@@ -109,3 +115,35 @@ services:
       timeout: 5s
       retries: 5
       start_period: 5s
+  virtual-clients:
+    << : *common-attrs
+    build: backend
+    image: csm-backend
+    container_name: virtual-clients
+    volumes:
+      - type: bind
+        source: ./
+        target: /backend/
+    develop:
+      watch:
+        - action: sync
+          path: ./src/plugins/
+          target: /backend/src/plugins/
+    command: [
+      "pipenv", "run", "uvicorn",
+      "src.plugins.virtual_clients.vcs_app:discovered_vcs",
+      "--port=8001",
+      "--workers", "1",
+      "--log-level", "debug",
+      "--log-config", "logs.ini"
+    ]
+    depends_on:
+      csm-mqtt-dev:
+        condition: service_healthy
+      csm-postgres-db-dev:
+        condition: service_healthy
+      csm-backend-dev:
+        condition: service_healthy
+    environment:
+      MQTT_CLIENT_ID_SUFFIX: virtual-clients
+    restart: always
