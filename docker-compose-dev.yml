@@ -133,7 +133,7 @@ services:
           target: /backend/src/plugins/
     command: [
       "pipenv", "run", "uvicorn",
-      "src.plugins.virtual_clients.vcs_app:discovered_vcs",
+      "src.plugins.virtual_clients.vcs_app:vcs_manager",
       "--port=8001",
       "--workers", "1",
       "--log-level", "debug",

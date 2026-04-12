@@ -6,8 +6,8 @@ from sqlalchemy.exc import IntegrityError, NoResultFound
 
 from src import crud, schemas
 from src.dependencies import mqtt_client_session
+from src.plugins.virtual_clients import VirtualClientsManager
 from src.pubsub import connect_to_mqtt_broker, request_all_devices_data
-from src.plugins.virtual_clients.discover_virtual_clients import DiscoverVirtualClients
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -29,7 +29,8 @@ while not mqtt_client.is_connected():
     sleep_loader(5)
 
 
-discovered_vcs = DiscoverVirtualClients()
+vcs_manager = VirtualClientsManager()
+vcs_manager.discover()
 sleep_loader(3)
 
 request_all_devices_data()
@@ -57,11 +58,11 @@ device_mqtt_ids_and_tag_ids = (
     # (907, [3]),
 )
 
-logger.info(f"Discovered virtual clients: {discovered_vcs.virtual_clients}")
+logger.info(f"Discovered virtual clients: {vcs_manager.virtual_clients}")
 
 logger.info("Patching virtual client tags")
 for device_mqtt_id, tag_ids in device_mqtt_ids_and_tag_ids:
-    if device_mqtt_id not in discovered_vcs.virtual_clients:
+    if device_mqtt_id not in vcs_manager.virtual_clients:
         logger.warning("vcs mqtt id %s was not found in discovered clients", 900)
         continue
     logger.info(f"Adding tags to virtual client device: {device_mqtt_id=} {tag_ids=}")

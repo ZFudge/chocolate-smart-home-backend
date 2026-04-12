@@ -65,7 +65,7 @@ clean: devclean
 
 .PHONY: shell
 shell:
-	docker run -it --rm \
+	@docker run -it --rm \
       --network=${NETWORK_NAME}-dev \
 	  -v $(shell pwd):/backend \
       -v $(shell pwd)/csm.sh:/etc/profile.d/csm.sh \
@@ -96,7 +96,7 @@ black:
 	docker run -it --rm \
 	  -v $(shell pwd):/backend \
       -v $(shell pwd)/csm.sh:/etc/profile.d/csm.sh \
-      -w /backend csm-backend:latest ash -l -c \
+      csm-backend:latest ash -l -c \
 	'black /backend'
 
 .PHONY: broadcast

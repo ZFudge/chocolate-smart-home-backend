@@ -19,53 +19,60 @@ def import_vcs_module(vcs_module_name: str) -> ModuleType | None:
 
 def validate_virtual_client_module(vcs_module: ModuleType | None) -> bool:
     if vcs_module is None:
-        logger.warning("No virtual client module found")
+        logger.warning("Virtual clients module not found")
         return False
 
     if not hasattr(vcs_module, "seeds"):
-        logger.warning(f"No seeds list found in {vcs_module.__name__}")
+        logger.warning(f"{vcs_module.__name__}.seeds list not found.")
         return False
     elif not isinstance(vcs_module.seeds, (list, tuple)):
-        logger.warning(f"seeds is not an iterable of dicts in {vcs_module.__name__}")
+        logger.warning(f"{vcs_module.__name__}.seeds is not an iterable of dicts")
         return False
 
-    if hasattr(vcs_module, "compose_state_as_msg"):
-        if not callable(vcs_module.compose_state_as_msg):
+    if hasattr(vcs_module, "compose_outgoing_msg"):
+        if not callable(vcs_module.compose_outgoing_msg):
             logger.warning(
-                f"compose_state_as_msg must be a callable: {vcs_module.__name__}"
+                f"{vcs_module.__name__}.compose_outgoing_msg must be a callable"
             )
             return False
         else:
-            sig = signature(vcs_module.compose_state_as_msg)
+            sig = signature(vcs_module.compose_outgoing_msg)
             if (
                 len(sig.parameters) != 1
                 or "seed" not in sig.parameters
                 or sig.return_annotation is not str
             ):
                 logger.warning(
-                    "The signature of parse_payload must be: (seed: dict) -> str. "
+                    f"The signature of {vcs_module.__name__}.compose_outgoing_msg must be: (seed: dict) -> str. "
                     f"Received {sig}"
                 )
                 return False
 
-    if hasattr(vcs_module, "parse_payload"):
-        if not callable(vcs_module.parse_payload):
-            logger.warning(f"parse_payload must be a callable: {vcs_module.__name__}")
+    if hasattr(vcs_module, "parse_incoming_payload"):
+        if not callable(vcs_module.parse_incoming_payload):
+            logger.warning(
+                f"{vcs_module.__name__}.parse_incoming_payload must be a callable"
+            )
             return False
         else:
-            sig = signature(vcs_module.parse_payload)
-            annotation = sig.return_annotation.__args__
+            sig = signature(vcs_module.parse_incoming_payload)
+            annotation = sig.return_annotation
+            if not hasattr(annotation, "__args__"):
+                logger.warning(
+                    f"{vcs_module.__name__}.parse_incoming_payload must return a tuple with length of 2"
+                )
+                return False
             if (
                 len(sig.parameters) != 1
                 or "payload" not in sig.parameters
                 or sig.parameters["payload"].annotation is not str
-                or type(annotation) not in (list, tuple)
-                or len(annotation) != 2
+                or type(annotation.__args__) is not tuple
+                or len(annotation.__args__) != 2
             ):
                 logger.warning(
-                    "Expecting parse_payload function to accepts a single argument, "
-                    '"payload" annotated as a str type, and a return annotation '
-                    f"of type list or tuple, with a length of 2 -> {sig}"
+                    f"Expecting {vcs_module.__name__}.parse_incoming_payload to accept a single argument, "
+                    '"payload", annotated as a str type, with a return annotation '
+                    f"of tuple with length of 2 -> {sig}"
                 )
                 return False
 

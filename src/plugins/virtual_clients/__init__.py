@@ -1,1 +1,1 @@
-from .discover_virtual_clients import DiscoverVirtualClients  # noqa: F401
+from .VirtualClientsManager import VirtualClientsManager  # noqa: F401

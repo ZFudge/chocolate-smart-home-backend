@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from src.plugins.virtual_clients.helper_funcs import (
     import_vcs_module,
     validate_virtual_client_module,
@@ -25,31 +27,87 @@ def test_validate_virtual_client_module_invalid_seeds(vcs_module):
     assert not validate_virtual_client_module(vcs_module)
 
 
-def test_validate_virtual_client_module_invalid_parse_payload(vcs_module):
-    setattr(vcs_module, "parse_payload", None)
+def test_validate_virtual_client_module_parse_incoming_payload_not_callable(vcs_module):
+    setattr(vcs_module, "parse_incoming_payload", None)
     assert not validate_virtual_client_module(vcs_module)
-    setattr(vcs_module, "parse_payload", 1)
+    setattr(vcs_module, "parse_incoming_payload", 1)
     assert not validate_virtual_client_module(vcs_module)
-    setattr(vcs_module, "parse_payload", "string")
+    setattr(vcs_module, "parse_incoming_payload", "string")
     assert not validate_virtual_client_module(vcs_module)
-    setattr(vcs_module, "parse_payload", 1.0)
+    setattr(vcs_module, "parse_incoming_payload", 1.0)
     assert not validate_virtual_client_module(vcs_module)
-    setattr(vcs_module, "parse_payload", True)
+    setattr(vcs_module, "parse_incoming_payload", True)
     assert not validate_virtual_client_module(vcs_module)
 
 
-def test_validate_virtual_client_module_invalid_compose_state_as_msg(
+def test_validate_virtual_client_module_parse_incoming_payload_signature_invalid(
     vcs_module,
 ):
-    setattr(vcs_module, "compose_state_as_msg", None)
+    setattr(vcs_module, "parse_incoming_payload", lambda: "cabbage")
     assert not validate_virtual_client_module(vcs_module)
-    setattr(vcs_module, "compose_state_as_msg", 1)
+
+    # invalid return annotation
+    def parse_incoming_payload(payload: str) -> str:
+        pass
+
+    setattr(vcs_module, "parse_incoming_payload", parse_incoming_payload)
+
+    # invalid parameter annotation
+    def parse_incoming_payload(payload: int) -> Tuple[None, None]:
+        pass
+
+    setattr(vcs_module, "parse_incoming_payload", parse_incoming_payload)
     assert not validate_virtual_client_module(vcs_module)
-    setattr(vcs_module, "compose_state_as_msg", "string")
+
+    # fewer than 2 elements in tuple annotation
+    def parse_incoming_payload(payload: str) -> Tuple[None]:
+        pass
+
+    setattr(vcs_module, "parse_incoming_payload", parse_incoming_payload)
     assert not validate_virtual_client_module(vcs_module)
-    setattr(vcs_module, "compose_state_as_msg", 1.0)
+
+    # more than 2 elements in tuple annotation
+    def parse_incoming_payload(payload: str) -> Tuple[None, None, None]:
+        pass
+
+    setattr(vcs_module, "parse_incoming_payload", parse_incoming_payload)
     assert not validate_virtual_client_module(vcs_module)
-    setattr(vcs_module, "compose_state_as_msg", True)
+
+
+def test_validate_virtual_client_module_parse_incoming_payload_signature_valid(
+    vcs_module,
+):
+    def parse_incoming_payload(payload: str) -> Tuple[None, None]:
+        pass
+
+    setattr(vcs_module, "parse_incoming_payload", parse_incoming_payload)
+    assert validate_virtual_client_module(vcs_module)
+
+    def parse_incoming_payload(payload: str) -> Tuple[str, str]:
+        pass
+
+    setattr(vcs_module, "parse_incoming_payload", parse_incoming_payload)
+    assert validate_virtual_client_module(vcs_module)
+
+    def parse_incoming_payload(payload: str) -> Tuple[bool, bool]:
+        pass
+
+    setattr(vcs_module, "parse_incoming_payload", parse_incoming_payload)
+    assert validate_virtual_client_module(vcs_module)
+
+
+def test_validate_virtual_client_module_invalid_compose_outgoing_msg(
+    vcs_module,
+):
+    setattr(vcs_module, "compose_outgoing_msg", None)
+    assert not validate_virtual_client_module(vcs_module)
+    setattr(vcs_module, "compose_outgoing_msg", 1)
+    assert not validate_virtual_client_module(vcs_module)
+    setattr(vcs_module, "compose_outgoing_msg", "string")
+    assert not validate_virtual_client_module(vcs_module)
+    setattr(vcs_module, "compose_outgoing_msg", 1.0)
+    assert not validate_virtual_client_module(vcs_module)
+    setattr(vcs_module, "compose_outgoing_msg", True)
     assert not validate_virtual_client_module(vcs_module)
 
 
@@ -60,15 +118,17 @@ def test_validate_virtual_client_module_missing_only_seeds(
     assert not validate_virtual_client_module(vcs_module)
 
 
-def test_validate_virtual_client_module_still_passes_without_compose_state_as_msg(
+def test_validate_virtual_client_module_still_passes_without_compose_outgoing_msg(
     vcs_module,
 ):
-    delattr(vcs_module, "compose_state_as_msg")
+    delattr(vcs_module, "compose_outgoing_msg")
     assert validate_virtual_client_module(vcs_module)
 
 
-def test_validate_virtual_client_module_still_passes_without_parse_payload(vcs_module):
-    delattr(vcs_module, "parse_payload")
+def test_validate_virtual_client_module_still_passes_without_parse_incoming_payload(
+    vcs_module,
+):
+    delattr(vcs_module, "parse_incoming_payload")
     assert validate_virtual_client_module(vcs_module)
 
 

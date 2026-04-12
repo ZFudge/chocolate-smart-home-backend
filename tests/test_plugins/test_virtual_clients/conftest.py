@@ -3,14 +3,14 @@ from typing import Tuple
 
 import pytest
 
-from src.plugins.virtual_clients import DiscoverVirtualClients
+from src.plugins.virtual_clients import VirtualClientsManager
 
 
 @pytest.fixture(scope="function", autouse=True)
-def DiscoverVirtualClients_cleanup():
-    DiscoverVirtualClients.mqtt_id = 900
-    DiscoverVirtualClients.compose_funcs_mapping = {}
-    DiscoverVirtualClients.virtual_clients = {}
+def VirtualClientsManager_cleanup():
+    VirtualClientsManager.mqtt_id = 900
+    VirtualClientsManager.outgoing_msg_composer_funcs = {}
+    VirtualClientsManager.virtual_clients = {}
     yield
 
 
@@ -26,12 +26,14 @@ def vcs_module():
     )
     test_module.seeds = seeds
 
-    def t(seed: dict) -> str:
+    def composer(seed: dict) -> str:
         return ""
 
-    def p(payload: str) -> Tuple[None, None]:
+    test_module.compose_outgoing_msg = composer
+
+    def parser(payload: str) -> Tuple[None, None]:
         return payload.split("=")
 
-    test_module.compose_state_as_msg = t
-    test_module.parse_payload = p
+    test_module.parse_incoming_payload = parser
+
     yield test_module

@@ -12,7 +12,7 @@ seeds = [
 ]
 
 
-def compose_state_as_msg(seed: dict) -> str:
+def compose_outgoing_msg(seed: dict) -> str:
     """Mocks the controller state expected by the CSM server"""
     msg_values = [
         # Add configs
@@ -26,7 +26,7 @@ def compose_state_as_msg(seed: dict) -> str:
     return ",".join(msg_values)
 
 
-def parse_payload(payload: str) -> tuple[None, None]:
+def parse_incoming_payload(payload: str) -> tuple[None, None]:
     """Accepts payload from virtual client. Returns None for key and value."""
     logger.info(f"Received payload: {payload}")
     return None, None
