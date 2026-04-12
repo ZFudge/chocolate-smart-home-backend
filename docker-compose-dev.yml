@@ -5,7 +5,7 @@ networks:
 volumes:
   csm-postgres-vol-dev:
     driver: local
-  csm_redis_data_dev:
+  csm-redis-data-dev:
     driver: local
 
 x-common-attrs: &common-attrs
@@ -63,11 +63,6 @@ services:
     build: .
     image: csm-backend
     container_name: csm-backend-dev
-    develop:
-      watch:
-        - action: sync
-          path: ./
-          target: /backend/
     ports:
       - 8000:8000
     volumes:
@@ -91,8 +86,9 @@ services:
       "pipenv", "run", "uvicorn", "src.main:app",
       "--host", "0.0.0.0",
       "--reload",
-      "--reload-exclude", "tests/*",
-      "--reload-exclude", "src/plugins/virtual_clients/*",
+      "--reload-dir", "src",
+      "--reload-exclude", "plugins/virtual_clients/*",
+      "--reload-exclude", "plugins/device_plugins/*/tests/",
       "--log-level", "debug",
       "--log-config", "logs.ini"
     ]
@@ -109,7 +105,7 @@ services:
     ports:
       - 6379:6379
     volumes:
-      - csm_redis_data_dev:/data
+      - csm-redis-data-dev:/data
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
