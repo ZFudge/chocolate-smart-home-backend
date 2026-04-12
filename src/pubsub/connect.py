@@ -15,10 +15,9 @@ logger = logging.getLogger(__name__)
 def connect_to_mqtt_broker():
     mqtt_client = mqtt_client_session.get()
     host = os.environ.get("MQTT_HOST", "csm-mosquitto")
-    port = int(os.environ.get("MQTT_PORT", 1883))
     try:
-        logger.info(f"Attempting MQTT connection to {host}:{port}")
-        mqtt_client.connect(host, port, 60)
+        logger.info(f"Attempting MQTT connection to {host}")
+        mqtt_client.connect(host)
         logger.info("Successfully connected to MQTT broker")
     except socket.gaierror as e:
         logger.error("Failed to connect to the MQTT broker: %s" % e)
@@ -33,7 +32,9 @@ def connect_to_mqtt_broker():
     logger.info("Starting MQTT client loop")
     for x in range(3):
         try:
-            if mqtt_client.loop_start() == MQTTErrorCode.MQTT_ERR_SUCCESS:
+            mqtt_error_code = mqtt_client.loop_start()
+            logger.info(f"MQTT client loop start returned status: {mqtt_error_code}")
+            if mqtt_error_code == MQTTErrorCode.MQTT_ERR_SUCCESS:
                 break
         except MQTTException as e:
             if x == 2:

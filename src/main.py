@@ -8,11 +8,19 @@ from src.dependencies import mqtt_client_session
 from src.plugins import discovered_plugins
 from src.pubsub import connect_to_mqtt_broker, subscribe, topics
 from src.pubsub.handler import mqtt_message_handler
-from src.streams import handle_reads
 from src.routers import APP_ROUTERS
+from src.streams import handle_reads
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
+
+class EndpointFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        return "/healthcheck" not in record.getMessage()
+
+
+logging.getLogger("uvicorn.access").addFilter(EndpointFilter())
 
 
 @asynccontextmanager

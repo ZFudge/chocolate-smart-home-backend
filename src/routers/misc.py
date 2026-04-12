@@ -25,7 +25,7 @@ def broadcast_request_devices_state():
         )
 
 
-@misc_router.get("/health")
+@misc_router.get("/healthcheck")
 def health_check():
     if (
         not mqtt_client_session.get().is_connected()

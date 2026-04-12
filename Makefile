@@ -43,7 +43,7 @@ testdb: _testuser
 		"psql -c 'CREATE DATABASE testdb OWNER testuser;' csm" || true
 
 logsdir:
-	@mkdir /tmp/logs && touch /tmp/logs/mosquitto.log || true
+	@mkdir /tmp/logs 2>> /dev/null && touch /tmp/logs/mosquitto.log 2>> /dev/null || true
 
 .PHONY: devclean
 devclean:
@@ -51,14 +51,9 @@ devclean:
 
 .PHONY: devlogs
 devlogs:
-    # explicitly specify which services to attach to, while excluding mqtt service,
-    # but still allowing mqtt service to log to stdout,
-    # thus allowing the mqttlogs recipe to still work
 	@docker compose -f docker-compose-dev.yml logs -f \
-      csm-backend-dev \
-      csm-redis-dev \
-      virtual-clients \
-      csm-postgres-db-dev 
+      csm-backend-dev
+      virtual-clients
 
 .PHONY: mqttlogs
 mqttlogs:
@@ -75,28 +70,16 @@ clean: devclean
 
 .PHONY: shell
 shell:
-	@docker run -it --rm \
-      --network=${NETWORK_NAME}-dev \
-	  -v $(shell pwd):/backend \
-      -v $(shell pwd)/csm.sh:/etc/profile.d/csm.sh \
-      -w /backend csm-backend:latest ash -l
+	@docker compose -f docker-compose-dev.yml exec -it csm-backend-dev ash -l
 
 .PHONY: test
 test: testdb
 	@docker compose -f docker-compose-dev.yml exec csm-backend-dev ash -l -c \
-	'ruff check /backend && black --check /backend && pytest -vv' || \
-	docker run -it --rm -v $(shell pwd):/backend \
-      -v $(shell pwd)/csm.sh:/etc/profile.d/csm.sh \
-      -w /backend csm-backend:latest ash -l -c \
 	'ruff check /backend && black --check /backend && pytest -vv'
 
 .PHONY: coverage
 coverage: testdb
-	@docker run -it --rm \
-      --network=${NETWORK_NAME}-dev \
-	  -v $(shell pwd):/backend \
-      -v $(shell pwd)/csm.sh:/etc/profile.d/csm.sh \
-      -w /backend csm-backend:latest ash -l -c \
+	@docker compose -f docker-compose-dev.yml exec -it csm-backend-dev ash -l -c \
 	'pytest --cov=src --cov-report=term-missing tests/'
 
 .PHONY: black

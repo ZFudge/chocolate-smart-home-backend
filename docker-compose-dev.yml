@@ -23,7 +23,6 @@ services:
   csm-mosquitto-dev:
     image: eclipse-mosquitto:2.0.20
     container_name: csm-mosquitto-dev
-    user: "1883:1883"
     networks:
       - csm-backend-network-dev
     volumes:
@@ -93,7 +92,7 @@ services:
     environment:
       << : *environment-variables
     healthcheck:
-      test: ["CMD-SHELL", "curl -i http://localhost:8000/health | grep '200 OK'"]
+      test: ["CMD-SHELL", "curl -i http://localhost:8000/healthcheck | grep '200 OK'"]
       interval: 10s
       timeout: 5s
       retries: 3
