@@ -15,6 +15,7 @@ ruff = "*"
 pytest-asyncio = "*"
 redis = "*"
 fastapi = {extras = ["standard"], version = "*"}
+uvicorn = {extras = ["standard"], version = "*"}
 
 [dev-packages]
 
