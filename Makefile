@@ -33,14 +33,14 @@ build:
 	@docker compose -f docker-compose-dev.yml build
 
 _testuser:
-	@echo "Creating test user if one does not exist. Errors about user already existing are expected."
+	@echo "Creating test user if one does not exist."
 	@docker exec -it $(POSTGRES_CONTAINER_NAME) /bin/bash -c \
-		"psql -c \"CREATE USER testuser WITH ENCRYPTED PASSWORD 'testpw';\" csm" || true
+      "psql -c \"CREATE USER testuser WITH ENCRYPTED PASSWORD 'testpw';\" csm 2>> /dev/null" || true
 
 testdb: _testuser
-	@echo "Creating test database if one does not exist. Errors about database already existing are expected."
+	@echo "Creating test database if one does not exist."
 	@docker exec -it $(POSTGRES_CONTAINER_NAME) /bin/bash -c \
-		"psql -c 'CREATE DATABASE testdb OWNER testuser;' csm" || true
+      "psql -c 'CREATE DATABASE testdb OWNER testuser;' csm 2>> /dev/null" || true
 
 logsdir:
 	@mkdir /tmp/logs 2>> /dev/null && touch /tmp/logs/mosquitto.log 2>> /dev/null || true
@@ -52,7 +52,7 @@ devclean:
 .PHONY: devlogs
 devlogs:
 	@docker compose -f docker-compose-dev.yml logs -f \
-      csm-backend-dev
+      csm-backend-dev \
       virtual-clients
 
 .PHONY: mqttlogs
@@ -75,22 +75,22 @@ shell:
 .PHONY: test
 test: testdb
 	@docker compose -f docker-compose-dev.yml exec csm-backend-dev ash -l -c \
-	'ruff check /backend && black --check /backend && pytest -vv'
+      'ruff check /backend && black --check /backend && pytest -vv'
 
 .PHONY: coverage
 coverage: testdb
 	@docker compose -f docker-compose-dev.yml exec -it csm-backend-dev ash -l -c \
-	'pytest --cov=src --cov-report=term-missing tests/'
+      'pytest --cov=src --cov-report=term-missing tests/'
 
 .PHONY: black
 black:
 	@docker compose -f docker-compose-dev.yml exec csm-backend-dev ash -l -c \
-	'black /backend' || \
-	docker run -it --rm \
-	  -v $(shell pwd):/backend \
+      'black /backend' || \
+      docker run -it --rm \
+      -v $(shell pwd):/backend \
       -v $(shell pwd)/csm.sh:/etc/profile.d/csm.sh \
       csm-backend:latest ash -l -c \
-	'black /backend'
+      'black /backend'
 
 .PHONY: broadcast
 broadcast:
