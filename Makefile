@@ -32,10 +32,6 @@ help:
 build:
 	@docker compose -f docker-compose-dev.yml build
 
-.PHONY: mqttlogs
-mqttlogs:
-	@docker compose -f docker-compose-dev.yml logs -f csm-mqtt-dev
-
 _testuser:
 	@echo "Creating test user if one does not exist. Errors about user already existing are expected."
 	@docker exec -it $(POSTGRES_CONTAINER_NAME) /bin/bash -c \
@@ -46,16 +42,30 @@ testdb: _testuser
 	@docker exec -it $(POSTGRES_CONTAINER_NAME) /bin/bash -c \
 		"psql -c 'CREATE DATABASE testdb OWNER testuser;' csm" || true
 
+logsdir:
+	@mkdir /tmp/logs && touch /tmp/logs/mosquitto.log || true
+
 .PHONY: devclean
 devclean:
 	@docker compose -f docker-compose-dev.yml down
 
 .PHONY: devlogs
 devlogs:
-	@docker compose -f docker-compose-dev.yml logs -f
+    # explicitly specify which services to attach to, while excluding mqtt service,
+    # but still allowing mqtt service to log to stdout,
+    # thus allowing the mqttlogs recipe to still work
+	@docker compose -f docker-compose-dev.yml logs -f \
+      csm-backend-dev \
+      csm-redis-dev \
+      virtual-clients \
+      csm-postgres-db-dev 
+
+.PHONY: mqttlogs
+mqttlogs:
+	@docker compose -f docker-compose-dev.yml logs -f csm-mosquitto-dev
 
 .PHONY: dev
-dev: devclean
+dev: devclean logsdir
 	@docker compose -f docker-compose-dev.yml up -d
 	@make testdb
 	@make devlogs

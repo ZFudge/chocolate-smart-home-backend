@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 def connect_to_mqtt_broker():
     mqtt_client = mqtt_client_session.get()
-    host = os.environ.get("MQTT_HOST", "mqtt")
+    host = os.environ.get("MQTT_HOST", "csm-mosquitto")
     port = int(os.environ.get("MQTT_PORT", 1883))
     try:
         logger.info(f"Attempting MQTT connection to {host}:{port}")

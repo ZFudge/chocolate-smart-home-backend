@@ -12,27 +12,27 @@ x-common-attrs: &common-attrs
   env_file: .env
   networks:
     - csm-backend-network-dev
-  environment:
-    MQTT_HOST: csm-mqtt-dev
-    MQTT_CLIENT_ID: CSM-FASTAPI-SERVER-DEV
-    REDIS_HOST: csm-redis-dev
-    BACKEND_STREAM_NAME: csm-backend-stream-dev
+
+x-environment-variables: &environment-variables
+  MQTT_HOST: csm-mosquitto-dev
+  MQTT_CLIENT_ID: CSM-FASTAPI-SERVER-DEV
+  REDIS_HOST: csm-redis-dev
+  BACKEND_STREAM_NAME: csm-backend-stream-dev
 
 services:
-  csm-mqtt-dev:
-    << : *common-attrs
+  csm-mosquitto-dev:
     image: eclipse-mosquitto:2.0.20
-    container_name: csm-mqtt-dev
-    ports:
-      - 1883:1883
-      - 9001:9001
+    container_name: csm-mosquitto-dev
+    user: "1883:1883"
+    networks:
+      - csm-backend-network-dev
     volumes:
       - type: bind
         source: ./mosquitto.conf
         target: /mosquitto/config/mosquitto.conf
       - type: bind
-        source: /tmp/logs/
-        target: /mosquitto/log/
+        source: /tmp/logs/mosquitto.log
+        target: /mosquitto/log/mosquitto.log
       - type: bind
         source: ./mqtt_healthcheck.sh
         target: /usr/local/bin/healthcheck.sh
@@ -43,8 +43,6 @@ services:
       timeout: 5s
       retries: 3
       start_period: 5s
-    environment:
-      MQTT_CLIENT_ID_SUFFIX: virtual-clients
   csm-postgres-db-dev:
     << : *common-attrs
     image: postgres:12.18-bullseye
@@ -78,7 +76,7 @@ services:
     depends_on:
       csm-postgres-db-dev:
         condition: service_healthy
-      csm-mqtt-dev:
+      csm-mosquitto-dev:
         condition: service_healthy
       csm-redis-dev:
         condition: service_healthy
@@ -92,6 +90,8 @@ services:
       "--log-level", "debug",
       "--log-config", "logs.ini"
     ]
+    environment:
+      << : *environment-variables
     healthcheck:
       test: ["CMD-SHELL", "curl -i http://localhost:8000/health | grep '200 OK'"]
       interval: 10s
@@ -136,11 +136,12 @@ services:
       "--log-config", "logs.ini"
     ]
     depends_on:
-      csm-mqtt-dev:
+      csm-mosquitto-dev:
         condition: service_healthy
       csm-postgres-db-dev:
         condition: service_healthy
       csm-backend-dev:
         condition: service_healthy
     environment:
+      << : *environment-variables
       MQTT_CLIENT_ID_SUFFIX: virtual-clients
