@@ -1,5 +1,5 @@
-from . import discovered_plugins
+from .PluginsManager import PluginsManager
 
 __all__ = [
-    "discovered_plugins",
+    "PluginsManager",
 ]

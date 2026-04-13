@@ -1,12 +1,12 @@
 import logging
-from typing import Dict, Callable
+from typing import Callable, Dict
 
 from paho.mqtt.client import Client, MQTTMessage
 from pydantic import ValidationError
 
 from src.crud import get_device_by_id
 from src.models import Device as Device_model
-from src.plugins import discovered_plugins
+from src.plugins import PluginsManager
 from src.schemas.device import DeviceReceived as DeviceReceivedSchema
 
 
@@ -31,16 +31,18 @@ def mqtt_message_handler(
         logger.error('Received invalid payload: "%s"' % payload)
         return
 
-    device_plugin: Dict = discovered_plugins.get_plugin_by_device_type_name(
+    device_plugin: Dict = PluginsManager.get_plugin_by_device_type_name(
         device_type_name
     )
 
-    DuplexMessenger: Callable = device_plugin["DuplexMessenger"]
+    ControllerToServerMessenger: Callable = device_plugin["ControllerToServerMessenger"]
     DeviceManager: Callable = device_plugin["DeviceManager"]
 
     # Parse message data
     try:
-        device_received: DeviceReceivedSchema = DuplexMessenger().parse_msg(payload)
+        device_received: DeviceReceivedSchema = (
+            ControllerToServerMessenger().parse_controller_msg(payload)
+        )
     except StopIteration as e:
         logger.error(e)
         return

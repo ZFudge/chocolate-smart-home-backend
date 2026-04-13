@@ -92,6 +92,16 @@ black:
       csm-backend:latest ash -l -c \
       'black /backend'
 
+.PHONY: ruffcheck
+ruffcheck:
+	@docker compose -f docker-compose-dev.yml exec csm-backend-dev ash -l -c \
+      'ruff check /backend' || \
+      docker run -it --rm \
+      -v $(shell pwd):/backend \
+      -v $(shell pwd)/csm.sh:/etc/profile.d/csm.sh \
+      csm-backend:latest ash -l -c \
+      'ruff check /backend'
+
 .PHONY: broadcast
 broadcast:
 	@curl --head http://localhost:8000/device/broadcast_request_devices_state/

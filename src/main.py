@@ -5,11 +5,11 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from src.dependencies import mqtt_client_session
-from src.plugins import discovered_plugins
+from src.plugins import PluginsManager
 from src.pubsub import connect_to_mqtt_broker, subscribe, topics
 from src.pubsub.handler import mqtt_message_handler
 from src.routers import APP_ROUTERS
-from src.streams import handle_reads
+from src.streams import handle_reads as handle_stream_reads
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -31,14 +31,13 @@ async def lifespan(app: FastAPI):
         await asyncio.sleep(3)
         connect_to_mqtt_broker()
     subscribe(topic=topics.RECEIVE_DEVICE_DATA, handler=mqtt_message_handler)
-    asyncio.create_task(handle_reads())
+    asyncio.create_task(handle_stream_reads())
     yield
 
 
 app = FastAPI(lifespan=lifespan)
 
-
-discovered_plugins.discover_and_import_device_plugin_modules()
+PluginsManager.discover_plugins()
 
 logger.info("Including routers...")
 for router in APP_ROUTERS:
