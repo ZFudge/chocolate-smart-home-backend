@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock, Mock, patch
 
 from src.pubsub.handler import mqtt_message_handler
-from src.plugins.PluginsManager import PluginsManager
+from src.plugins.PluginsManager import DEFAULT_PLUGIN
 from src.schemas.device import DeviceReceived
 
 
@@ -21,7 +21,7 @@ def test_ControllerToServerMessenger_called_mqtt_message_handler(
     controller_to_server_messenger = MagicMock()
     ControllerToServerMessenger = Mock(return_value=controller_to_server_messenger)
     with patch.dict(
-        PluginsManager.DEFAULT_PLUGIN,
+        DEFAULT_PLUGIN,
         {
             "ControllerToServerMessenger": ControllerToServerMessenger,
             "DeviceManager": MagicMock(),
@@ -39,7 +39,7 @@ def test_DeviceManager_create_device_called_mqtt_message_handler(
 ):
     device_manager = MagicMock()
     DeviceManager = Mock(return_value=device_manager)
-    with patch.dict(PluginsManager.DEFAULT_PLUGIN, {"DeviceManager": DeviceManager}):
+    with patch.dict(DEFAULT_PLUGIN, {"DeviceManager": DeviceManager}):
         mqtt_message_handler(None, None, mqtt_message)
         DeviceManager.assert_called_once()
         device_manager.create_device.assert_called_once_with(
@@ -57,7 +57,7 @@ def test_DeviceManager_update_device_called_mqtt_message_handler(
 ):
     device_manager = MagicMock()
     DeviceManager = Mock(return_value=device_manager)
-    with patch.dict(PluginsManager.DEFAULT_PLUGIN, {"DeviceManager": DeviceManager}):
+    with patch.dict(DEFAULT_PLUGIN, {"DeviceManager": DeviceManager}):
         mqtt_message_handler(None, None, mqtt_message)
         DeviceManager.assert_called_once()
         device_manager.update_device.assert_called_once_with(

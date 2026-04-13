@@ -21,19 +21,19 @@ def vcs_module():
         {"name": "Test Virtual Client 1"},
         {"name": "Test Virtual Client 2"},
     ]
-    test_module = ModuleType(
-        name="test_module",
+    test_vcs_module = ModuleType(
+        name="test_vcs_module",
     )
-    test_module.seeds = seeds
+    test_vcs_module.seeds = seeds
 
     def composer(seed: dict) -> str:
         return ""
 
-    test_module.compose_outgoing_msg = composer
+    test_vcs_module.compose_outgoing_msg = composer
 
     def parser(payload: str) -> Tuple[None, None]:
         return payload.split("=")
 
-    test_module.parse_incoming_payload = parser
+    test_vcs_module.parse_incoming_payload = parser
 
-    yield test_module
+    yield test_vcs_module

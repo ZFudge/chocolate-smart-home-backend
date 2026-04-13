@@ -114,18 +114,18 @@ def test_convergent_composer_func(vcs_module, mqtt_client, mqtt_message):
         vcs_module.compose_outgoing_msg = composer
 
         vcs_manager = VirtualClientsManager()
-        vcs_manager.register_virtual_clients_by_plugin(vcs_module, "test_module")
+        vcs_manager.register_virtual_clients_by_plugin(vcs_module, "test_vcs_module")
 
         data_received_handler = VirtualClientsManager.get_data_received_handler(
             vcs_module.parse_incoming_payload
         )
-        mqtt_message.topic = b"/900/test_module/"
+        mqtt_message.topic = b"/900/test_vcs_module/"
         mqtt_message.payload = b"a=5"
 
         data_received_handler(None, None, mqtt_message)
         publish.assert_called_once_with(
             topic="/receive_device_state/",
-            message="900,test_module,Test Virtual Client 0,a=5",
+            message="900,test_vcs_module,Test Virtual Client 0,a=5",
         )
 
 
@@ -141,16 +141,16 @@ def test_register_virtual_clients_by_plugin(vcs_module, mqtt_client):
         handler = lambda _: None  # noqa E731
         get_data_received_handler.return_value = handler
         VirtualClientsManager().register_virtual_clients_by_plugin(
-            vcs_module, "test_module"
+            vcs_module, "test_vcs_module"
         )
-        assert "test_module" in VirtualClientsManager.outgoing_msg_composer_funcs
+        assert "test_vcs_module" in VirtualClientsManager.outgoing_msg_composer_funcs
         assert VirtualClientsManager.mqtt_id == 903
         assert 3 == len(VirtualClientsManager.virtual_clients)
         subscribe.assert_has_calls(
             [
-                call(topic="/test_module/900/", handler=handler),
-                call(topic="/test_module/901/", handler=handler),
-                call(topic="/test_module/902/", handler=handler),
+                call(topic="/test_vcs_module/900/", handler=handler),
+                call(topic="/test_vcs_module/901/", handler=handler),
+                call(topic="/test_vcs_module/902/", handler=handler),
             ]
         )
 
@@ -172,12 +172,12 @@ def test_default_parse_incoming_payload_func_and_composer_func(
         delattr(vcs_module, "parse_incoming_payload")
 
         VirtualClientsManager().register_virtual_clients_by_plugin(
-            vcs_module, "test_module"
+            vcs_module, "test_vcs_module"
         )
 
         data_received_handler = subscribe_vc.call_args.args[1]
 
-        mqtt_message.topic = b"/900/test_module/"
+        mqtt_message.topic = b"/900/test_vcs_module/"
         mqtt_message.payload = b"something"
 
         data_received_handler(None, None, mqtt_message)
@@ -185,7 +185,7 @@ def test_default_parse_incoming_payload_func_and_composer_func(
         assert VirtualClientsManager.virtual_clients[900]["last_payload"] == "something"
         publish.assert_called_once_with(
             topic="/receive_device_state/",
-            message="900,test_module,Test Virtual Client 0",
+            message="900,test_vcs_module,Test Virtual Client 0",
         )
 
 
@@ -235,7 +235,7 @@ def test_publish_all_vc_states(vcs_module, mqtt_client, mqtt_message):
         delattr(vcs_module, "parse_incoming_payload")
 
         VirtualClientsManager().register_virtual_clients_by_plugin(
-            vcs_module, "test_module"
+            vcs_module, "test_vcs_module"
         )
         VirtualClientsManager.subscribe_vc_manager()
 
@@ -246,15 +246,15 @@ def test_publish_all_vc_states(vcs_module, mqtt_client, mqtt_message):
             [
                 call(
                     topic="/receive_device_state/",
-                    message="900,test_module,Test Virtual Client 0",
+                    message="900,test_vcs_module,Test Virtual Client 0",
                 ),
                 call(
                     topic="/receive_device_state/",
-                    message="901,test_module,Test Virtual Client 1",
+                    message="901,test_vcs_module,Test Virtual Client 1",
                 ),
                 call(
                     topic="/receive_device_state/",
-                    message="902,test_module,Test Virtual Client 2",
+                    message="902,test_vcs_module,Test Virtual Client 2",
                 ),
             ]
         )
