@@ -1,12 +1,14 @@
 import datetime as dt
 import logging
-from typing import Tuple
+from typing import Tuple, Type
 
+from sqlalchemy import text
 from sqlalchemy.exc import NoResultFound, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from src.crud.device_types import get_device_type_by_name, create_device_type
 from src.crud.tags import get_tags_by_ids
+from src.database import Base
 from src.dependencies import db_session
 from src.models import Device as DeviceModel, DeviceType as DeviceTypeModel
 from src.schemas import DevicePatch, DeviceReceived
@@ -15,7 +17,7 @@ from src.schemas import DevicePatch, DeviceReceived
 logger = logging.getLogger()
 
 
-def commit_device(device: DeviceModel) -> DeviceModel:
+def commit_db_object(device: Type[Base]) -> Type[Base]:
     db: Session = db_session.get()
     db.add(device)
     try:
@@ -24,7 +26,7 @@ def commit_device(device: DeviceModel) -> DeviceModel:
         db.rollback()
         raise
 
-    db.refresh(device)
+    return db.refresh(device)
 
 
 def get_devices() -> Tuple[DeviceModel]:
@@ -96,7 +98,7 @@ def update_last_update_sent(mqtt_id: int) -> DeviceModel | None:
         if device is None:
             raise NoResultFound(f"Device with mqtt id {mqtt_id} not found")
         device.last_update_sent = dt.datetime.now()
-        return commit_device(device)
+        return commit_db_object(device)
     except (SQLAlchemyError, NoResultFound) as e:
         (detail,) = e.args
         logger.error(
@@ -111,7 +113,7 @@ def update_last_seen(mqtt_id: int) -> DeviceModel | None:
         if device is None:
             raise NoResultFound(f"Device with mqtt id {mqtt_id} not found")
         device.last_seen = dt.datetime.now()
-        return commit_device(device)
+        return commit_db_object(device)
     except (SQLAlchemyError, NoResultFound) as e:
         (detail,) = e.args
         logger.error(
@@ -135,7 +137,7 @@ def create_device(device: DeviceReceived) -> DeviceModel:
         name=truncated_remote_name,
         device_type=db_device_type,
     )
-    new_device = commit_device(device_model)
+    new_device = commit_db_object(device_model)
     return new_device
 
 
@@ -158,5 +160,18 @@ def update_device(device: DeviceReceived, *_) -> DeviceModel:
         db_device.reboots += 1
         db_device.remote_name = device.remote_name
 
-    updated_device = commit_device(db_device)
+    updated_device = commit_db_object(db_device)
     return updated_device
+
+
+def get_plugin_db_obj_using_device_type_and_mqtt_id(
+    device_type_name: str, mqtt_id: int
+) -> DeviceModel | None:
+    return (
+        db_session.get()
+        .execute(
+            text(f"SELECT * FROM {device_type_name} WHERE mqtt_id = :mqtt_id;"),
+            {"mqtt_id": mqtt_id},
+        )
+        .first()
+    )

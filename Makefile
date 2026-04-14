@@ -30,7 +30,7 @@ help:
 
 .PHONY: build
 build:
-	@docker compose -f docker-compose-dev.yml build
+	@docker build . -t csm-backend
 
 _testuser:
 	@echo "Creating test user if one does not exist."

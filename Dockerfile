@@ -11,5 +11,3 @@ COPY ./Pipfile.lock /backend/
 
 RUN mkdir -p /var/logs/csm/
 RUN pip install pipenv && pipenv install
-
-ENV PYTHONPATH="${PYTHONPATH}:/backend/src"

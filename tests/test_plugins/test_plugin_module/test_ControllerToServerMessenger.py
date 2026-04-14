@@ -6,18 +6,21 @@ from src.plugins import (
     PluginsManager,
 )
 
+from .example_plugin.ControllerToServerMessenger import ControllerToServerMessenger
 
-def test_PluginControllerTwoServerMessenger_subclassed_from_BaseControllerToServerMessenger(
+
+def test_PluginControllerToServerMessenger_subclassed_from_BaseControllerToServerMessenger(
     example_plugin_path,
 ):
     PluginsManager.add_plugin_object(example_plugin_path)
     PluginsManager.check_controller_to_server_messenger(example_plugin_path)
-    PluginControllerTwoServerMessenger = PluginsManager.PLUGINS["example_plugin"][
+    PluginControllerToServerMessenger = PluginsManager.PLUGINS["example_plugin"][
         "ControllerToServerMessenger"
     ]
     assert issubclass(
-        PluginControllerTwoServerMessenger, BaseControllerToServerMessenger
+        PluginControllerToServerMessenger, BaseControllerToServerMessenger
     )
+    assert issubclass(PluginControllerToServerMessenger, ControllerToServerMessenger)
 
 
 def test_ModuleNotFoundError_exception_falls_back_on_BaseControllerToServerMessenger():
@@ -28,10 +31,10 @@ def test_ModuleNotFoundError_exception_falls_back_on_BaseControllerToServerMesse
         PluginsManager.add_plugin_object("test_plugin")
         PluginsManager.check_controller_to_server_messenger("test_plugin")
         import_module.assert_called_once_with("test_plugin.ControllerToServerMessenger")
-        PluginControllerTwoServerMessenger = PluginsManager.PLUGINS["test_plugin"][
+        PluginControllerToServerMessenger = PluginsManager.PLUGINS["test_plugin"][
             "ControllerToServerMessenger"
         ]
-        assert PluginControllerTwoServerMessenger is DefaultControllerToServerMessenger
+        assert PluginControllerToServerMessenger is DefaultControllerToServerMessenger
 
 
 def test_Exception_falls_back_on_BaseControllerToServerMessenger():
@@ -41,7 +44,7 @@ def test_Exception_falls_back_on_BaseControllerToServerMessenger():
         PluginsManager.add_plugin_object("test_plugin")
         PluginsManager.check_controller_to_server_messenger("test_plugin")
         import_module.assert_called_once_with("test_plugin.ControllerToServerMessenger")
-        PluginControllerTwoServerMessenger = PluginsManager.PLUGINS["test_plugin"][
+        PluginControllerToServerMessenger = PluginsManager.PLUGINS["test_plugin"][
             "ControllerToServerMessenger"
         ]
-        assert PluginControllerTwoServerMessenger is DefaultControllerToServerMessenger
+        assert PluginControllerToServerMessenger is DefaultControllerToServerMessenger

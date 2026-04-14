@@ -3,6 +3,9 @@ import logging
 import os
 from typing import Dict
 
+from sqlalchemy import Column, ForeignKey, Integer
+
+from src.database import Base, engine
 from . import device_plugins
 from .BaseDeviceManager import BaseDeviceManager
 from .BaseControllerToServerMessenger import (
@@ -54,7 +57,7 @@ def pluginnamefrompath(f):
     def wrapper(*args, **kwargs):
         if "plugin_name" not in kwargs:
             plugin_path = args[1]
-            plugin_name = plugin_path.split(".").pop()
+            plugin_name = plugin_path.split(".").pop().split("/").pop()
             kwargs["plugin_name"] = plugin_name
         f(*args, **kwargs)
 
@@ -85,14 +88,21 @@ class PluginsManager:
         logger.info("Checking for discoverable device plugin modules...")
         for _finder, plugin_path, _ispkg in iter_nametag(device_plugins):
             plugin_name = plugin_path.split(".").pop()
-            logger.info(f'Found discoverable device plugin module: "{plugin_name}"')
-            cls.add_plugin_object(plugin_path)
-            cls.check_device_manager(plugin_path)
-            cls.check_controller_to_server_messenger(plugin_path)
-            cls.check_server_to_controller_messenger(plugin_path)
-            cls.check_router(plugin_path)
-            if "PYTEST_VERSION" not in os.environ:
-                cls.check_db_seeding(plugin_path)
+            logger.info(
+                f'Found discoverable device plugin "{plugin_name}" : {plugin_path}'
+            )
+            cls.load_plugin_from_path(plugin_path)
+
+    @classmethod
+    def load_plugin_from_path(cls, plugin_path: str):
+        cls.add_plugin_object(plugin_path)
+        cls.check_device_manager(plugin_path)
+        cls.check_controller_to_server_messenger(plugin_path)
+        cls.check_server_to_controller_messenger(plugin_path)
+        cls.check_router(plugin_path)
+        cls.check_model(plugin_path)
+        if "PYTEST_VERSION" not in os.environ:
+            cls.check_db_seeding(plugin_path)
 
     @classmethod
     @pluginnamefrompath
@@ -114,18 +124,24 @@ class PluginsManager:
             device_manager_module = importlib.import_module(device_manager_module_name)
             PluginDeviceManager = device_manager_module.DeviceManager
             DeviceManager = type(
-                "DeviceManager", (BaseDeviceManager, PluginDeviceManager), {}
+                "DeviceManager",
+                (
+                    PluginDeviceManager,
+                    BaseDeviceManager,
+                ),
+                {},
             )
         except ModuleNotFoundError:
             logger.info(
                 f"No device manager module found for {plugin_path}. Using default device manager."
             )
-        except (ImportError, AttributeError):
+        except (ImportError, AttributeError) as e:
             logger.warning(
                 f"Unable to import device manager from {plugin_path}. Using default device manager."
             )
-        except Exception as e:
             logger.warning(e)
+        except Exception as e:
+            logger.error(e)
 
         plugin["DeviceManager"] = DeviceManager
 
@@ -157,7 +173,10 @@ class PluginsManager:
             # Creating dynamic plugin classes in place gives access to the super proxy
             ControllerToServerMessenger = type(
                 "ControllerToServerMessenger",
-                (_BaseControllerToServerMessenger, PluginControllerToServerMessenger),
+                (
+                    PluginControllerToServerMessenger,
+                    _BaseControllerToServerMessenger,
+                ),
                 {},
             )
         except ModuleNotFoundError:
@@ -195,8 +214,8 @@ class PluginsManager:
             ServerToControllerMessenger = type(
                 "ServerToControllerMessenger",
                 (
-                    BaseServerToControllerMessenger,
                     PluginServerToControllerMessenger,
+                    BaseServerToControllerMessenger,
                 ),
                 {},
             )
@@ -228,6 +247,40 @@ class PluginsManager:
             logger.info(f"No router module found for {plugin_name}.")
         except (ImportError, AttributeError):
             logger.warning(f"Unable to import router from {plugin_path}.")
+
+    @classmethod
+    @pluginnamefrompath
+    def check_model(cls, plugin_path: str, *, plugin_name=None):
+        logger.info(f"Checking for Model module in {plugin_path}")
+        try:
+            model_module_name = f"{plugin_path}.Model"
+            model_module = importlib.import_module(model_module_name)
+        except ModuleNotFoundError:
+            logger.info(f"No model module found for {plugin_name}.")
+            return
+        except (ImportError, AttributeError) as e:
+            logger.warning(f"Unable to import model from {plugin_path}.")
+            logger.error(e)
+            return
+        except Exception as e:
+            logger.error(e)
+            return
+
+        model_class_name = "".join(map(str.title, plugin_name.split("_")))
+        PluginModel = type(
+            model_class_name,
+            (
+                model_module.PluginModel,
+                Base,
+            ),
+            {
+                "mqtt_id": Column(
+                    Integer, ForeignKey("devices.mqtt_id", ondelete="CASCADE")
+                )
+            },
+        )
+        model_module.PluginModel = PluginModel
+        Base.metadata.create_all(bind=engine, tables=[PluginModel.__table__])
 
     @classmethod
     @pluginnamefrompath

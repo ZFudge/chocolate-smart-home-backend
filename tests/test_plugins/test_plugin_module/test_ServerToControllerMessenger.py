@@ -2,6 +2,8 @@ from unittest.mock import patch
 
 from src.plugins import BaseServerToControllerMessenger, PluginsManager
 
+from .example_plugin.ServerToControllerMessenger import ServerToControllerMessenger
+
 
 def test_PluginServerToControllerMessenger_subclassed_from_BaseServerToControllerMessenger(
     example_plugin_path,
@@ -14,6 +16,7 @@ def test_PluginServerToControllerMessenger_subclassed_from_BaseServerToControlle
     assert issubclass(
         PluginServerToControllerMessenger, BaseServerToControllerMessenger
     )
+    assert issubclass(PluginServerToControllerMessenger, ServerToControllerMessenger)
 
 
 def test_ModuleNotFoundError_exception_falls_back_on_BaseServerToControllerMessenger():

@@ -13,8 +13,8 @@ logger = logging.getLogger()
 
 
 class BaseControllerToServerMessenger:
-    @staticmethod
     def parse_controller_msg(
+        self,
         raw_msg: str,
     ) -> Tuple[DeviceReceivedSchema, Iterable[str]]:
         """Parse message from remote controller."""

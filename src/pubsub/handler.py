@@ -5,7 +5,6 @@ from paho.mqtt.client import Client, MQTTMessage
 from pydantic import ValidationError
 
 from src.crud import get_device_by_id
-from src.models import Device as Device_model
 from src.plugins import PluginsManager
 from src.schemas.device import DeviceReceived as DeviceReceivedSchema
 
@@ -17,7 +16,7 @@ def mqtt_message_handler(
     _client: Client,
     _userdata: None,
     message: MQTTMessage,
-) -> Device_model | None:
+) -> DeviceReceivedSchema | None:
     if message.payload is None:
         return
 
@@ -40,7 +39,7 @@ def mqtt_message_handler(
 
     # Parse message data
     try:
-        device_received: DeviceReceivedSchema = (
+        device_received_schema: DeviceReceivedSchema = (
             ControllerToServerMessenger().parse_controller_msg(payload)
         )
     except StopIteration as e:
@@ -53,8 +52,11 @@ def mqtt_message_handler(
     # Store client data in DB
     existing_device = get_device_by_id(mqtt_id)
     if existing_device is None:
-        db_plugin_device = DeviceManager().create_device(device_received)
+        DeviceManager().create_device(device_received_schema)
     else:
-        db_plugin_device = DeviceManager().update_device(device_received)
+        DeviceManager().update_device(device_received_schema)
 
-    return db_plugin_device
+    # device_received_schema still contains most recent values
+    # and should be broadcast to frontend
+
+    return device_received_schema

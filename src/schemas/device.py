@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Any
 
 from src.schemas.device_type import DeviceType
 
@@ -37,6 +37,7 @@ class DeviceReceived(BaseModel):
     device_type_name: str
     remote_name: str
     name: str | None = None
+    plugin: Any = None
 
 
 class DeviceFrontend(DeviceId, DeviceBase):
