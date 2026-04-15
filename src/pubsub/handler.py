@@ -6,7 +6,11 @@ from pydantic import ValidationError
 
 from src.crud import get_device_by_id
 from src.plugins import PluginsManager
-from src.schemas.device import DeviceReceived as DeviceReceivedSchema
+from src.schemas.device import (
+    DeviceReceived as DeviceReceivedSchema,
+    DeviceFrontend as DeviceFrontendSchema,
+)
+from src.models.device import Device as DeviceModel
 
 
 logger = logging.getLogger("mqtt")
@@ -49,14 +53,32 @@ def mqtt_message_handler(
         logger.error(e)
         return
 
+    primary_device = get_device_by_id(mqtt_id)
     # Store client data in DB
-    existing_device = get_device_by_id(mqtt_id)
-    if existing_device is None:
-        DeviceManager().create_device(device_received_schema)
+    if primary_device is None:
+        primary_device = DeviceManager().create_device(device_received_schema)
     else:
-        DeviceManager().update_device(device_received_schema)
+        primary_device = DeviceManager().update_device(device_received_schema)
+    if not isinstance(primary_device, DeviceModel):
+        logger.error(f"{primary_device=} is not a DeviceModel")
+        return None
 
-    # device_received_schema still contains most recent values
+    device_frontend_schema = DeviceFrontendSchema(
+        mqtt_id=mqtt_id,
+        remote_name=device_received_schema.remote_name,
+        name=primary_device.name,
+        device_type_name=device_type_name,
+        tags=[t.id for t in primary_device.tags],
+        reboots=primary_device.reboots,
+        last_seen=str(primary_device.last_seen) if primary_device.last_seen else None,
+        last_update_sent=(
+            str(primary_device.last_update_sent)
+            if primary_device.last_update_sent
+            else None
+        ),
+        plugin=device_received_schema.plugin,
+    )
+
+    # device_frontend_schema still contains most recent values
     # and should be broadcast to frontend
-
-    return device_received_schema
+    return device_frontend_schema

@@ -2,7 +2,6 @@ import datetime as dt
 import logging
 from typing import Tuple, Type
 
-from sqlalchemy import text
 from sqlalchemy.exc import NoResultFound, SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -12,7 +11,7 @@ from src.database import Base
 from src.dependencies import db_session
 from src.models import Device as DeviceModel, DeviceType as DeviceTypeModel
 from src.schemas import DevicePatch, DeviceReceived
-
+from src.utils import snakecase_to_pascalcase
 
 logger = logging.getLogger()
 
@@ -26,7 +25,8 @@ def commit_db_object(device: Type[Base]) -> Type[Base]:
         db.rollback()
         raise
 
-    return db.refresh(device)
+    db.refresh(device)
+    return device
 
 
 def get_devices() -> Tuple[DeviceModel]:
@@ -37,7 +37,7 @@ def get_device_by_id(mqtt_id: int) -> DeviceModel | None:
     return (
         db_session.get()
         .query(DeviceModel)
-        .filter(DeviceModel.mqtt_id == mqtt_id)
+        .where(DeviceModel.mqtt_id == mqtt_id)
         .one_or_none()
     )
 
@@ -164,14 +164,17 @@ def update_device(device: DeviceReceived, *_) -> DeviceModel:
     return updated_device
 
 
+def get_plugin_model_class_using_device_type_name(
+    device_type_name: str,
+) -> DeviceModel | None:
+    plugin_model_class_name = snakecase_to_pascalcase(device_type_name)
+    for mapper in Base.registry.mappers:
+        if mapper.class_.__name__ == plugin_model_class_name:
+            return mapper.class_
+
+
 def get_plugin_db_obj_using_device_type_and_mqtt_id(
     device_type_name: str, mqtt_id: int
 ) -> DeviceModel | None:
-    return (
-        db_session.get()
-        .execute(
-            text(f"SELECT * FROM {device_type_name} WHERE mqtt_id = :mqtt_id;"),
-            {"mqtt_id": mqtt_id},
-        )
-        .first()
-    )
+    Table = get_plugin_model_class_using_device_type_name(device_type_name)
+    return db_session.get().query(Table).where(Table.mqtt_id == mqtt_id).one_or_none()

@@ -3,9 +3,7 @@ from src import models, schemas
 
 def test_device_mod_obj_to_frontend_schema_with_tags(populated_test_db):
     device = (
-        populated_test_db.query(models.Device)
-        .filter(models.Device.mqtt_id == 123)
-        .one()
+        populated_test_db.query(models.Device).where(models.Device.mqtt_id == 123).one()
     )
     assert schemas.device_mod_obj_to_frontend_schema(device) == schemas.DeviceFrontend(
         mqtt_id=123,
@@ -21,9 +19,7 @@ def test_device_mod_obj_to_frontend_schema_with_tags(populated_test_db):
 
 def test_device_mod_obj_to_frontend_schema_empty_tag(populated_test_db):
     device = (
-        populated_test_db.query(models.Device)
-        .filter(models.Device.mqtt_id == 234)
-        .one()
+        populated_test_db.query(models.Device).where(models.Device.mqtt_id == 234).one()
     )
     assert schemas.device_mod_obj_to_frontend_schema(device) == schemas.DeviceFrontend(
         mqtt_id=234,

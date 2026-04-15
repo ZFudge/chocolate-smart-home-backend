@@ -3,9 +3,7 @@ from src import models
 
 def test_device_model_str(populated_test_db):
     device_1 = (
-        populated_test_db.query(models.Device)
-        .filter(models.Device.mqtt_id == 123)
-        .one()
+        populated_test_db.query(models.Device).where(models.Device.mqtt_id == 123).one()
     )
     assert str(device_1) == (
         "Device("
@@ -21,9 +19,7 @@ def test_device_model_str(populated_test_db):
     assert repr(device_1) == str(device_1)
 
     device_2 = (
-        populated_test_db.query(models.Device)
-        .filter(models.Device.mqtt_id == 234)
-        .one()
+        populated_test_db.query(models.Device).where(models.Device.mqtt_id == 234).one()
     )
     assert str(device_2) == (
         "Device("
@@ -42,7 +38,7 @@ def test_device_model_str(populated_test_db):
 def test_device_type_model_str(populated_test_db):
     device_type_1 = (
         populated_test_db.query(models.DeviceType)
-        .filter(models.DeviceType.id == 1)
+        .where(models.DeviceType.id == 1)
         .one()
     )
     expected_str_1 = "DeviceType(id=1, name=TEST_DEVICE_TYPE_NAME_1)"
@@ -51,7 +47,7 @@ def test_device_type_model_str(populated_test_db):
 
     device_type_2 = (
         populated_test_db.query(models.DeviceType)
-        .filter(models.DeviceType.id == 2)
+        .where(models.DeviceType.id == 2)
         .one()
     )
     expected_str_2 = "DeviceType(id=2, name=TEST_DEVICE_TYPE_NAME_2)"
@@ -60,12 +56,12 @@ def test_device_type_model_str(populated_test_db):
 
 
 def test_tag_model_str(populated_test_db):
-    tag_1 = populated_test_db.query(models.Tag).filter(models.Tag.id == 1).one()
+    tag_1 = populated_test_db.query(models.Tag).where(models.Tag.id == 1).one()
     expected_str_1 = "Tag(id=1, name=Main Tag)"
     assert str(tag_1) == expected_str_1
     assert repr(tag_1) == expected_str_1
 
-    tag_2 = populated_test_db.query(models.Tag).filter(models.Tag.id == 2).one()
+    tag_2 = populated_test_db.query(models.Tag).where(models.Tag.id == 2).one()
     expected_str_2 = "Tag(id=2, name=Other Tag)"
     assert str(tag_2) == expected_str_2
     assert repr(tag_2) == expected_str_2

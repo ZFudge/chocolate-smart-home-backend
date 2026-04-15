@@ -23,7 +23,7 @@ class BaseDeviceManager:
     def create_device(self, device: DeviceReceivedSchema) -> models_Device:
         return create_device(device)
 
-    def update_device(self, device: DeviceReceivedSchema, *_) -> models_Device:
+    def update_device(self, device: DeviceReceivedSchema) -> models_Device:
         return update_device(device)
 
     def commit_db_object(self, db_obj: Type[Base]) -> Type[Base]:
@@ -32,4 +32,6 @@ class BaseDeviceManager:
     def get_plugin_db_obj_using_device_type_and_mqtt_id(
         self, *, device_type_name: str, mqtt_id: int, **kwargs
     ):
-        get_plugin_db_obj_using_device_type_and_mqtt_id(device_type_name, mqtt_id)
+        return get_plugin_db_obj_using_device_type_and_mqtt_id(
+            device_type_name, mqtt_id
+        )

@@ -17,7 +17,7 @@ def get_tags() -> Tuple[TagModel]:
 
 
 def get_tag_by_id(tag_id: int) -> TagModel | None:
-    return db_session.get().query(TagModel).filter(TagModel.id == tag_id).one_or_none()
+    return db_session.get().query(TagModel).where(TagModel.id == tag_id).one_or_none()
 
 
 def get_tags_by_ids(tag_ids: Tuple[int, ...]) -> Tuple[TagModel, ...]:
@@ -26,7 +26,7 @@ def get_tags_by_ids(tag_ids: Tuple[int, ...]) -> Tuple[TagModel, ...]:
 
 def get_tag_by_name(tag_name: str) -> TagModel | None:
     return (
-        db_session.get().query(TagModel).filter(TagModel.name == tag_name).one_or_none()
+        db_session.get().query(TagModel).where(TagModel.name == tag_name).one_or_none()
     )
 
 

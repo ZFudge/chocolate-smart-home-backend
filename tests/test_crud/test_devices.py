@@ -58,7 +58,7 @@ def test_create_device_creates_a_new_device(empty_test_db):
         )
     )
     device = (
-        empty_test_db.query(models.Device).filter(models.Device.mqtt_id == 123).first()
+        empty_test_db.query(models.Device).where(models.Device.mqtt_id == 123).first()
     )
     assert device.mqtt_id == 123
     assert device.device_type.name == "test_device_type_name"
@@ -75,7 +75,7 @@ def test_create_device_does_not_set_last_seen_or_last_update_sent_values(empty_t
         )
     )
     device = (
-        empty_test_db.query(models.Device).filter(models.Device.mqtt_id == 123).first()
+        empty_test_db.query(models.Device).where(models.Device.mqtt_id == 123).first()
     )
     assert device.last_seen is None
     assert device.last_update_sent is None
@@ -90,7 +90,7 @@ def test_create_device_initializes_reboots_with_zero_value(empty_test_db):
         )
     )
     device = (
-        empty_test_db.query(models.Device).filter(models.Device.mqtt_id == 123).first()
+        empty_test_db.query(models.Device).where(models.Device.mqtt_id == 123).first()
     )
     assert device.reboots == 0
 
@@ -105,7 +105,7 @@ def test_create_device_sets_created_date(empty_test_db):
         )
     )
     device = (
-        empty_test_db.query(models.Device).filter(models.Device.mqtt_id == 123).first()
+        empty_test_db.query(models.Device).where(models.Device.mqtt_id == 123).first()
     )
     assert device.created_date > d
 
@@ -120,7 +120,7 @@ def test_update_device_sets_remote_name(populated_test_db):
     )
     device = (
         populated_test_db.query(models.Device)
-        .filter(models.Device.mqtt_id == 123)
+        .where(models.Device.mqtt_id == 123)
         .first()
     )
     assert device.remote_name == "new_test_remote_name"
@@ -136,7 +136,7 @@ def test_update_device_increments_reboots_when_remote_name_changed(populated_tes
     )
     device = (
         populated_test_db.query(models.Device)
-        .filter(models.Device.mqtt_id == 123)
+        .where(models.Device.mqtt_id == 123)
         .first()
     )
     assert device.reboots == 1
@@ -154,7 +154,7 @@ def test_update_device_does_not_increment_reboots_when_remote_name_not_changed(
     )
     device = (
         populated_test_db.query(models.Device)
-        .filter(models.Device.mqtt_id == 123)
+        .where(models.Device.mqtt_id == 123)
         .first()
     )
     assert device.reboots == 0
@@ -170,7 +170,7 @@ def test_update_device_can_change_device_type(populated_test_db):
     )
     device = (
         populated_test_db.query(models.Device)
-        .filter(models.Device.mqtt_id == 123)
+        .where(models.Device.mqtt_id == 123)
         .first()
     )
     assert device.device_type.name == "new_test_device_type_name"
@@ -186,7 +186,7 @@ def test_update_device_does_not_update_last_sent_or_last_update_sent(populated_t
     )
     device = (
         populated_test_db.query(models.Device)
-        .filter(models.Device.mqtt_id == 123)
+        .where(models.Device.mqtt_id == 123)
         .first()
     )
     assert device.last_update_sent == dt.fromisoformat("2025-01-01 00:00:00.000000")
@@ -198,7 +198,7 @@ def test_update_last_seen(populated_test_db):
     crud.update_last_seen(mqtt_id=123)
     device = (
         populated_test_db.query(models.Device)
-        .filter(models.Device.mqtt_id == 123)
+        .where(models.Device.mqtt_id == 123)
         .first()
     )
     assert device.last_seen > d
@@ -209,7 +209,7 @@ def test_update_last_update_sent(populated_test_db):
     crud.update_last_update_sent(mqtt_id=123)
     device = (
         populated_test_db.query(models.Device)
-        .filter(models.Device.mqtt_id == 123)
+        .where(models.Device.mqtt_id == 123)
         .first()
     )
     assert device.last_update_sent > d

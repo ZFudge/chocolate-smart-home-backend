@@ -6,6 +6,7 @@ from typing import Dict
 from sqlalchemy import Column, ForeignKey, Integer
 
 from src.database import Base, engine
+from src import utils
 from . import device_plugins
 from .BaseDeviceManager import BaseDeviceManager
 from .BaseControllerToServerMessenger import (
@@ -14,6 +15,7 @@ from .BaseControllerToServerMessenger import (
 )
 from .BaseServerToControllerMessenger import BaseServerToControllerMessenger
 from .utils import iter_nametag
+
 
 logger = logging.getLogger()
 
@@ -266,8 +268,11 @@ class PluginsManager:
             logger.error(e)
             return
 
-        model_class_name = "".join(map(str.title, plugin_name.split("_")))
-        PluginModel = type(
+        if plugin_name in Base.metadata.tables:
+            logger.info(f"Model for {plugin_name} already exists. Skipping.")
+            return
+        model_class_name = utils.snakecase_to_pascalcase(plugin_name)
+        model_module.PluginModel = type(
             model_class_name,
             (
                 model_module.PluginModel,
@@ -276,11 +281,12 @@ class PluginsManager:
             {
                 "mqtt_id": Column(
                     Integer, ForeignKey("devices.mqtt_id", ondelete="CASCADE")
-                )
+                ),
             },
         )
-        model_module.PluginModel = PluginModel
-        Base.metadata.create_all(bind=engine, tables=[PluginModel.__table__])
+        Base.metadata.create_all(
+            bind=engine, tables=[model_module.PluginModel.__table__]
+        )
 
     @classmethod
     @pluginnamefrompath

@@ -31,6 +31,6 @@ def get_device_type_by_name(device_type_name: str) -> DeviceTypeModel | None:
     return (
         db_session.get()
         .query(DeviceTypeModel)
-        .filter(DeviceTypeModel.name == device_type_name)
+        .where(DeviceTypeModel.name == device_type_name)
         .one_or_none()
     )

@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 
 from src import models
+from src.crud import get_plugin_model_class_using_device_type_name
 from src.database import Base
 from src.dependencies import (
     db_session,
@@ -21,7 +22,6 @@ from src.dependencies import (
     redis_session,
 )
 from src.main import app
-
 from src.SingletonMeta import SingletonMeta
 
 
@@ -50,7 +50,7 @@ def db_closure():
 
 
 @pytest.fixture
-def empty_test_db():
+def empty_test_db(clear_test_db):
     override_get_db = db_closure()
     app.dependency_overrides[get_db] = override_get_db
 
@@ -63,18 +63,32 @@ def empty_test_db():
     yield db_session.get()
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def clear_test_db():
     yield
-    try:
-        db_session.get().query(models.device_tags).delete()
-        db_session.get().query(models.Device).delete()
-        db_session.get().query(models.Tag).delete()
-        db_session.get().query(models.DeviceType).delete()
-        db_session.get().commit()
+    drop = False
+    if "example_plugin" in Base.metadata.tables:
+        try:
+            Model = get_plugin_model_class_using_device_type_name("example_plugin")
+            db_session.get().query(Model).delete()
+            db_session.get().commit()
+        except Exception as e:
+            print(e)
+        drop = True
+    if "device_tags" in Base.metadata.tables:
+        try:
+            db_session.get().query(models.device_tags).delete()
+            db_session.get().query(models.Device).delete()
+            db_session.get().query(models.Tag).delete()
+            db_session.get().query(models.DeviceType).delete()
+            db_session.get().commit()
+            Base.metadata.drop_all(bind=engine)
+            drop = True
+        except (ProgrammingError, InternalError) as e:
+            print(e)
+            pass
+    if drop:
         Base.metadata.drop_all(bind=engine)
-    except (ProgrammingError, InternalError):
-        pass
 
 
 @pytest.fixture
