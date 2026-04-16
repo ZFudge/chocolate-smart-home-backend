@@ -10,7 +10,6 @@ from sqlalchemy.orm import Session, sessionmaker
 
 
 from src import models
-from src.crud import get_plugin_model_class_using_device_type_name
 from src.database import Base
 from src.dependencies import (
     db_session,
@@ -67,14 +66,17 @@ def empty_test_db(clear_test_db):
 def clear_test_db():
     yield
     drop = False
-    if "example_plugin" in Base.metadata.tables:
-        try:
-            Model = get_plugin_model_class_using_device_type_name("example_plugin")
-            db_session.get().query(Model).delete()
-            db_session.get().commit()
-        except Exception as e:
-            print(e)
-        drop = True
+
+    for mapper in Base.registry.mappers:
+        if mapper.class_.__name__.lower().endswith("plugin"):
+            try:
+                ModelClass = mapper.class_
+                db_session.get().query(ModelClass).delete()
+                db_session.get().commit()
+            except Exception as e:
+                print(e)
+            drop = True
+
     if "device_tags" in Base.metadata.tables:
         try:
             db_session.get().query(models.device_tags).delete()
@@ -87,6 +89,7 @@ def clear_test_db():
         except (ProgrammingError, InternalError) as e:
             print(e)
             pass
+
     if drop:
         Base.metadata.drop_all(bind=engine)
 

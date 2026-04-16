@@ -5,8 +5,8 @@ from typing import Dict
 
 from sqlalchemy import Column, ForeignKey, Integer
 
-from src.database import Base, engine
 from src import utils
+from src.database import Base, engine
 from . import device_plugins
 from .BaseDeviceManager import BaseDeviceManager
 from .BaseControllerToServerMessenger import (
@@ -93,32 +93,35 @@ class PluginsManager:
             logger.info(
                 f'Found discoverable device plugin "{plugin_name}" : {plugin_path}'
             )
-            cls.load_plugin_from_path(plugin_path)
+            try:
+                cls.load_plugin_from_path(plugin_path)
+            except Exception as e:
+                logger.error(e)
 
     @classmethod
     def load_plugin_from_path(cls, plugin_path: str):
-        cls.add_plugin_object(plugin_path)
+        cls.map_new_plugin(plugin_path)
         cls.check_device_manager(plugin_path)
         cls.check_controller_to_server_messenger(plugin_path)
         cls.check_server_to_controller_messenger(plugin_path)
-        cls.check_router(plugin_path)
         cls.check_model(plugin_path)
+        cls.check_router(plugin_path)
         if "PYTEST_VERSION" not in os.environ:
             cls.check_db_seeding(plugin_path)
 
     @classmethod
     @pluginnamefrompath
-    def add_plugin_object(cls, _, *, plugin_name):
+    def map_new_plugin(cls, _, *, plugin_name):
         cls.PLUGINS[plugin_name] = PluginDict()
 
     @classmethod
     @pluginnamefrompath
     def check_device_manager(cls, plugin_path: str, *, plugin_name=None):
-        """Check for the presence of a device manager module in the plugin's subdirectory.
+        """Check for the presence of a DeviceManager module in the plugin's subdirectory.
         If found, import the module and create a dynamic plugin class that inherits from BaseDeviceManager and the plugin's DeviceManager class.
-        If not found, use the default device manager class.
+        If not found, use the BaseDeviceManager class.
         """
-        logger.info(f"Checking for device manager module in {plugin_path}...")
+        logger.info(f"Checking for DeviceManager module in {plugin_path}...")
         plugin = cls.PLUGINS[plugin_name]
         DeviceManager = BaseDeviceManager
         try:
@@ -135,11 +138,11 @@ class PluginsManager:
             )
         except ModuleNotFoundError:
             logger.info(
-                f"No device manager module found for {plugin_path}. Using default device manager."
+                f"No DeviceManager module found for {plugin_path}. Using BaseDeviceManager."
             )
         except (ImportError, AttributeError) as e:
             logger.warning(
-                f"Unable to import device manager from {plugin_path}. Using default device manager."
+                f"Unable to import DeviceManager from {plugin_path}. Using BaseDeviceManager."
             )
             logger.warning(e)
         except Exception as e:
@@ -152,12 +155,12 @@ class PluginsManager:
     def check_controller_to_server_messenger(
         cls, plugin_path: str, *, plugin_name=None
     ):
-        """Check for the presence of a controller to server messenger module in the plugin's subdirectory.
-        If found, import the module and create a dynamic plugin class that inherits from BaseControllerToServerMessenger and the plugin's ControllerToServerMessenger class.
-        If not found, use the default controller to server messenger class.
+        """Check for the presence of a ControllerToServerMessenger module in the plugin's subdirectory.
+        If found, import the module and create a dynamic plugin class that inherits from DefaultControllerToServerMessenger and the plugin's ControllerToServerMessenger class.
+        If not found, use the DefaultControllerToServerMessenger class.
         """
         logger.info(
-            f"Checking for controller to server messenger module in {plugin_path}..."
+            f"Checking for ControllerToServerMessenger module in {plugin_path}..."
         )
         plugin = cls.PLUGINS[plugin_name]
         ControllerToServerMessenger = DefaultControllerToServerMessenger
@@ -169,7 +172,7 @@ class PluginsManager:
             )
             _BaseControllerToServerMessenger = BaseControllerToServerMessenger
             # if plugin device does not have its own device-specific values to parse,
-            # defer to default controller to server messenger to be sure parse_controller_msg returns a device schema
+            # defer to DefaultControllerToServerMessenger to be sure parse_controller_msg returns a device schema
             if not hasattr(PluginControllerToServerMessenger, "parse_controller_msg"):
                 _BaseControllerToServerMessenger = DefaultControllerToServerMessenger
             # Creating dynamic plugin classes in place gives access to the super proxy
@@ -183,12 +186,15 @@ class PluginsManager:
             )
         except ModuleNotFoundError:
             logger.info(
-                f"No controller to server messenger module found for {plugin_path}. Using default controller to server messenger."
+                f"No ControllerToServerMessenger module found for {plugin_path}. Using DefaultControllerToServerMessenger."
             )
         except (ImportError, AttributeError):
             logger.warning(
-                f"Unable to import controller to server messenger from {plugin_path}. Using default controller to server messenger."
+                f"Unable to import ControllerToServerMessenger from {plugin_path}. Using DefaultControllerToServerMessenger."
             )
+        except Exception as e:
+            logger.error(e)
+            return
 
         plugin["ControllerToServerMessenger"] = ControllerToServerMessenger
 
@@ -197,12 +203,12 @@ class PluginsManager:
     def check_server_to_controller_messenger(
         cls, plugin_path: str, *, plugin_name=None
     ):
-        """Check for the presence of a server to controller messenger module in the plugin's subdirectory.
+        """Check for the presence of a ServerToControllerMessenger module in the plugin's subdirectory.
         If found, import the module and create a dynamic plugin class that inherits from BaseServerToControllerMessenger and the plugin's ServerToControllerMessenger class.
-        If not found, use the default server to controller messenger class.
+        If not found, use the BaseServerToControllerMessenger class.
         """
         logger.info(
-            f"Checking for server to controller messenger module in {plugin_path}..."
+            f"Checking for ServerToControllerMessenger module in {plugin_path}..."
         )
         plugin_name = plugin_path.split(".").pop()
         plugin = cls.PLUGINS[plugin_name]
@@ -223,52 +229,41 @@ class PluginsManager:
             )
         except ModuleNotFoundError:
             logger.info(
-                f"No server to controller messenger module found for {plugin_path}. Using default server to controller messenger."
+                f"No ServerToControllerMessenger module found for {plugin_path}. Using BaseServerToControllerMessenger."
             )
         except (ImportError, AttributeError):
             logger.warning(
-                f"Unable to import server to controller messenger from {plugin_path}. Using default server to controller messenger."
+                f"Unable to import ServerToControllerMessenger from {plugin_path}. Using BaseServerToControllerMessenger."
             )
+        except Exception as e:
+            logger.error(e)
+            return
 
         plugin["ServerToControllerMessenger"] = ServerToControllerMessenger
 
     @classmethod
     @pluginnamefrompath
-    def check_router(cls, plugin_path: str, *, plugin_name=None):
-        """Check for the presence of a router module in the plugin's subdirectory.
-        If found, import the module and add the router to the PluginsManager.ROUTERS list.
-        If not found, use the default router class.
-        """
-        logger.info(f"Checking for router module in {plugin_path}...")
-        try:
-            router_module_name = f"{plugin_path}.router"
-            router_module = importlib.import_module(router_module_name)
-            plugin_router = router_module.plugin_router
-            cls.ROUTERS.append(plugin_router)
-        except ModuleNotFoundError:
-            logger.info(f"No router module found for {plugin_name}.")
-        except (ImportError, AttributeError):
-            logger.warning(f"Unable to import router from {plugin_path}.")
-
-    @classmethod
-    @pluginnamefrompath
     def check_model(cls, plugin_path: str, *, plugin_name=None):
-        logger.info(f"Checking for Model module in {plugin_path}")
+        logger.info(f"Checking for {plugin_path}.Model module.")
         try:
             model_module_name = f"{plugin_path}.Model"
             model_module = importlib.import_module(model_module_name)
         except ModuleNotFoundError:
-            logger.info(f"No model module found for {plugin_name}.")
+            logger.info(f"No {plugin_name}.Model module found.")
             return
         except (ImportError, AttributeError) as e:
-            logger.warning(f"Unable to import model from {plugin_path}.")
+            logger.warning(f"Unable to import {plugin_name}.Model")
             logger.error(e)
             return
         except Exception as e:
             logger.error(e)
             return
 
-        if plugin_name in Base.metadata.tables:
+        model_class_name = utils.snakecase_to_pascalcase(plugin_name)
+        if (
+            plugin_name in Base.metadata.tables
+            or model_class_name in Base.metadata.tables
+        ):
             logger.info(f"Model for {plugin_name} already exists. Skipping.")
             return
         model_class_name = utils.snakecase_to_pascalcase(plugin_name)
@@ -290,6 +285,27 @@ class PluginsManager:
 
     @classmethod
     @pluginnamefrompath
+    def check_router(cls, plugin_path: str, *, plugin_name=None):
+        """Check for the presence of a router module in the plugin's subdirectory.
+        If found, import the module and add the router to the PluginsManager.ROUTERS list.
+        If not found, use the default router class.
+        """
+        logger.info(f"Checking for router module in {plugin_path}...")
+        try:
+            router_module_name = f"{plugin_path}.router"
+            router_module = importlib.import_module(router_module_name)
+            plugin_router = router_module.plugin_router
+            cls.ROUTERS.append(plugin_router)
+        except ModuleNotFoundError:
+            logger.info(f"No router module found for {plugin_name}.")
+        except (ImportError, AttributeError):
+            logger.warning(f"Unable to import router from {plugin_path}.")
+        except Exception as e:
+            logger.error(e)
+            return
+
+    @classmethod
+    @pluginnamefrompath
     def check_db_seeding(cls, plugin_path: str, *, plugin_name=None):
         """Check for the presence of a db_seeding module in the plugin's subdirectory.
         If found, import the module and call the seed_db function.
@@ -307,6 +323,9 @@ class PluginsManager:
             logger.info(f"No db_seeding module found for {plugin_name}.")
         except ImportError:
             logger.warning(f"Unable to import db_seeding from {plugin_path}.")
+        except Exception as e:
+            logger.error(e)
+            return
 
     @classmethod
     def get_plugin_by_device_type_name(cls, plugin_name: str) -> Dict:

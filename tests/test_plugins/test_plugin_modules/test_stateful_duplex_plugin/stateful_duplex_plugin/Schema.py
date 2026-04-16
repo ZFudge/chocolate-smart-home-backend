@@ -1,5 +1,5 @@
 from pydantic import BaseModel
 
 
-class ExamplePluginSchema(BaseModel):
+class StatefulDuplexPluginSchema(BaseModel):
     count: int

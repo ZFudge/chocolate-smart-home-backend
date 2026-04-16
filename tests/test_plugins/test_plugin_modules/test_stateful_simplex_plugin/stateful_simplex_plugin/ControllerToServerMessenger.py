@@ -2,7 +2,7 @@ import logging
 
 from pydantic import BaseModel
 
-from .Schema import ExamplePluginSchema
+from .Schema import StatefulSimplexPluginSchema
 
 logger = logging.getLogger()
 
@@ -14,12 +14,14 @@ class ControllerToServerMessenger:
     ) -> type[BaseModel]:
         device_schema, msg_seq = super().parse_controller_msg(raw_msg)
         try:
-            count: str = next(msg_seq)
+            sensor_reading: str = next(msg_seq)
             try:
-                count = int(count)
+                sensor_reading = int(sensor_reading)
             except Exception:
-                count = -1
-            device_schema.plugin = ExamplePluginSchema(count=count)
+                sensor_reading = -1
+            device_schema.plugin = StatefulSimplexPluginSchema(
+                sensor_reading=sensor_reading
+            )
             return device_schema
         except StopIteration:
             raise StopIteration(
