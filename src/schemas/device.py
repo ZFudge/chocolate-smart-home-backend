@@ -1,8 +1,6 @@
 from pydantic import BaseModel
 from typing import List, Any
 
-from src.schemas.device_type import DeviceType
-
 
 class DeviceId(BaseModel):
     mqtt_id: int
@@ -14,30 +12,12 @@ class DeviceBase(BaseModel):
     reboots: int
 
 
-class DeviceWithTagsAndDeviceType(BaseModel):
-    tags: List[int] | None
-    device_type: DeviceType
-
-
-class Device(DeviceId, DeviceWithTagsAndDeviceType):
-    pass
-
-
-class DeviceUpdate(BaseModel):
-    mqtt_id: int
-    device_type_name: str
-
-
-class UpdateDeviceName(BaseModel):
-    name: str
-
-
 class DeviceReceived(BaseModel):
     mqtt_id: int
-    device_type_name: str
-    remote_name: str
+    device_type_name: str | None = None
+    remote_name: str | None = None
     name: str | None = None
-    plugin: Any = None
+    plugin: Any | None = None
 
 
 class DeviceFrontend(DeviceId, DeviceBase):
@@ -54,10 +34,8 @@ class DevicePatch(BaseModel):
 
 
 __all__ = [
-    "Device",
     "DeviceBase",
     "DeviceFrontend",
     "DevicePatch",
     "DeviceReceived",
-    "DeviceUpdate",
 ]

@@ -1,11 +1,10 @@
-import datetime as dt
 import logging
 from typing import Tuple, Type
 
-from sqlalchemy.exc import NoResultFound, SQLAlchemyError
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
-from src.crud.device_types import get_device_type_by_name, create_device_type
+from src.crud.device_types import create_device_type, get_device_type_by_name
 from src.crud.tags import get_tags_by_ids
 from src.database import Base
 from src.dependencies import db_session
@@ -90,36 +89,6 @@ def patch_device(patch_device: DevicePatch) -> DeviceModel:
         raise
     db.refresh(device)
     return device
-
-
-def update_last_update_sent(mqtt_id: int) -> DeviceModel | None:
-    try:
-        device = get_device_by_id(mqtt_id)
-        if device is None:
-            raise NoResultFound(f"Device with mqtt id {mqtt_id} not found")
-        device.last_update_sent = dt.datetime.now()
-        return commit_db_object(device)
-    except (SQLAlchemyError, NoResultFound) as e:
-        (detail,) = e.args
-        logger.error(
-            "Failed to update last update sent for Device with an id of %s: %s"
-            % (mqtt_id, detail)
-        )
-
-
-def update_last_seen(mqtt_id: int) -> DeviceModel | None:
-    try:
-        device = get_device_by_id(mqtt_id)
-        if device is None:
-            raise NoResultFound(f"Device with mqtt id {mqtt_id} not found")
-        device.last_seen = dt.datetime.now()
-        return commit_db_object(device)
-    except (SQLAlchemyError, NoResultFound) as e:
-        (detail,) = e.args
-        logger.error(
-            "Failed to update last sent for Device with an id of %s: %s"
-            % (mqtt_id, detail)
-        )
 
 
 def create_device(device: DeviceReceived) -> DeviceModel:

@@ -1,13 +1,8 @@
 from pydantic import BaseModel
-from typing import List
 
 
 class TagId(BaseModel):
     id: int
-
-
-class TagIds(BaseModel):
-    ids: List[int] | None = None
 
 
 class TagBase(BaseModel):
@@ -26,4 +21,4 @@ class TagPatch(TagId, TagBase):
     pass
 
 
-__all__ = ["Tag", "TagBase", "TagCreate", "TagIds", "TagPatch"]
+__all__ = ["Tag", "TagBase", "TagCreate", "TagPatch"]

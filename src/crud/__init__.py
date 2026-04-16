@@ -9,8 +9,6 @@ from src.crud.devices import (
     get_plugin_model_class_using_device_type_name,
     patch_device,
     update_device,
-    update_last_seen,
-    update_last_update_sent,
 )
 from src.crud.tags import (
     create_tag,
@@ -41,6 +39,4 @@ __all__ = [
     "patch_device",
     "patch_tag",
     "update_device",
-    "update_last_seen",
-    "update_last_update_sent",
 ]

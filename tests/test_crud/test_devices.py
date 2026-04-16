@@ -191,25 +191,3 @@ def test_update_device_does_not_update_last_sent_or_last_update_sent(populated_t
     )
     assert device.last_update_sent == dt.fromisoformat("2025-01-01 00:00:00.000000")
     assert device.last_seen == dt.fromisoformat("2025-01-02 00:00:00.000000")
-
-
-def test_update_last_seen(populated_test_db):
-    d = dt.now()
-    crud.update_last_seen(mqtt_id=123)
-    device = (
-        populated_test_db.query(models.Device)
-        .where(models.Device.mqtt_id == 123)
-        .first()
-    )
-    assert device.last_seen > d
-
-
-def test_update_last_update_sent(populated_test_db):
-    d = dt.now()
-    crud.update_last_update_sent(mqtt_id=123)
-    device = (
-        populated_test_db.query(models.Device)
-        .where(models.Device.mqtt_id == 123)
-        .first()
-    )
-    assert device.last_update_sent > d
