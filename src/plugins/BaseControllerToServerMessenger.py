@@ -19,21 +19,23 @@ class BaseControllerToServerMessenger:
     ) -> Tuple[DeviceReceivedSchema, Iterable[str]]:
         """Parse message from remote controller."""
         msg_seq: Iterable[str] = iter(raw_msg.split(","))
+        mqtt_id: int = int(next(msg_seq))
+        device_type_name: str = ""
+        remote_name: str = ""
         try:
-            mqtt_id: str = next(msg_seq)
-            device_type_name: str = next(msg_seq)
-            remote_name: str = next(msg_seq)
-            device = DeviceReceivedSchema(
-                mqtt_id=mqtt_id,
-                device_type_name=device_type_name,
-                remote_name=remote_name,
-                name=remote_name,
-            )
-            return device, msg_seq
+            device_type_name = next(msg_seq)
+            remote_name = next(msg_seq)
         except StopIteration:
-            raise StopIteration(
+            logger.warning(
                 f"Not enough comma-separated values in message.payload. payload='{raw_msg}'."
-            ) from None
+            )
+        device = DeviceReceivedSchema(
+            mqtt_id=mqtt_id,
+            device_type_name=device_type_name,
+            remote_name=remote_name,
+            name=remote_name,
+        )
+        return device, msg_seq
 
     @staticmethod
     def get_device_frontend(db_device: models_Device) -> DeviceFrontendSchema:

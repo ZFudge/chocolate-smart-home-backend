@@ -14,10 +14,10 @@ class DeviceBase(BaseModel):
 
 class DeviceReceived(BaseModel):
     mqtt_id: int
-    device_type_name: str | None = None
-    remote_name: str | None = None
-    name: str | None = None
-    plugin: Any | None = None
+    device_type_name: str = ""
+    remote_name: str = ""
+    name: str = ""
+    plugin: Any = None
 
 
 class DeviceFrontend(DeviceId, DeviceBase):
@@ -25,6 +25,7 @@ class DeviceFrontend(DeviceId, DeviceBase):
     tags: List[int] | None = None
     last_seen: str | None = None
     last_update_sent: str | None = None
+    plugin: Any = None
 
 
 class DevicePatch(BaseModel):

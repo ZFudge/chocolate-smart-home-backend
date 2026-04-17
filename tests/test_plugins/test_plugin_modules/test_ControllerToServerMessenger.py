@@ -42,18 +42,32 @@ def test_BaseControllerToServerMessenger_parse_controller_msg():
         next(msg_seq)
 
 
-def test_BaseControllerToServerMessenger_StopIteration_raised_when_not_enough_values_in_payload_for_base_duplex_messenger_parse_controller_msg():
+def test_BaseControllerToServerMessenger_accepts_partial_payload_length_2():
+    device, msg_seq = BaseControllerToServerMessenger().parse_controller_msg(
+        "123,test_device_type_name"
+    )
+    assert device == DeviceReceivedSchema(
+        mqtt_id=123,
+        device_type_name="test_device_type_name",
+        remote_name="",
+        name="",
+    )
+    assert isinstance(msg_seq, Iterable)
     with pytest.raises(StopIteration):
-        BaseControllerToServerMessenger().parse_controller_msg(
-            "123,test_device_type_name"
-        )
+        next(msg_seq)
 
 
-def test_BaseControllerToServerMessenger_StopIteration_raised_when_not_enough_values_in_payload_for_default_duplex_messenger_parse_controller_msg():
+def test_BaseControllerToServerMessenger_accepts_partial_payload_length_1():
+    device, msg_seq = BaseControllerToServerMessenger().parse_controller_msg("123")
+    assert device == DeviceReceivedSchema(
+        mqtt_id=123,
+        device_type_name="",
+        remote_name="",
+        name="",
+    )
+    assert isinstance(msg_seq, Iterable)
     with pytest.raises(StopIteration):
-        BaseControllerToServerMessenger().parse_controller_msg(
-            "123,test_device_type_name"
-        )
+        next(msg_seq)
 
 
 def test_BaseControllerToServerMessenger_get_device_frontend():

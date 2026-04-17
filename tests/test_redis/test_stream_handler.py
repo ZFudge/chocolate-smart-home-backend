@@ -1,12 +1,11 @@
 import pytest
 
-import src.schemas as schemas
-from src.streams import send_to_ws_service, stream_names
+from src import schemas, streams
 
 
 @pytest.mark.asyncio
 async def test_send_to_ws_service(redis_client):
-    await send_to_ws_service(
+    await streams.send_to_ws_service(
         schemas.DeviceFrontend(
             device_type_name="example_device_type_name",
             last_seen=None,
@@ -16,10 +15,11 @@ async def test_send_to_ws_service(redis_client):
             reboots=7,
             remote_name="example_remote_name",
             tags=None,
+            plugin=None,
         )
     )
     redis_client.xadd.assert_called_once_with(
-        stream_names.WS_STREAM_NAME,
+        streams.stream_names.WS_STREAM_NAME,
         {
             "message": (
                 "{"
@@ -30,7 +30,8 @@ async def test_send_to_ws_service(redis_client):
                 '"device_type_name": "example_device_type_name", '
                 '"tags": null, '
                 '"last_seen": null, '
-                '"last_update_sent": null'
+                '"last_update_sent": null, '
+                '"plugin": null'
                 "}"
             )
         },

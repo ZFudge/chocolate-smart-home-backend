@@ -1,10 +1,10 @@
 from unittest.mock import patch
 
 from src.plugins import (
-    BaseDeviceManager,
     BaseControllerToServerMessenger,
-    DefaultControllerToServerMessenger,
+    BaseDeviceManager,
     BaseServerToControllerMessenger,
+    DefaultControllerToServerMessenger,
     PluginsManager,
 )
 

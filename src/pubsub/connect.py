@@ -8,7 +8,6 @@ from paho.mqtt.client import MQTTErrorCode
 
 from src.dependencies import mqtt_client_session
 
-# logger = logging.getLogger("mqtt")
 logger = logging.getLogger(__name__)
 
 
@@ -30,7 +29,7 @@ def connect_to_mqtt_broker():
         raise
 
     logger.info("Starting MQTT client loop")
-    for x in range(3):
+    for x in range(5):
         try:
             mqtt_error_code = mqtt_client.loop_start()
             logger.info(f"MQTT client loop start returned status: {mqtt_error_code}")

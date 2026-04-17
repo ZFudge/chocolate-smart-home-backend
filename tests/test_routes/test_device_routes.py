@@ -26,6 +26,7 @@ def test_get_devices(populated_test_db):
             "tags": [1, 2],
             "last_seen": "2025-01-02 00:00:00",
             "last_update_sent": "2025-01-01 00:00:00",
+            "plugin": None,
         },
         {
             "mqtt_id": 234,
@@ -36,6 +37,7 @@ def test_get_devices(populated_test_db):
             "tags": None,
             "last_seen": "2025-01-01 00:00:00",
             "last_update_sent": "2025-01-02 00:00:00",
+            "plugin": None,
         },
     ]
 
@@ -75,6 +77,7 @@ def test_get_device_data_by_id(populated_test_db):
         "tags": [1, 2],
         "last_seen": "2025-01-02 00:00:00",
         "last_update_sent": "2025-01-01 00:00:00",
+        "plugin": None,
     }
 
 
@@ -139,6 +142,7 @@ def test_patch_device_name_request(populated_test_db):
         "tags": [1, 2],
         "last_seen": "2025-01-02 00:00:00",
         "last_update_sent": "2025-01-01 00:00:00",
+        "plugin": None,
     }
     assert resp.json() == client.get("/devices/123").json()
 
@@ -161,6 +165,7 @@ def test_patch_device_tags_request(populated_test_db):
         "tags": [3],
         "last_seen": "2025-01-02 00:00:00",
         "last_update_sent": "2025-01-01 00:00:00",
+        "plugin": None,
     }
     assert resp.json() == client.get("/devices/123").json()
 
@@ -184,6 +189,7 @@ def test_patch_both_name_and_tags_request(populated_test_db):
         "tags": [3],
         "last_seen": "2025-01-02 00:00:00",
         "last_update_sent": "2025-01-01 00:00:00",
+        "plugin": None,
     }
     assert resp.json() == client.get("/devices/123").json()
 
