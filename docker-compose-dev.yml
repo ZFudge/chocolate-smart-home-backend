@@ -55,6 +55,21 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+  csm-redis-dev:
+    << : *common-attrs
+    image: redis:7.4.1-alpine
+    container_name: csm-redis-dev
+    ports:
+      - 6379:6379
+    volumes:
+      - csm-redis-data-dev:/data
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
   csm-backend-dev:
     << : *common-attrs
     build: .
@@ -97,21 +112,6 @@ services:
       timeout: 5s
       retries: 3
       start_period: 5s
-  csm-redis-dev:
-    << : *common-attrs
-    image: redis:7.4.1-alpine
-    container_name: csm-redis-dev
-    ports:
-      - 6379:6379
-    volumes:
-      - csm-redis-data-dev:/data
-    restart: always
-    healthcheck:
-      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-      start_period: 5s
   virtual-clients:
     << : *common-attrs
     build: backend
@@ -142,5 +142,5 @@ services:
       csm-backend-dev:
         condition: service_healthy
     environment:
-      << : *environment-variables
       MQTT_CLIENT_ID_SUFFIX: virtual-clients
+      << : *environment-variables

@@ -15,7 +15,7 @@ logger.setLevel(logging.INFO)
 
 def sleep_loader(n: int):
     for x in range(1, n + 1):
-        print(("." * x).ljust(n) + "|", file=sys.stderr)
+        print(("#" * x).ljust(n) + "|", file=sys.stderr)
         sleep(1)
 
 

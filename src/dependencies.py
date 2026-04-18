@@ -3,10 +3,11 @@ import os
 import sys
 from contextvars import ContextVar
 
+import sqlalchemy.exc as exc
+import uvloop
 from paho.mqtt.client import Client
 from redis.asyncio import Redis
 from sqlalchemy.orm import Session
-import sqlalchemy.exc as exc
 
 from src.database import Base, SessionLocal, engine
 from src.mqtt import get_configured_mqtt_client
@@ -81,4 +82,8 @@ get_redis = redis_closure()
 
 redis_session: ContextVar[Redis] = ContextVar(
     "redis_session", default=next(get_redis())
+)
+
+redis_event_loop: ContextVar[uvloop.Loop|None] = ContextVar(
+    "redis_event_loop", default=None
 )

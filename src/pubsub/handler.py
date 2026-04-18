@@ -1,15 +1,18 @@
+import asyncio
 import logging
 from typing import Callable, Dict
 
 from paho.mqtt.client import Client, MQTTMessage
 
 from src.crud import get_device_by_id
+from src.dependencies import redis_event_loop
+from src.models.device import Device as DeviceModel
 from src.plugins import PluginsManager
 from src.schemas.device import (
     DeviceReceived as DeviceReceivedSchema,
     DeviceFrontend as DeviceFrontendSchema,
 )
-from src.models.device import Device as DeviceModel
+from src.streams.send import send_to_ws_service
 
 
 logger = logging.getLogger("mqtt")
@@ -79,6 +82,17 @@ def mqtt_message_handler(
         plugin=device_received_schema.plugin,
     )
 
-    # device_frontend_schema still contains most recent values
-    # and should be broadcast to frontend
+    # Schedule the coroutine on the main event loop from the MQTT thread
+    if redis_event_loop.get() is not None:
+        try:
+            asyncio.run_coroutine_threadsafe(
+                send_to_ws_service(device_frontend_schema),
+                redis_event_loop.get()
+            )
+        except Exception as e:
+            logger.error("Error scheduling coroutine on redis streams event loop: %s" % e)
+    else:
+        logger.warning("Redis streams event loop not set. Cannot send message.")
+
+
     return device_frontend_schema
