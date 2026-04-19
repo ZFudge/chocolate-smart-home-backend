@@ -1,13 +1,14 @@
+import asyncio
 import logging
 import os
 import sys
 from contextvars import ContextVar
 
 import sqlalchemy.exc as exc
-import uvloop
 from paho.mqtt.client import Client
 from redis.asyncio import Redis
 from sqlalchemy.orm import Session
+from uvloop import Loop
 
 from src.database import Base, SessionLocal, engine
 from src.mqtt import get_configured_mqtt_client
@@ -84,6 +85,21 @@ redis_session: ContextVar[Redis] = ContextVar(
     "redis_session", default=next(get_redis())
 )
 
-redis_event_loop: ContextVar[uvloop.Loop|None] = ContextVar(
-    "redis_event_loop", default=None
+
+def event_loop_closure():
+    event_loop: Loop | None = None
+
+    def event_loop_func():
+        nonlocal event_loop
+        if event_loop is None and "PYTEST_VERSION" not in os.environ:
+            event_loop = asyncio.get_event_loop()
+        yield event_loop
+
+    return event_loop_func
+
+
+get_loop = event_loop_closure()
+
+redis_event_loop: ContextVar[Loop] = ContextVar(
+    "redis_event_loop", default=next(get_loop())
 )

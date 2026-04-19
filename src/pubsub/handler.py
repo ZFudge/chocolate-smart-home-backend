@@ -86,13 +86,13 @@ def mqtt_message_handler(
     if redis_event_loop.get() is not None:
         try:
             asyncio.run_coroutine_threadsafe(
-                send_to_ws_service(device_frontend_schema),
-                redis_event_loop.get()
+                send_to_ws_service(device_frontend_schema), redis_event_loop.get()
             )
         except Exception as e:
-            logger.error("Error scheduling coroutine on redis streams event loop: %s" % e)
+            logger.error(
+                "Error scheduling coroutine on redis streams event loop: %s" % e
+            )
     else:
         logger.warning("Redis streams event loop not set. Cannot send message.")
-
 
     return device_frontend_schema

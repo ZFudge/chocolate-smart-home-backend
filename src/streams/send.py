@@ -12,4 +12,4 @@ logger.setLevel(logging.DEBUG)
 async def send_to_ws_service(device_data: DeviceFrontendSchema):
     data = device_data.model_dump()
     message_data = dict(message=json.dumps(data))
-    await redis_session.get().xadd(stream_names.WS_STREAM_NAME, message_data)
+    await redis_session.get().xadd(stream_names.WEBSOCKETS_STREAM_NAME, message_data)

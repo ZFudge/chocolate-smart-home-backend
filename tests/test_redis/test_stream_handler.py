@@ -19,7 +19,7 @@ async def test_send_to_ws_service(redis_client):
         )
     )
     redis_client.xadd.assert_called_once_with(
-        streams.stream_names.WS_STREAM_NAME,
+        streams.stream_names.WEBSOCKETS_STREAM_NAME,
         {
             "message": (
                 "{"

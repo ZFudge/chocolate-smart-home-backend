@@ -18,6 +18,7 @@ x-environment-variables: &environment-variables
   MQTT_CLIENT_ID: CSM-FASTAPI-SERVER-DEV
   REDIS_HOST: csm-redis-dev
   BACKEND_STREAM_NAME: csm-backend-stream-dev
+  WEBSOCKETS_STREAM_NAME: csm-websockets-stream-dev
 
 services:
   csm-mosquitto-dev:
@@ -140,6 +141,8 @@ services:
       csm-postgres-db-dev:
         condition: service_healthy
       csm-backend-dev:
+        condition: service_healthy
+      csm-redis-dev: # initial startup publish triggers data streaming with redis
         condition: service_healthy
     environment:
       MQTT_CLIENT_ID_SUFFIX: virtual-clients

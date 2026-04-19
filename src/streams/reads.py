@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 from src.dependencies import redis_session
+from src.pubsub.comm_funcs import request_all_devices_data
 from . import stream_names
 
 logger = logging.getLogger(__name__)
@@ -9,7 +10,10 @@ logger.setLevel(logging.DEBUG)
 
 
 async def handle_message(message_data: dict):
-    pass
+    logger.info(f"Handling message: {message_data}")
+    action = message_data.get("action")
+    if action == "request_all_devices_data":
+        request_all_devices_data()
 
 
 async def handle_reads():

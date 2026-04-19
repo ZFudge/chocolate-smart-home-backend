@@ -7,6 +7,7 @@ from paho.mqtt.client import CallbackAPIVersion, Client, MQTT_ERR_SUCCESS, MQTTM
 from redis.asyncio import Redis
 from sqlalchemy.exc import InternalError, ProgrammingError
 from sqlalchemy.orm import Session, sessionmaker
+from uvloop import Loop
 
 
 from src import models
@@ -15,9 +16,11 @@ from src.dependencies import (
     db_session,
     engine,
     get_db,
+    get_loop,
     get_mqtt_client,
     get_redis,
     mqtt_client_session,
+    redis_event_loop,
     redis_session,
 )
 from src.main import app
@@ -183,6 +186,33 @@ def mqtt_message():
     yield message
 
 
+def event_loop_closure():
+    event_loop: Loop | None = None
+
+    def event_loop_func():
+        nonlocal event_loop
+        if event_loop is None:
+            event_loop = AsyncMock(spec=Loop)
+        yield event_loop
+
+    return event_loop_func
+
+
+@pytest.fixture
+def event_loop():
+    override_get_loop = event_loop_closure()
+    app.dependency_overrides[get_loop] = override_get_loop
+
+    override_event_loop: ContextVar[Loop] = ContextVar(
+        "redis_event_loop", default=next(override_get_loop())
+    )
+
+    redis_event_loop.set(next(override_get_loop()))
+    app.dependency_overrides[redis_event_loop] = override_event_loop
+
+    yield redis_event_loop.get()
+
+
 def redis_closure():
     redis_client: Redis | None = None
 
@@ -198,7 +228,7 @@ def redis_closure():
 
 
 @pytest.fixture
-def redis_client():
+def redis_client(event_loop):
     override_get_redis = redis_closure()
     app.dependency_overrides[get_redis] = override_get_redis
 
