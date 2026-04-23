@@ -279,9 +279,7 @@ class PluginsManager:
                 ),
             },
         )
-        Base.metadata.create_all(
-            bind=engine, tables=[model_module.PluginModel.__table__]
-        )
+        Base.metadata.create_all(bind=engine)
 
     @classmethod
     @pluginnamefrompath

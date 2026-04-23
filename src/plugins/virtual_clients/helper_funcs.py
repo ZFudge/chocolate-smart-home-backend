@@ -39,7 +39,7 @@ def validate_virtual_client_module(vcs_module: ModuleType | None) -> bool:
             sig = signature(vcs_module.compose_outgoing_msg)
             if (
                 len(sig.parameters) != 1
-                or "seed" not in sig.parameters
+                or "vc_state" not in sig.parameters
                 or sig.return_annotation is not str
             ):
                 logger.warning(

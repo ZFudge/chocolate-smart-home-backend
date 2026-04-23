@@ -26,12 +26,12 @@ def vcs_module():
     )
     test_vcs_module.seeds = seeds
 
-    def composer(seed: dict) -> str:
+    def composer(vc_state: dict) -> str:
         return ""
 
     test_vcs_module.compose_outgoing_msg = composer
 
-    def parser(payload: str) -> Tuple[None, None]:
+    def parser(payload: str) -> Tuple[str, str]:
         return payload.split("=")
 
     test_vcs_module.parse_incoming_payload = parser

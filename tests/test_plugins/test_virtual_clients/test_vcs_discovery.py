@@ -108,8 +108,8 @@ def test_convergent_composer_func(vcs_module, mqtt_client, mqtt_message):
         ) as publish,
     ):
 
-        def composer(seed: dict) -> str:
-            return f'a={seed["a"]}'
+        def composer(vc_state: dict) -> str:
+            return f'a={vc_state["a"]}'
 
         vcs_module.compose_outgoing_msg = composer
 

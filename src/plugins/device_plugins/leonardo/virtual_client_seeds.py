@@ -12,13 +12,13 @@ seeds = [
 ]
 
 
-def compose_outgoing_msg(seed: dict) -> str:
+def compose_outgoing_msg(vc_state: dict) -> str:
     """Mocks the controller state expected by the CSM server"""
     msg_values = [
         # Add configs
-        seed["mqtt_id"],
-        seed["device_type_name"],
-        seed["name"],
+        vc_state["mqtt_id"],
+        vc_state["device_type_name"],
+        vc_state["name"],
     ]
 
     msg_values = map(str, msg_values)
