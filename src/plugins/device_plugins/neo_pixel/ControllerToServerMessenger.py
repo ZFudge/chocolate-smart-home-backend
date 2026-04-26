@@ -45,7 +45,7 @@ class ControllerToServerMessenger:
                     pir_timeout=timeout,
                 )
             except ValidationError:
-                pass
+                device_schema.plugin = None
             return device_schema
         except StopIteration:
             raise StopIteration(

@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 class NeoPixel(BaseModel):
     on: bool = None
     twinkle: bool = None
-    all_twinkle_colors_are_current: bool = None
+    all_twinkle_colors_are_current: bool | None = None
     transform: bool = None
     ms: int = Field(None, ge=0, le=255)
     brightness: int = Field(None, ge=0, le=255)

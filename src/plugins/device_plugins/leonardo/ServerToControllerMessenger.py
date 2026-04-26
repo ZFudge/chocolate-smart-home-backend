@@ -7,7 +7,7 @@ class LeonardoServerToControllerMessenger:
     @staticmethod
     def compose_controller_msg(msg: dict) -> str:
         if not isinstance(msg, dict):
-            raise ValueError(f"Invalid message type: {type(msg)}")
+            raise TypeError(f"Invalid message type: {type(msg)}")
         if "command" not in msg:
             raise ValueError(f"Missing command in message: {msg}")
         if msg["command"] not in COMMANDS:

@@ -1,4 +1,27 @@
-from ..ServerToControllerMessenger import ServerToControllerMessenger
+from ..ServerToControllerMessenger import (
+    key_and_bool_value,
+    key_and_value,
+    kvp_param,
+    ServerToControllerMessenger,
+)
+
+
+def test_neo_pixel_kvp_param():
+    assert kvp_param("key", "value") == "key=value;"
+    assert kvp_param("key", "732") == "key=732;"
+
+
+def test_neo_pixel_key_and_bool_value():
+    assert key_and_bool_value({"on": True}, "on") == "on=1;"
+
+
+def test_neo_pixel_key_and_value_minmax():
+    assert key_and_value({"count": "578"}, "count") == "count=255;"
+    assert key_and_value({"count": -789}, "count") == "count=0;"
+
+
+def test_neo_pixel_key_and_value_ValueError():
+    assert key_and_value({"count": "1a"}, "count") == "count=1a;"
 
 
 def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_empty():
