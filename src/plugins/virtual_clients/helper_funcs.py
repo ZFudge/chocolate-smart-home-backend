@@ -3,7 +3,7 @@ import logging
 from inspect import signature
 from types import ModuleType
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("vcs")
 
 
 def import_vcs_module(vcs_module_name: str) -> ModuleType | None:

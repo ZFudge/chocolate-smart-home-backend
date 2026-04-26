@@ -1,6 +1,6 @@
 import logging
 
-logger = logging.getLogger("vsc")
+logger = logging.getLogger("vcs")
 
 seeds = [
     {

@@ -3,7 +3,7 @@
 
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("vcs")
 
 seeds = [
     dict(name="Leonardo Virtual Client 0"),

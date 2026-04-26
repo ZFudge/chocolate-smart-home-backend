@@ -1,8 +1,9 @@
 import logging
+import os
 
 from src.dependencies import mqtt_client_session
 
-logger = logging.getLogger("mqtt")
+logger = logging.getLogger(os.environ.get("LOGGER", "mqtt"))
 
 
 def validate_client_connection(f):

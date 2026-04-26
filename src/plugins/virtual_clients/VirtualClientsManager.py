@@ -12,7 +12,7 @@ from src.pubsub import topics
 from src.pubsub.comm_funcs import subscribe, publish
 from . import defaults, helper_funcs
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("vcs")
 
 
 class VirtualClientsManager(metaclass=SingletonMeta):

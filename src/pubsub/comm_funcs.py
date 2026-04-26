@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import Callable, Tuple
 
 from paho.mqtt import MQTTException
@@ -7,7 +8,7 @@ from paho.mqtt.client import MQTTErrorCode
 from .topics import REQUEST_DEVICE_DATA_ALL
 from .validate_client_connection import validate_client_connection
 
-logger = logging.getLogger("mqtt")
+logger = logging.getLogger(os.environ.get("LOGGER", "mqtt"))
 
 
 @validate_client_connection

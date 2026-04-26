@@ -9,8 +9,7 @@ from src.dependencies import mqtt_client_session
 from src.plugins.virtual_clients import VirtualClientsManager
 from src.pubsub import connect_to_mqtt_broker, request_all_devices_data
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger = logging.getLogger("vcs")
 
 
 def sleep_loader(n: int):
@@ -35,7 +34,7 @@ sleep_loader(3)
 
 request_all_devices_data()
 
-tag_names = list(map(lambda x: f"vsc tag {x}", range(1, 4)))
+tag_names = list(map(lambda x: f"vcs tag {x}", range(1, 4)))
 tags_added = False
 for t_name in tag_names:
     if not crud.get_tag_by_name(t_name):
@@ -74,3 +73,7 @@ for device_mqtt_id, tag_ids in device_mqtt_ids_and_tag_ids:
         crud.patch_device(device)
     except (IntegrityError, NoResultFound) as e:
         logger.error("Error putting virtual client device tags: %s", e)
+
+logger.info(
+    f"VCS startup complete. Virtual clients standing by. {list(vcs_manager.virtual_clients.keys())}"
+)

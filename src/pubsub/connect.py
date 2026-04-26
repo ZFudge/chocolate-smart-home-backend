@@ -8,7 +8,7 @@ from paho.mqtt.client import MQTTErrorCode
 
 from src.dependencies import mqtt_client_session
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(os.environ.get("LOGGER", "mqtt"))
 
 
 def connect_to_mqtt_broker():

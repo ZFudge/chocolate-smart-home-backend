@@ -4,7 +4,7 @@ import os
 from paho.mqtt.client import CallbackAPIVersion, Client
 
 
-logger = logging.getLogger("mqtt")
+logger = logging.getLogger(os.environ.get("LOGGER", "mqtt"))
 
 
 def get_configured_mqtt_client() -> Client:

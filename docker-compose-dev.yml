@@ -122,11 +122,9 @@ services:
       - type: bind
         source: ./
         target: /backend/
-    develop:
-      watch:
-        - action: sync
-          path: ./src/plugins/
-          target: /backend/src/plugins/
+      - type: bind
+        source: /tmp/logs/
+        target: /var/logs/csm/
     command: [
       "pipenv", "run", "uvicorn",
       "src.plugins.virtual_clients.vcs_app:vcs_manager",
@@ -146,4 +144,5 @@ services:
         condition: service_healthy
     environment:
       MQTT_CLIENT_ID_SUFFIX: virtual-clients
+      LOGGER: vcs
       << : *environment-variables

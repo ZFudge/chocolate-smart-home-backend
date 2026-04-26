@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 from typing import Callable, Dict
 
 from paho.mqtt.client import Client, MQTTMessage
@@ -15,7 +16,7 @@ from src.schemas.device import (
 from src.streams.send import send_to_ws_service
 
 
-logger = logging.getLogger("mqtt")
+logger = logging.getLogger(os.environ.get("LOGGER", "mqtt"))
 
 
 def mqtt_message_handler(
