@@ -1,0 +1,4 @@
+[run]
+omit =
+    # Omit specific directory
+    src/plugins/device_plugins/*

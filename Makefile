@@ -77,10 +77,18 @@ test: testdb
 	@docker compose -f docker-compose-dev.yml exec csm-backend-dev ash -l -c \
       'ruff check /backend && black --check /backend && pytest -vv'
 
-.PHONY: coverage
-coverage: testdb
+.PHONY: coverage-main
+coverage-main:
 	@docker compose -f docker-compose-dev.yml exec -it csm-backend-dev ash -l -c \
-      'pytest --cov=src --cov-report=term-missing tests/'
+      'pytest --cov=src --cov-config=tests/.coveragerc --cov-report=term-missing tests/'
+
+.PHONY: coverage-plugins
+coverage-plugins:
+	@docker compose -f docker-compose-dev.yml exec -it csm-backend-dev ash -l -c \
+      'for plugin_name in $$(ls src/plugins/device_plugins/); do . ./scripts/coverage.sh; checkPluginCoverage $$plugin_name; done'
+
+.PHONY: coverage
+coverage: testdb coverage-main coverage-plugins
 
 .PHONY: black
 black:

@@ -34,7 +34,7 @@ services:
         source: /tmp/logs/mosquitto.log
         target: /mosquitto/log/mosquitto.log
       - type: bind
-        source: ./mqtt_healthcheck.sh
+        source: ./scripts/mqtt_healthcheck.sh
         target: /usr/local/bin/healthcheck.sh
     restart: always
     healthcheck:
@@ -86,7 +86,7 @@ services:
         source: /tmp/logs/
         target: /var/logs/csm/
       - type: bind
-        source: ./csm.sh
+        source: ./scripts/csm.sh
         target: /etc/profile.d/csm.sh
     depends_on:
       csm-postgres-db-dev:
@@ -101,7 +101,7 @@ services:
       "--reload",
       "--reload-dir", "src",
       "--reload-exclude", "plugins/virtual_clients/*",
-      "--reload-exclude", "plugins/device_plugins/*/tests/",
+      "--reload-exclude", "plugins/device_plugins/*/tests/*",
       "--log-level", "debug",
       "--log-config", "logs.ini"
     ]
