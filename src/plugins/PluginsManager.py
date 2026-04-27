@@ -1,12 +1,12 @@
 import importlib
 import logging
-import os
 from typing import Dict
 
 from sqlalchemy import Column, ForeignKey, Integer
 
 from src import utils
 from src.database import Base, engine
+from src.dependencies import db_session
 from . import device_plugins
 from .BaseDeviceManager import BaseDeviceManager
 from .BaseControllerToServerMessenger import (
@@ -105,9 +105,9 @@ class PluginsManager:
         cls.check_controller_to_server_messenger(plugin_path)
         cls.check_server_to_controller_messenger(plugin_path)
         cls.check_model(plugin_path)
+        cls.check_extra_models(plugin_path)
         cls.check_router(plugin_path)
-        if "PYTEST_VERSION" not in os.environ:
-            cls.check_db_seeding(plugin_path)
+        cls.check_db_seeding(plugin_path)
 
     @classmethod
     @pluginnamefrompath
@@ -292,8 +292,8 @@ class PluginsManager:
         try:
             router_module_name = f"{plugin_path}.router"
             router_module = importlib.import_module(router_module_name)
-            plugin_router = router_module.plugin_router
-            cls.ROUTERS.append(plugin_router)
+            router_module.db = db_session.get()
+            cls.ROUTERS.append(router_module.plugin_router)
         except ModuleNotFoundError:
             logger.info(f"No router module found for {plugin_name}.")
         except (ImportError, AttributeError):
@@ -301,6 +301,44 @@ class PluginsManager:
         except Exception as e:
             logger.error(e)
             return
+
+    @classmethod
+    @pluginnamefrompath
+    def check_extra_models(cls, plugin_path: str, *, plugin_name=None):
+        """Check for the presence of extra models in the plugin's subdirectory.
+        If found, import, and dynamically patch new models by combining the Base class with
+        each of these extra models, using inheritance."""
+        logger.info(f"Checking for {plugin_path}.models module.")
+        try:
+            models_module_name = f"{plugin_path}.models"
+            models_module = importlib.import_module(models_module_name)
+        except ModuleNotFoundError:
+            logger.info(f"No {plugin_name}.models module found.")
+            return
+        except (ImportError, AttributeError) as e:
+            logger.warning(f"Unable to import {plugin_name}.Model")
+            logger.error(e)
+            return
+        except Exception as e:
+            logger.error(e)
+            return
+
+        if not models_module.models:
+            return
+
+        for ExtraModel in models_module.models:
+            ModelClassName = ExtraModel.__name__
+            if (
+                ExtraModel.__tablename__ in Base.metadata.tables
+                or ModelClassName in Base.metadata.tables
+            ):
+                logger.info(
+                    f"Model {ModelClassName} for {plugin_name} already exists. Skipping."
+                )
+                continue
+            NewExtraModel = type(ModelClassName, (ExtraModel, Base), {})
+            setattr(models_module, ModelClassName, NewExtraModel)
+        Base.metadata.create_all(bind=engine)
 
     @classmethod
     @pluginnamefrompath
@@ -316,7 +354,7 @@ class PluginsManager:
                 f"Attempting import of db_seeding module for {db_seeding_module_name}"
             )
             db_seeding_module = importlib.import_module(db_seeding_module_name)
-            db_seeding_module.seed_db()
+            db_seeding_module.seed_db(db_session.get())
         except ModuleNotFoundError:
             logger.info(f"No db_seeding module found for {plugin_name}.")
         except ImportError:

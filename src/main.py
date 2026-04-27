@@ -39,5 +39,5 @@ app = FastAPI(lifespan=lifespan)
 PluginsManager.discover_plugins()
 
 logger.info("Including routers...")
-for router in APP_ROUTERS:
+for router in APP_ROUTERS + tuple(PluginsManager.ROUTERS):
     app.include_router(router)
