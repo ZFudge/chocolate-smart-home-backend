@@ -8,13 +8,13 @@ from src.main import app
 client = TestClient(app)
 
 
-def test_get_tags_empty(empty_test_db):
+def test_route_get_tags_returns_empty_list(empty_test_db):
     resp = client.get("/tags")
     assert resp.status_code == 200
     assert resp.json() == []
 
 
-def test_get_tags(populated_test_db):
+def test_route_get_tags_returns_tags(populated_test_db):
     resp = client.get("/tags")
     assert resp.status_code == 200
     assert resp.json() == [
@@ -33,7 +33,7 @@ def test_get_tags(populated_test_db):
     ]
 
 
-def test_raises_exception_on_get_tags(populated_test_db):
+def test_route_get_tags_returns_500_when_raises_exception(populated_test_db):
     with patch(
         "src.routers.tags.crud.get_tags", side_effect=Exception("Test exception")
     ):
@@ -44,13 +44,13 @@ def test_raises_exception_on_get_tags(populated_test_db):
         }
 
 
-def test_get_tag_does_not_exist(empty_test_db):
+def test_route_get_tag_by_id_returns_none_when_tag_does_not_exist(empty_test_db):
     resp = client.get("/tags/1")
     assert resp.status_code == 200
     assert resp.json() is None
 
 
-def test_get_tag(populated_test_db):
+def test_route_get_tag_by_id_returns_tag(populated_test_db):
     resp = client.get("/tags/1")
     assert resp.status_code == 200
     assert resp.json() == {
@@ -59,7 +59,7 @@ def test_get_tag(populated_test_db):
     }
 
 
-def test_raises_exception_on_get_tag_by_id(populated_test_db):
+def test_route_get_tag_by_id_returns_500_when_raises_exception(populated_test_db):
     with patch(
         "src.routers.tags.crud.get_tag_by_id", side_effect=Exception("Test exception")
     ):
@@ -70,7 +70,7 @@ def test_raises_exception_on_get_tag_by_id(populated_test_db):
         }
 
 
-def test_create_tag(empty_test_db):
+def test_route_create_tag_creates_tag(empty_test_db):
     resp = client.post("/tags/", json={"name": "New Tag"})
     assert resp.status_code == 200
     assert resp.json() == {
@@ -79,7 +79,7 @@ def test_create_tag(empty_test_db):
     }
 
 
-def test_create_duplicate_tag_fails(empty_test_db):
+def test_route_create_tag_returns_500_on_duplicate_tag(empty_test_db):
     resp = client.post("/tags/", json={"name": "New Tag"})
     resp = client.post("/tags/", json={"name": "New Tag"})
     assert resp.status_code == 500
@@ -88,7 +88,7 @@ def test_create_duplicate_tag_fails(empty_test_db):
     }
 
 
-def test_raises_exception_on_create_tag(populated_test_db):
+def test_route_create_tag_returns_500_when_raises_exception(populated_test_db):
     with patch(
         "src.routers.tags.crud.create_tag", side_effect=Exception("Test exception")
     ):
@@ -99,7 +99,7 @@ def test_raises_exception_on_create_tag(populated_test_db):
         }
 
 
-def test_raises_exception_on_none_returned_create_tag(populated_test_db):
+def test_route_create_tag_returns_500_when_none_returned(populated_test_db):
     with patch("src.routers.tags.crud.create_tag", return_value=None):
         resp = client.post("/tags/", json={"name": "New Tag"})
         assert resp.status_code == 500
@@ -108,13 +108,13 @@ def test_raises_exception_on_none_returned_create_tag(populated_test_db):
         }
 
 
-def test_delete_tag(populated_test_db):
+def test_route_delete_tag_deletes_tag(populated_test_db):
     resp = client.delete("/tags/1")
     assert resp.status_code == 204
     assert client.get("/tags/1").json() is None
 
 
-def test_delete_tag_fails_on_invalid_tag_id(populated_test_db):
+def test_route_delete_tag_returns_500_on_invalid_tag_id(populated_test_db):
     resp = client.delete("/tags/1234")
     assert resp.status_code == 500
     assert resp.json() == {
@@ -125,7 +125,7 @@ def test_delete_tag_fails_on_invalid_tag_id(populated_test_db):
     }
 
 
-def test_delete_tag_duplicate_deletion_fails(populated_test_db):
+def test_route_delete_tag_returns_500_on_subsequent_deletion(populated_test_db):
     resp = client.delete("/tags/1")
     resp = client.delete("/tags/1")
     assert resp.status_code == 500
@@ -136,7 +136,7 @@ def test_delete_tag_duplicate_deletion_fails(populated_test_db):
     }
 
 
-def test_raises_exception_on_delete_tag(populated_test_db):
+def test_route_delete_tag_returns_500_when_raises_exception(populated_test_db):
     with patch(
         "src.routers.tags.crud.delete_tag", side_effect=Exception("Test exception")
     ):
@@ -147,7 +147,7 @@ def test_raises_exception_on_delete_tag(populated_test_db):
         }
 
 
-def test_patch_tag_name_request(populated_test_db):
+def test_route_patch_tag_updates_name(populated_test_db):
     resp = client.patch("/tags", json={"id": 1, "name": "Updated Tag Name"})
     assert resp.status_code == 200
     assert resp.json() == {
@@ -157,7 +157,7 @@ def test_patch_tag_name_request(populated_test_db):
     assert resp.json() == client.get("/tags/1").json()
 
 
-def test_patch_tag_does_not_exist(empty_test_db):
+def test_route_patch_tag_returns_500_when_tag_does_not_exist(empty_test_db):
     resp = client.patch("/tags", json={"id": 1, "name": "Updated Tag Name"})
     assert resp.status_code == 500
     assert resp.json() == {
@@ -165,7 +165,7 @@ def test_patch_tag_does_not_exist(empty_test_db):
     }
 
 
-def test_raises_exception_on_patch_tag(empty_test_db):
+def test_route_patch_tag_returns_500_when_raises_exception(empty_test_db):
     with patch(
         "src.routers.tags.crud.patch_tag", side_effect=Exception("Test exception")
     ):

@@ -7,13 +7,13 @@ from src.main import app
 client = TestClient(app)
 
 
-def test_empty_get_devices(empty_test_db):
+def test_route_get_devices_empty(empty_test_db):
     resp = client.get("/devices/")
     assert resp.status_code == 200
     assert resp.json() == []
 
 
-def test_get_devices(populated_test_db):
+def test_route_get_devices_returns_devices(populated_test_db):
     resp = client.get("/devices")
     assert resp.status_code == 200
     assert resp.json() == [
@@ -42,7 +42,7 @@ def test_get_devices(populated_test_db):
     ]
 
 
-def test_raises_exception_on_get_devices(populated_test_db):
+def test_route_getting_devices_returns_500_when_raises_exception(populated_test_db):
     with patch(
         "src.routers.devices.crud.get_devices", side_effect=Exception("Test exception")
     ):
@@ -53,7 +53,9 @@ def test_raises_exception_on_get_devices(populated_test_db):
         }
 
 
-def test_raises_exception_on_get_device_by_id(populated_test_db):
+def test_route_getting_device_by_id_returns_500_when_raises_exception(
+    populated_test_db,
+):
     with patch(
         "src.routers.devices.crud.get_device_by_id",
         side_effect=Exception("Test exception"),
@@ -65,7 +67,7 @@ def test_raises_exception_on_get_device_by_id(populated_test_db):
         }
 
 
-def test_get_device_data_by_id(populated_test_db):
+def test_route_getting_device_by_id_returns_device(populated_test_db):
     resp = client.get("/devices/123")
     assert resp.status_code == 200
     assert resp.json() == {
@@ -81,7 +83,7 @@ def test_get_device_data_by_id(populated_test_db):
     }
 
 
-def test_delete_device_request(populated_test_db):
+def test_route_delete_device_deletes_device(populated_test_db):
     resp = client.delete("/devices/123")
     assert resp.status_code == 204
     resp = client.get("/devices/123")
@@ -89,7 +91,7 @@ def test_delete_device_request(populated_test_db):
     assert resp.json() is None
 
 
-def test_delete_device_duplicate_deletion_fails(populated_test_db):
+def test_route_delete_device_returns_500_on_subsequent_deletion(populated_test_db):
     resp = client.delete("/devices/123")
     resp = client.delete("/devices/123")
     assert resp.status_code == 500
@@ -101,7 +103,7 @@ def test_delete_device_duplicate_deletion_fails(populated_test_db):
     }
 
 
-def test_delete_device_fails_on_invalid_mqtt_id(populated_test_db):
+def test_route_delete_device_returns_500_on_invalid_mqtt_id(populated_test_db):
     resp = client.delete("/devices/777")
     assert resp.status_code == 500
     assert resp.json() == {
@@ -112,7 +114,7 @@ def test_delete_device_fails_on_invalid_mqtt_id(populated_test_db):
     }
 
 
-def test_raises_exception_on_delete_device(populated_test_db):
+def test_route_delete_device_returns_500_when_raises_exception(populated_test_db):
     with patch(
         "src.routers.devices.crud.delete_device",
         side_effect=Exception("Test exception"),
@@ -124,7 +126,7 @@ def test_raises_exception_on_delete_device(populated_test_db):
         }
 
 
-def test_patch_device_name_request(populated_test_db):
+def test_route_patch_device_updates_name(populated_test_db):
     resp = client.patch(
         "/devices",
         json={
@@ -147,7 +149,7 @@ def test_patch_device_name_request(populated_test_db):
     assert resp.json() == client.get("/devices/123").json()
 
 
-def test_patch_device_tags_request(populated_test_db):
+def test_route_patch_device_updates_tags(populated_test_db):
     resp = client.patch(
         "/devices",
         json={
@@ -170,7 +172,7 @@ def test_patch_device_tags_request(populated_test_db):
     assert resp.json() == client.get("/devices/123").json()
 
 
-def test_patch_both_name_and_tags_request(populated_test_db):
+def test_route_patch_device_updates_both_name_and_tags(populated_test_db):
     resp = client.patch(
         "/devices",
         json={
@@ -194,7 +196,7 @@ def test_patch_both_name_and_tags_request(populated_test_db):
     assert resp.json() == client.get("/devices/123").json()
 
 
-def test_patch_device_fails_on_invalid_mqtt_id(populated_test_db):
+def test_route_patch_device_returns_500_on_invalid_mqtt_id(populated_test_db):
     resp = client.patch(
         "/devices",
         json={
@@ -212,7 +214,7 @@ def test_patch_device_fails_on_invalid_mqtt_id(populated_test_db):
     }
 
 
-def test_raises_exception_on_patch_device(populated_test_db):
+def test_route_patch_device_returns_500_when_raises_exception(populated_test_db):
     with patch(
         "src.routers.devices.crud.patch_device", side_effect=Exception("Test exception")
     ):
@@ -225,7 +227,7 @@ def test_raises_exception_on_patch_device(populated_test_db):
         }
 
 
-def test_raises_exception_on_none_returned_patch_device(populated_test_db):
+def test_route_patch_device_returns_500_when_none_returned(populated_test_db):
     with patch("src.routers.devices.crud.patch_device", return_value=None):
         resp = client.patch(
             "/devices", json={"mqtt_id": 123, "name": "Updated Device Name"}
