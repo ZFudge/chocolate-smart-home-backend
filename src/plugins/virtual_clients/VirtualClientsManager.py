@@ -43,6 +43,7 @@ class VirtualClientsManager(metaclass=SingletonMeta):
     @classmethod
     def subscribe_vc_manager(cls) -> None:
         def publish_all_vc_states(_client, userdata, message):
+            logger.info("Publishing all VCS states")
             # Publish the states of all devices
             for vc_state in cls.virtual_clients.values():
                 composer_func = cls.outgoing_msg_composer_funcs[

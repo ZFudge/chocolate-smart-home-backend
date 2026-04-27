@@ -1,7 +1,9 @@
+import logging
 import re
 
 from src.plugins.device_plugins.neo_pixel.utils import convert_9_hex_to_27_byte_str
 
+logger = logging.getLogger("vcs")
 
 seeds = [
     {
@@ -94,24 +96,18 @@ def compose_outgoing_msg(vc_state: dict) -> str:
     if len(palette) == 9:
         palette = convert_9_hex_to_27_byte_str(palette)
 
-    msg_values = [
-        # Add configs
-        vc_state["mqtt_id"],
-        vc_state["device_type_name"],
-        vc_state["name"],
-        # Add state
-        bools_byte,
-        vc_state["ms"],
-        vc_state["brightness"],
-        vc_state["timeout"],
+    state_values = [
+        str(bools_byte),
+        str(vc_state["ms"]),
+        str(vc_state["brightness"]),
+        str(vc_state["timeout"]),
         palette,
     ]
 
-    msg_values = map(str, msg_values)
-
-    return ",".join(msg_values)
+    return ",".join(state_values)
 
 
 def parse_incoming_payload(payload: str) -> tuple[str, str]:
+    logger.info(f"Received neo_pixel plugin virtual client payload: {payload}")
     key, value = re.split("=|;", payload)[:2]
     return key, value

@@ -52,9 +52,9 @@ else:
 device_mqtt_ids_and_tag_ids = (
     (900, [1, 2, 3]),
     (901, [1, 2]),
-    # (904, [2, 3]),
-    # (906, [3]),
-    # (907, [3]),
+    (904, [2, 3]),
+    (906, [3]),
+    (907, [3]),
 )
 
 logger.info(f"Discovered virtual clients: {vcs_manager.virtual_clients}")

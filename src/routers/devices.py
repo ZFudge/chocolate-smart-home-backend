@@ -17,7 +17,37 @@ device_router = APIRouter(prefix="/devices")
 @device_router.get("/", response_model=Tuple[schemas.DeviceFrontend, ...])
 def get_devices():
     try:
-        return tuple(map(schemas.device_mod_obj_to_frontend_schema, crud.get_devices()))
+        devices = crud.get_devices()
+        devices_list = []
+        for d in devices:
+            plugin = d.get("plugin")
+            if plugin is not None:
+                del plugin["id"]
+                del plugin["mqtt_id"]
+
+            tag_ids = d.get("tag_ids")
+            if tag_ids:
+                # tag_ids is JSON cast to string
+                tag_ids = eval(tag_ids)
+
+            devices_list.append(
+                schemas.DeviceFrontend(
+                    mqtt_id=d["mqtt_id"],
+                    name=d["name"],
+                    remote_name=d["remote_name"],
+                    device_type_name=d["device_type_name"],
+                    tags=tag_ids,
+                    reboots=d["reboots"],
+                    last_seen=str(d["last_seen"]) if d.get("last_seen") else None,
+                    last_update_sent=(
+                        str(d["last_update_sent"])
+                        if d.get("last_update_sent")
+                        else None
+                    ),
+                    plugin=plugin,
+                )
+            )
+        return tuple(devices_list)
     except Exception as e:
         logger.error("Error getting devices: %s", e)
         raise HTTPException(status_code=500, detail="Failed to get devices.")

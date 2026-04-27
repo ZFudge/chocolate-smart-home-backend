@@ -36,17 +36,7 @@ seeds = [
 
 def compose_outgoing_msg(vc_state: dict) -> str:
     """Mocks the controller state expected by the CSM server"""
-    msg_values = [
-        # Add configs
-        vc_state["mqtt_id"],
-        vc_state["device_type_name"],
-        vc_state["name"],
-        str(int(vc_state["on"])),
-    ]
-
-    msg_values = map(str, msg_values)
-
-    return ",".join(msg_values)
+    return str(int(vc_state["on"]))
 
 
 def parse_incoming_payload(payload: str) -> tuple[str, str]:

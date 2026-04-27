@@ -1,6 +1,8 @@
 import logging
-from typing import Tuple, Type
+from typing import Dict, List, Tuple, Type
 
+from sqlalchemy import text
+from sqlalchemy.engine.result import MappingResult
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
@@ -28,8 +30,82 @@ def commit_db_object(device: Type[Base]) -> Type[Base]:
     return device
 
 
-def get_devices() -> Tuple[DeviceModel]:
-    return tuple(db_session.get().query(DeviceModel).all())
+def get_device_type_names_with_model_exists() -> List[Dict]:
+    results = db_session.get().execute(
+        text(
+            """
+        SELECT
+            name AS device_type_name,
+            EXISTS (
+                SELECT 1
+                FROM information_schema.tables
+                WHERE table_schema = 'public'
+                AND table_name = name
+            ) AS has_plugin_model
+        FROM
+            device_types;"""
+        )
+    )
+    return results.mappings().all()
+
+
+def get_devices() -> Tuple[MappingResult]:
+    models_exist_by_device_type = get_device_type_names_with_model_exists()
+    PLUGIN_CASE_WHENS = ""
+    PLUGIN_TABLE_LEFT_JOINS = ""
+    PLUGIN_GROUP_BYS = ""
+    for device_type_dict in models_exist_by_device_type:
+        plugin_name = device_type_dict["device_type_name"]
+        abbreviation = "".join([w[0] for w in plugin_name.split("_")])
+        if not device_type_dict["has_plugin_model"]:
+            continue
+        PLUGIN_CASE_WHENS += f"""
+                WHEN dt.name = '{plugin_name}' THEN row_to_json({abbreviation})"""
+        PLUGIN_TABLE_LEFT_JOINS += f"""
+        LEFT JOIN
+            {plugin_name} {abbreviation} ON d.mqtt_id = {abbreviation}.mqtt_id AND dt.name = '{plugin_name}'"""
+        PLUGIN_GROUP_BYS += f""",
+            {abbreviation}.*"""
+    PLUGIN_CASES = ""
+    if PLUGIN_CASE_WHENS:
+        PLUGIN_CASES = f""",
+            CASE{PLUGIN_CASE_WHENS}
+                ELSE null
+            END AS plugin"""
+    raw_sql = f"""
+        SELECT
+            d.mqtt_id,
+            d.name,
+            d.remote_name,
+            d.reboots,
+            d.last_seen,
+            d.last_update_sent,
+            dt.name AS device_type_name,
+            dtags.tag_ids{PLUGIN_CASES}
+        FROM
+            devices d
+        LEFT JOIN
+            device_types dt ON d.device_type_id = dt.id
+        LEFT JOIN
+            (
+                SELECT
+                    mqtt_id,
+                    JSON_AGG(tag_id)::TEXT AS tag_ids
+                FROM
+                    device_tags
+                GROUP BY
+                    mqtt_id
+            ) dtags ON d.mqtt_id = dtags.mqtt_id{PLUGIN_TABLE_LEFT_JOINS}
+        GROUP BY
+            d.mqtt_id,
+            dt.name,
+            dtags.tag_ids{PLUGIN_GROUP_BYS}
+        ORDER BY
+            dt.name,
+            d.mqtt_id;"""
+    logger.info(raw_sql)
+    results = db_session.get().execute(text(raw_sql))
+    return tuple(results.mappings().all())
 
 
 def get_device_by_id(mqtt_id: int) -> DeviceModel | None:
