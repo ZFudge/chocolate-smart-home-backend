@@ -323,7 +323,10 @@ class PluginsManager:
             logger.error(e)
             return
 
-        if not models_module.models:
+        if not hasattr(models_module, "models") or not models_module.models:
+            logger.info(
+                f"No models tuple found for {plugin_name}.models module. Skipping."
+            )
             return
 
         for ExtraModel in models_module.models:
