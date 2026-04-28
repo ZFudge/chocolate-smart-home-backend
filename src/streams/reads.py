@@ -1,8 +1,13 @@
 import asyncio
 import logging
 
+from pydantic import ValidationError
+
+from src import schemas
 from src.dependencies import redis_session
-from src.pubsub.comm_funcs import request_all_devices_data
+from src.plugins import PluginsManager
+from src.pubsub.comm_funcs import publish, request_all_devices_data
+from src.pubsub.topics import get_format_topic_by_mqtt_id_using_device_type_name
 from . import stream_names
 
 logger = logging.getLogger(__name__)
@@ -11,9 +16,35 @@ logger.setLevel(logging.DEBUG)
 
 async def handle_message(message_data: dict):
     logger.info(f"Handling message: {message_data}")
-    action = message_data.get("action")
-    if action == "request_all_devices_data":
+    if message_data.get("action") == "request_all_devices_data":
         request_all_devices_data()
+        return
+
+    try:
+        incoming_ws_msg = schemas.WebsocketMessage(**message_data)
+    except ValidationError:
+        return
+
+    plugin_mapping = PluginsManager.PLUGINS[incoming_ws_msg.device_type_name]
+    DeviceManager = plugin_mapping["DeviceManager"]
+    if DeviceManager.is_server_side_value(incoming_ws_msg.name):
+        DeviceManager.updates_server_side_value(incoming_ws_msg.model_dump())
+        # TODO broadcast db values?
+    else:
+        ServerToControllerMessenger = plugin_mapping["ServerToControllerMessenger"]
+        outgoing_controller_msg = ServerToControllerMessenger().compose_controller_msg(
+            incoming_ws_msg.model_dump()
+        )
+        format_topic_by_mqtt_id = get_format_topic_by_mqtt_id_using_device_type_name(
+            incoming_ws_msg.device_type_name
+        )
+        if isinstance(incoming_ws_msg.mqtt_id, list):
+            for mqtt_id in incoming_ws_msg.mqtt_id:
+                topic = format_topic_by_mqtt_id(mqtt_id)
+                publish(topic=topic, message=outgoing_controller_msg)
+        else:
+            topic = format_topic_by_mqtt_id(incoming_ws_msg.mqtt_id)
+            publish(topic=topic, message=outgoing_controller_msg)
 
 
 async def handle_reads():

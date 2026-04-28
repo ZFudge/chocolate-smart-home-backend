@@ -7,6 +7,19 @@ logger = logging.getLogger()
 
 
 class DeviceManager:
+    SERVER_SIDE_COLUMNS = ["scheduled_palette_rotation"]
+
+    def update_server_side_value(self, data: dict) -> None:
+        super().update_server_side_value(data)
+        db_plugin_device: Model.PluginModel = (
+            self.get_plugin_db_obj_using_device_type_and_mqtt_id(
+                device_type_name=data["device_type_name"],
+                mqtt_id=data["mqtt_id"],
+            )
+        )
+        setattr(db_plugin_device, data["name"], data["value"])
+        super().commit_db_object(db_plugin_device)
+
     def create_device(self, device_schema):
         db_device = super().create_device(device_schema)
         neo_pixel_schema: Schema.NeoPixel = device_schema.plugin

@@ -17,6 +17,20 @@ logger = logging.getLogger()
 
 
 class BaseDeviceManager:
+    SERVER_SIDE_COLUMNS = []
+
+    @classmethod
+    def is_server_side_value(cls, name: str) -> bool:
+        return name in cls.SERVER_SIDE_COLUMNS
+
+    def update_server_side_value(self, data: dict):
+        if data.keys().isdisjoint(["device_type_name", "mqtt_id", "name", "value"]):
+            raise ValueError(
+                "data must contain device_type_name, mqtt_id, name, and value"
+            )
+        if not self.is_server_side_value(data["name"]):
+            raise ValueError(f'{data["name"]} is not a server-side value')
+
     def get_device_by_id(self, mqtt_id: int) -> models_Device | None:
         return get_device_by_id(mqtt_id)
 

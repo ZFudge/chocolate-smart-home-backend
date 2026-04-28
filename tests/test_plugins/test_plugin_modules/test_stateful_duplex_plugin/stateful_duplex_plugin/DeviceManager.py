@@ -7,6 +7,8 @@ logger = logging.getLogger()
 
 
 class DeviceManager:
+    SERVER_SIDE_COLUMNS = ["example_server_side_value"]
+
     def create_device(self, device_schema):
         db_device = super().create_device(device_schema)
         test_stateful_duplex_plugin_schema: Schema.StatefulDuplexPluginSchema = (

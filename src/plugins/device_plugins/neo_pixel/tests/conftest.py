@@ -32,6 +32,9 @@ def DeviceManagerWithSuper_and_mocked_PluginModel():
 
     BaseDeviceManager.create_device = Mock(return_value="create_db_device")
     BaseDeviceManager.update_device = Mock(return_value="updated_db_device")
+    BaseDeviceManager.update_server_side_value = Mock(
+        return_value="update_server_side_value"
+    )
     BaseDeviceManager.commit_db_object = Mock()
 
     class DeviceManagerWithSuper(DeviceManager, BaseDeviceManager):
