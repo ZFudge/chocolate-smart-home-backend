@@ -10,7 +10,7 @@ class PluginModel:
     on = Column(Boolean)
     twinkle = Column(Boolean)
     all_twinkle_colors_are_current = Column(Boolean, nullable=True)
-    scheduled_palette_rotation = Column(Boolean)
+    scheduled_palette_rotation = Column(Boolean, default=False)
     transform = Column(Boolean)
     ms = Column(Integer)
     brightness = Column(Integer)

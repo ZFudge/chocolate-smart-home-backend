@@ -70,12 +70,14 @@ def test_DeviceManager_update_device_called_mqtt_message_handler(
         )
 
 
-def test_get_device_by_id_called_mqtt_message_handler(mqtt_message, empty_test_db):
+def test_set_last_seen_to_current_time_called_mqtt_message_handler(
+    mqtt_message, empty_test_db
+):
     with patch(
-        "src.pubsub.handler.get_device_by_id", return_value=None
-    ) as get_device_by_id:
+        "src.pubsub.handler.crud.set_last_seen_to_current_time", return_value=None
+    ) as set_last_seen_to_current_time:
         mqtt_message_handler(None, None, mqtt_message)
-        get_device_by_id.assert_called_once_with(123)
+        set_last_seen_to_current_time.assert_called_once_with(123)
 
 
 def test_none_payload_mqtt_message_handler(mqtt_message):
@@ -84,11 +86,13 @@ def test_none_payload_mqtt_message_handler(mqtt_message):
         patch(
             "src.pubsub.handler.PluginsManager.get_plugin_by_device_type_name"
         ) as get_plugin_by_device_type_name,
-        patch("src.pubsub.handler.get_device_by_id") as get_device_by_id,
+        patch(
+            "src.pubsub.handler.crud.set_last_seen_to_current_time"
+        ) as set_last_seen_to_current_time,
     ):
         mqtt_message_handler(None, None, mqtt_message)
         get_plugin_by_device_type_name.assert_not_called()
-        get_device_by_id.assert_not_called()
+        set_last_seen_to_current_time.assert_not_called()
 
 
 def test_invalid_payload_mqtt_message_handler(mqtt_message):
@@ -98,9 +102,11 @@ def test_invalid_payload_mqtt_message_handler(mqtt_message):
             "src.pubsub.handler.PluginsManager.get_plugin_by_device_type_name"
         ) as get_plugin_by_device_type_name,
         patch("src.pubsub.handler.logger.error") as mock_logger,
-        patch("src.pubsub.handler.get_device_by_id") as get_device_by_id,
+        patch(
+            "src.pubsub.handler.crud.set_last_seen_to_current_time"
+        ) as set_last_seen_to_current_time,
     ):
-        get_device_by_id.assert_not_called()
+        set_last_seen_to_current_time.assert_not_called()
         mqtt_message_handler(None, None, mqtt_message)
         get_plugin_by_device_type_name.assert_not_called()
         mock_logger.assert_called_once_with('Received invalid payload: "invalid"')

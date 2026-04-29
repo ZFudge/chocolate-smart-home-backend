@@ -5,14 +5,9 @@ from typing import Callable, Dict
 
 from paho.mqtt.client import Client, MQTTMessage
 
-from src.crud import get_device_by_id
+from src import crud, models, schemas
 from src.dependencies import redis_event_loop
-from src.models.device import Device as DeviceModel
 from src.plugins import PluginsManager
-from src.schemas.device import (
-    DeviceReceived as DeviceReceivedSchema,
-    DeviceFrontend as DeviceFrontendSchema,
-)
 from src.streams.send import send_to_ws_service
 
 
@@ -23,7 +18,7 @@ def mqtt_message_handler(
     _client: Client,
     _userdata: None,
     message: MQTTMessage,
-) -> DeviceReceivedSchema | None:
+) -> schemas.DeviceReceived | None:
     if message.payload is None:
         return
 
@@ -35,6 +30,10 @@ def mqtt_message_handler(
     except ValueError:
         logger.error('Received invalid payload: "%s"' % payload)
         return
+    # mark as seen as soon as we have a valid mqtt id
+    db_primary_device: models.Device | None = crud.set_last_seen_to_current_time(
+        mqtt_id
+    )
 
     try:
         device_type_name = payload.split(",")[1]
@@ -48,34 +47,37 @@ def mqtt_message_handler(
 
     # Parse message data
     try:
-        device_received_schema: DeviceReceivedSchema = (
+        device_received_schema: schemas.DeviceReceived = (
             ControllerToServerMessenger().parse_controller_msg(payload)
         )
     except Exception as e:
         logger.error(e)
         return
 
-    primary_device = get_device_by_id(mqtt_id)
     # Store client data in DB
-    if primary_device is None:
-        primary_device = DeviceManager().create_device(device_received_schema)
+    if db_primary_device is None:
+        db_primary_device = DeviceManager().create_device(device_received_schema)
     else:
-        primary_device = DeviceManager().update_device(device_received_schema)
-    if not isinstance(primary_device, DeviceModel):
-        logger.error(f"{primary_device=} is not a DeviceModel")
+        db_primary_device = DeviceManager().update_device(device_received_schema)
+    if not isinstance(db_primary_device, models.Device):
+        logger.error(
+            f"Received instance of {type(db_primary_device).__name__}, {db_primary_device}, instead of models.Device object"
+        )
         return None
 
-    device_frontend_schema = DeviceFrontendSchema(
+    device_frontend_schema = schemas.DeviceFrontend(
         mqtt_id=mqtt_id,
         remote_name=device_received_schema.remote_name,
-        name=primary_device.name,
+        name=db_primary_device.name,
         device_type_name=device_type_name,
-        tags=[t.id for t in primary_device.tags],
-        reboots=primary_device.reboots,
-        last_seen=str(primary_device.last_seen) if primary_device.last_seen else None,
+        reboots=db_primary_device.reboots,
+        tags=[t.id for t in db_primary_device.tags],
+        last_seen=(
+            str(db_primary_device.last_seen) if db_primary_device.last_seen else None
+        ),
         last_update_sent=(
-            str(primary_device.last_update_sent)
-            if primary_device.last_update_sent
+            str(db_primary_device.last_update_sent)
+            if db_primary_device.last_update_sent
             else None
         ),
         plugin=device_received_schema.plugin,

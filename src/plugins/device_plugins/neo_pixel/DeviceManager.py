@@ -4,12 +4,14 @@ from . import Model, Schema
 class DeviceManager:
     SERVER_SIDE_COLUMNS = ["scheduled_palette_rotation"]
 
-    def update_server_side_value(self, data: dict) -> Model.PluginModel:
+    def update_server_side_value(
+        self, data: dict, mqtt_id: int
+    ) -> Model.PluginModel | list[Model.PluginModel]:
         super().update_server_side_value(data)
         db_plugin_device: Model.PluginModel = (
             self.get_plugin_db_obj_using_device_type_and_mqtt_id(
                 device_type_name=data["device_type_name"],
-                mqtt_id=data["mqtt_id"],
+                mqtt_id=mqtt_id,
             )
         )
         setattr(db_plugin_device, data["name"], data["value"])

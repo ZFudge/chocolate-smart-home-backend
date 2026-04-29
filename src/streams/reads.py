@@ -4,8 +4,7 @@ import logging
 
 from pydantic import ValidationError
 
-from src import crud, schemas
-from src.dependencies import redis_session
+from src import crud, dependencies, schemas
 from src.plugins import PluginsManager
 from src.pubsub.comm_funcs import publish, request_all_devices_data
 from src.pubsub.topics import get_format_topic_by_mqtt_id_using_device_type_name
@@ -41,29 +40,22 @@ async def handle_message(message_data: dict):
         logger.info(
             f'Updating server side value: "{incoming_ws_msg.name}" to {incoming_ws_msg.value}'
         )
-        # Plugin schema should exist because only plugins that implement their own model will have server side values
-        plugin_schema = DeviceManager().update_server_side_value(
-            incoming_ws_msg.model_dump()
+        logger.info(
+            f'Updating server side value: "{incoming_ws_msg.name}" to {incoming_ws_msg.value}'
         )
-        primary_device = crud.get_device_by_id(incoming_ws_msg.mqtt_id)
-        frontend_schema = schemas.DeviceFrontend(
-            mqtt_id=incoming_ws_msg.mqtt_id,
-            remote_name=primary_device.remote_name,
-            name=primary_device.name,
-            device_type_name=primary_device.device_type.name,
-            tags=[t.id for t in primary_device.tags],
-            reboots=primary_device.reboots,
-            last_seen=(
-                str(primary_device.last_seen) if primary_device.last_seen else None
-            ),
-            last_update_sent=(
-                str(primary_device.last_update_sent)
-                if primary_device.last_update_sent
-                else None
-            ),
-            plugin=plugin_schema,
-        )
-        await send.send_to_ws_service(frontend_schema)
+        if isinstance(incoming_ws_msg.mqtt_id, list):
+            for mqtt_id in incoming_ws_msg.mqtt_id:
+                plugin_schema = DeviceManager().update_server_side_value(
+                    incoming_ws_msg.model_dump(), mqtt_id
+                )
+                await send.broadcast_db_state_to_client(plugin_schema, mqtt_id)
+        else:
+            plugin_schema = DeviceManager().update_server_side_value(
+                incoming_ws_msg.model_dump(), incoming_ws_msg.mqtt_id
+            )
+            await send.broadcast_db_state_to_client(
+                plugin_schema, incoming_ws_msg.mqtt_id
+            )
     else:
         logger.info(
             f'Composing controller message from data: "{incoming_ws_msg.model_dump()}'
@@ -79,16 +71,18 @@ async def handle_message(message_data: dict):
             for mqtt_id in incoming_ws_msg.mqtt_id:
                 topic = format_topic_by_mqtt_id(mqtt_id)
                 publish(topic=topic, message=outgoing_controller_msg)
+                crud.set_last_update_sent_to_current_time(mqtt_id)
         else:
             topic = format_topic_by_mqtt_id(incoming_ws_msg.mqtt_id)
             publish(topic=topic, message=outgoing_controller_msg)
+            crud.set_last_update_sent_to_current_time(incoming_ws_msg.mqtt_id)
 
 
 async def handle_reads():
     last_id = "$"
     while True:
         try:
-            messages = await redis_session.get().xread(
+            messages = await dependencies.redis_session.get().xread(
                 {stream_names.BACKEND_STREAM_NAME: last_id},
                 count=1,
                 block=1000,

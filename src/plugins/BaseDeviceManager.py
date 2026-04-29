@@ -1,16 +1,8 @@
 import logging
 from typing import Type
 
-from src.crud import (
-    commit_db_object,
-    create_device,
-    get_device_by_id,
-    get_plugin_db_obj_using_device_type_and_mqtt_id,
-    update_device,
-)
+from src import crud, models, schemas
 from src.database import Base
-from src.models import Device as models_Device
-from src.schemas import DeviceReceived as DeviceReceivedSchema
 from .ValidateFEtoBEData import ValidateFEtoBEData
 
 logger = logging.getLogger()
@@ -32,21 +24,21 @@ class BaseDeviceManager(ValidateFEtoBEData):
         if not self.is_server_side_value(data["name"]):
             raise ValueError(f'{data["name"]} is not a server-side value')
 
-    def get_device_by_id(self, mqtt_id: int) -> models_Device | None:
-        return get_device_by_id(mqtt_id)
+    def get_device_by_id(self, mqtt_id: int) -> models.Device | None:
+        return crud.get_device_by_id(mqtt_id)
 
-    def create_device(self, device: DeviceReceivedSchema) -> models_Device:
-        return create_device(device)
+    def create_device(self, device: schemas.DeviceReceived) -> models.Device:
+        return crud.create_device(device)
 
-    def update_device(self, device: DeviceReceivedSchema) -> models_Device:
-        return update_device(device)
+    def update_device(self, device: schemas.DeviceReceived) -> models.Device:
+        return crud.update_device(device)
 
     def commit_db_object(self, db_obj: Type[Base]) -> Type[Base]:
-        return commit_db_object(db_obj)
+        return crud.commit_db_object(db_obj)
 
     def get_plugin_db_obj_using_device_type_and_mqtt_id(
         self, *, device_type_name: str, mqtt_id: int, **kwargs
     ):
-        return get_plugin_db_obj_using_device_type_and_mqtt_id(
+        return crud.get_plugin_db_obj_using_device_type_and_mqtt_id(
             device_type_name, mqtt_id
         )

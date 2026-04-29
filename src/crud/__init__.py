@@ -8,6 +8,8 @@ from src.crud.devices import (
     get_plugin_db_obj_using_device_type_and_mqtt_id,
     get_plugin_model_class_using_device_type_name,
     patch_device,
+    set_last_update_sent_to_current_time,
+    set_last_seen_to_current_time,
     update_device,
 )
 from src.crud.tags import (
@@ -38,5 +40,7 @@ __all__ = [
     "get_tags",
     "patch_device",
     "patch_tag",
+    "set_last_update_sent_to_current_time",
+    "set_last_seen_to_current_time",
     "update_device",
 ]
