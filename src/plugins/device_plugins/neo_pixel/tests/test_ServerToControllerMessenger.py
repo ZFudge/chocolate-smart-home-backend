@@ -1,133 +1,235 @@
-from ..ServerToControllerMessenger import (
-    key_and_bool_value,
-    key_and_value,
-    kvp_param,
-    ServerToControllerMessenger,
-)
-
-
-def test_neo_pixel_kvp_param():
-    assert kvp_param("key", "value") == "key=value;"
-    assert kvp_param("key", "732") == "key=732;"
-
-
-def test_neo_pixel_key_and_bool_value():
-    assert key_and_bool_value({"on": True}, "on") == "on=1;"
-
-
-def test_neo_pixel_key_and_value_minmax():
-    assert key_and_value({"count": "578"}, "count") == "count=255;"
-    assert key_and_value({"count": -789}, "count") == "count=0;"
-
-
-def test_neo_pixel_key_and_value_ValueError():
-    assert key_and_value({"count": "1a"}, "count") == "count=1a;"
-
-
-def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_empty():
-    assert ServerToControllerMessenger().compose_controller_msg({}) == ""
-
-
-def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_multiple():
+def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_on_converts_bool_to_str(
+    ServerToControllerMessengerWithSuper,
+):
     assert (
-        ServerToControllerMessenger().compose_controller_msg(
+        ServerToControllerMessengerWithSuper().compose_controller_msg(
             {
-                "on": True,
-                "twinkle": True,
-                "transform": True,
-                "ms": 100,
-                "brightness": 50,
+                "name": "on",
+                "value": False,
+                "mqtt_id": 123,
+                "device_type_name": "",
             }
         )
-        == "on=1;twinkle=1;transform=1;ms=100;brightness=50;"
+        == "on=0;"
     )
 
 
-def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_on():
+def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_on_uses_str(
+    ServerToControllerMessengerWithSuper,
+):
     assert (
-        ServerToControllerMessenger().compose_controller_msg({"on": False}) == "on=0;"
+        ServerToControllerMessengerWithSuper().compose_controller_msg(
+            {
+                "name": "on",
+                "value": "0",
+                "mqtt_id": 123,
+                "device_type_name": "",
+            }
+        )
+        == "on=0;"
     )
 
 
-def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_twinkle():
+def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_twinkle(
+    ServerToControllerMessengerWithSuper,
+):
     assert (
-        ServerToControllerMessenger().compose_controller_msg({"twinkle": True})
+        ServerToControllerMessengerWithSuper().compose_controller_msg(
+            {
+                "name": "twinkle",
+                "value": True,
+                "mqtt_id": 123,
+                "device_type_name": "",
+            }
+        )
         == "twinkle=1;"
     )
 
 
-def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_transform():
+def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_transform(
+    ServerToControllerMessengerWithSuper,
+):
     assert (
-        ServerToControllerMessenger().compose_controller_msg({"transform": True})
+        ServerToControllerMessengerWithSuper().compose_controller_msg(
+            {
+                "name": "transform",
+                "value": True,
+                "mqtt_id": 123,
+                "device_type_name": "",
+            }
+        )
         == "transform=1;"
     )
 
 
-def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_ms():
-    assert ServerToControllerMessenger().compose_controller_msg({"ms": 43}) == "ms=43;"
-
-
-def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_max_limit_ms():
+def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_ms(
+    ServerToControllerMessengerWithSuper,
+):
     assert (
-        ServerToControllerMessenger().compose_controller_msg({"ms": 543}) == "ms=255;"
+        ServerToControllerMessengerWithSuper().compose_controller_msg(
+            {
+                "name": "ms",
+                "value": 43,
+                "mqtt_id": 123,
+                "device_type_name": "",
+            }
+        )
+        == "ms=43;"
     )
 
 
-def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_str_min_limit_ms():
-    assert ServerToControllerMessenger().compose_controller_msg({"ms": "-9"}) == "ms=0;"
-
-
-def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_min_limit_ms():
-    assert ServerToControllerMessenger().compose_controller_msg({"ms": -321}) == "ms=0;"
-
-
-def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_brightness():
+def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_max_limit_ms(
+    ServerToControllerMessengerWithSuper,
+):
     assert (
-        ServerToControllerMessenger().compose_controller_msg({"brightness": 43})
+        ServerToControllerMessengerWithSuper().compose_controller_msg(
+            {
+                "name": "ms",
+                "value": 567,
+                "mqtt_id": 123,
+                "device_type_name": "",
+            }
+        )
+        == "ms=255;"
+    )
+
+
+def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_str_min_limit_ms(
+    ServerToControllerMessengerWithSuper,
+):
+    assert (
+        ServerToControllerMessengerWithSuper().compose_controller_msg(
+            {
+                "name": "ms",
+                "value": -9,
+                "mqtt_id": 123,
+                "device_type_name": "",
+            }
+        )
+        == "ms=0;"
+    )
+
+
+def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_min_limit_ms(
+    ServerToControllerMessengerWithSuper,
+):
+    assert (
+        ServerToControllerMessengerWithSuper().compose_controller_msg(
+            {
+                "name": "ms",
+                "value": -321,
+                "mqtt_id": 123,
+                "device_type_name": "",
+            }
+        )
+        == "ms=0;"
+    )
+
+
+def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_brightness(
+    ServerToControllerMessengerWithSuper,
+):
+    assert (
+        ServerToControllerMessengerWithSuper().compose_controller_msg(
+            {
+                "name": "brightness",
+                "value": 43,
+                "mqtt_id": 123,
+                "device_type_name": "",
+            }
+        )
         == "brightness=43;"
     )
 
 
-def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_max_limit_brightness():
+def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_max_limit_brightness(
+    ServerToControllerMessengerWithSuper,
+):
     assert (
-        ServerToControllerMessenger().compose_controller_msg({"brightness": 543})
+        ServerToControllerMessengerWithSuper().compose_controller_msg(
+            {
+                "name": "brightness",
+                "value": 543,
+                "mqtt_id": 123,
+                "device_type_name": "",
+            }
+        )
         == "brightness=255;"
     )
 
 
-def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_str_min_limit_brightness():
+def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_str_min_limit_brightness(
+    ServerToControllerMessengerWithSuper,
+):
     assert (
-        ServerToControllerMessenger().compose_controller_msg({"brightness": "-9"})
-        == "brightness=0;"
-    )
-
-
-def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_min_limit_brightness():
-    assert (
-        ServerToControllerMessenger().compose_controller_msg({"brightness": -321})
-        == "brightness=0;"
-    )
-
-
-def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_armed():
-    assert (
-        ServerToControllerMessenger().compose_controller_msg({"armed": False})
-        == "armed=0;"
-    )
-
-
-def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_timeout():
-    assert (
-        ServerToControllerMessenger().compose_controller_msg({"timeout": 5})
-        == "timeout=5;"
-    )
-
-
-def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_palette():
-    assert (
-        ServerToControllerMessenger().compose_controller_msg(
+        ServerToControllerMessengerWithSuper().compose_controller_msg(
             {
-                "palette": [
+                "name": "brightness",
+                "value": "-9",
+                "mqtt_id": 123,
+                "device_type_name": "",
+            }
+        )
+        == "brightness=0;"
+    )
+
+
+def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_min_limit_brightness(
+    ServerToControllerMessengerWithSuper,
+):
+    assert (
+        ServerToControllerMessengerWithSuper().compose_controller_msg(
+            {
+                "name": "brightness",
+                "value": -321,
+                "mqtt_id": 123,
+                "device_type_name": "",
+            }
+        )
+        == "brightness=0;"
+    )
+
+
+def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_armed(
+    ServerToControllerMessengerWithSuper,
+):
+    assert (
+        ServerToControllerMessengerWithSuper().compose_controller_msg(
+            {
+                "name": "pir_armed",
+                "value": False,
+                "mqtt_id": 123,
+                "device_type_name": "",
+            }
+        )
+        == "pir_armed=0;"
+    )
+
+
+def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_timeout(
+    ServerToControllerMessengerWithSuper,
+):
+    assert (
+        ServerToControllerMessengerWithSuper().compose_controller_msg(
+            {
+                "name": "pir_timeout",
+                "value": 5,
+                "mqtt_id": 123,
+                "device_type_name": "",
+            }
+        )
+        == "pir_timeout=5;"
+    )
+
+
+def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_palette(
+    ServerToControllerMessengerWithSuper,
+):
+    assert (
+        ServerToControllerMessengerWithSuper().compose_controller_msg(
+            {
+                "name": "palette",
+                "value": [
                     "#ff0099",
                     "#0099ff",
                     "#99ff00",
@@ -137,7 +239,9 @@ def test_neo_pixel_ServerToControllerMessenger_compose_controller_msg_palette():
                     "#decaff",
                     "#987654",
                     "#3210fe",
-                ]
+                ],
+                "mqtt_id": 123,
+                "device_type_name": "",
             }
         )
         == "palette=255,0,153,0,153,255,153,255,0,18,52,86,120,154,188,222,240,18,222,202,255,152,118,84,50,16,254;"

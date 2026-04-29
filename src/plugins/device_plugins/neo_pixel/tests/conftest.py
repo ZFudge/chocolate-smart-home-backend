@@ -4,6 +4,7 @@ import pytest
 
 from ..ControllerToServerMessenger import ControllerToServerMessenger
 from ..DeviceManager import DeviceManager, Model
+from ..ServerToControllerMessenger import ServerToControllerMessenger
 
 
 @pytest.fixture()
@@ -21,6 +22,24 @@ def ControllerToServerMessengerWithSuper():
         pass
 
     yield ControllerToServerMessengerWithSuper
+
+
+@pytest.fixture()
+def ServerToControllerMessengerWithSuper():
+    class BaseServerToControllerMessenger:
+        def compose_controller_msg(self, msg_data: dict) -> str | None:
+            return ""
+
+        @staticmethod
+        def _compose_param(key: str, val: str) -> str:
+            return f"{key}={val};"
+
+    class PluginServerToControllerMessenger(
+        ServerToControllerMessenger, BaseServerToControllerMessenger
+    ):
+        pass
+
+    yield PluginServerToControllerMessenger
 
 
 @pytest.fixture()

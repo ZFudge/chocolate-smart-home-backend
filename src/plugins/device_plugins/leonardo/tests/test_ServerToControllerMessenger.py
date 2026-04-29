@@ -1,46 +1,86 @@
 import pytest
 
-from ..ServerToControllerMessenger import ServerToControllerMessenger
 
-
-def test_leonardo_ServerToControllerMessenger_compose_controller_msg_talon():
+def test_leonardo_ServerToControllerMessenger_compose_controller_msg_talon(
+    ServerToControllerMessengerWithSuper,
+):
     assert (
-        ServerToControllerMessenger().compose_controller_msg({"command": "talon"})
+        ServerToControllerMessengerWithSuper().compose_controller_msg(
+            {
+                "mqtt_id": 123,
+                "device_type_name": "",
+                "name": "command",
+                "value": "talon",
+            }
+        )
         == "talon"
     )
 
 
-def test_leonardo_ServerToControllerMessenger_compose_controller_msg_unlock():
+def test_leonardo_ServerToControllerMessenger_compose_controller_msg_unlock(
+    ServerToControllerMessengerWithSuper,
+):
     assert (
-        ServerToControllerMessenger().compose_controller_msg({"command": "unlock"})
+        ServerToControllerMessengerWithSuper().compose_controller_msg(
+            {
+                "mqtt_id": 123,
+                "device_type_name": "",
+                "name": "command",
+                "value": "unlock",
+            }
+        )
         == "unlock"
     )
 
 
-def test_leonardo_ServerToControllerMessenger_compose_controller_msg_lock():
+def test_leonardo_ServerToControllerMessenger_compose_controller_msg_lock(
+    ServerToControllerMessengerWithSuper,
+):
     assert (
-        ServerToControllerMessenger().compose_controller_msg({"command": "lock"})
+        ServerToControllerMessengerWithSuper().compose_controller_msg(
+            {
+                "mqtt_id": 123,
+                "device_type_name": "",
+                "name": "command",
+                "value": "lock",
+            }
+        )
         == "lock"
     )
 
 
-def test_leonardo_ServerToControllerMessenger_compose_controller_msg_move():
+def test_leonardo_ServerToControllerMessenger_compose_controller_msg_move(
+    ServerToControllerMessengerWithSuper,
+):
     assert (
-        ServerToControllerMessenger().compose_controller_msg({"command": "move"})
+        ServerToControllerMessengerWithSuper().compose_controller_msg(
+            {
+                "mqtt_id": 123,
+                "device_type_name": "",
+                "name": "command",
+                "value": "move",
+            }
+        )
         == "move"
     )
 
 
-def test_leonardo_ServerToControllerMessenger_compose_controller_msg_ValueError_when_empty():
-    with pytest.raises(ValueError):
-        ServerToControllerMessenger().compose_controller_msg({}) == ""
+def test_leonardo_ServerToControllerMessenger_compose_controller_msg_ValueError_when_empty(
+    ServerToControllerMessengerWithSuper,
+):
+    with pytest.raises(KeyError):
+        ServerToControllerMessengerWithSuper().compose_controller_msg({}) == ""
 
 
-def test_leonardo_ServerToControllerMessenger_compose_controller_msg_ValueError_invalid_command():
-    with pytest.raises(ValueError):
-        ServerToControllerMessenger().compose_controller_msg({"command": "invalid"})
-
-
-def test_leonardo_ServerToControllerMessenger_compose_controller_msg_TypeError():
-    with pytest.raises(TypeError):
-        ServerToControllerMessenger().compose_controller_msg("command")
+def test_leonardo_ServerToControllerMessenger_compose_controller_msg_ValueError_invalid_command(
+    ServerToControllerMessengerWithSuper,
+):
+    with pytest.raises(ValueError, match='Invalid command: "invalid".'):
+        ServerToControllerMessengerWithSuper().compose_controller_msg(
+            {
+                "mqtt_id": 123,
+                "device_type_name": "",
+                "name": "command",
+                "value": "invalid",
+            }
+        )

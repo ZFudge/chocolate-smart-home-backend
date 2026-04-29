@@ -102,20 +102,3 @@ def test_neo_pixel_DeviceManager_update_device(
 
     BaseDeviceManager.update_device.assert_called_once_with(mock_device_schema)
     BaseDeviceManager.create_device.assert_not_called()
-
-
-def test_neo_pixel_DeviceManager_update_server_side_value(
-    DeviceManagerWithSuper_and_mocked_PluginModel,
-):
-    DeviceManagerWithSuper, _ = DeviceManagerWithSuper_and_mocked_PluginModel
-    data = {
-        "device_type_name": "neo_pixel",
-        "mqtt_id": 123,
-        "name": "scheduled_palette_rotation",
-        "value": True,
-    }
-    DeviceManagerWithSuper().update_server_side_value(data)
-    BaseDeviceManager = DeviceManagerWithSuper.mro()[2]
-    BaseDeviceManager.update_server_side_value.assert_called_once_with(data)
-    BaseDeviceManager.create_device.assert_not_called()
-    BaseDeviceManager.update_device.assert_not_called()

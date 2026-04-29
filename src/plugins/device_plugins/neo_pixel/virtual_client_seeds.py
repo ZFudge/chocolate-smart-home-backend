@@ -26,9 +26,9 @@ seeds = [
             "#800080",
             "#008000",
         ],
-        "pir": True,
-        "armed": True,
-        "timeout": 10,
+        "pir_enabled": True,
+        "pir_armed": True,
+        "pir_timeout": 10,
     },
     {
         "name": "Virtual Neo Pixel 2",
@@ -50,9 +50,9 @@ seeds = [
             "#0000FF",
             "#00FF00",
         ],
-        "pir": True,
-        "armed": False,
-        "timeout": 35,
+        "pir_enabled": True,
+        "pir_armed": False,
+        "pir_timeout": 35,
     },
     {
         "name": "Virtual Neo Pixel 3",
@@ -74,9 +74,9 @@ seeds = [
             "#0000FF",
             "#00FF00",
         ],
-        "pir": True,
-        "armed": False,
-        "timeout": 17,
+        "pir_enabled": True,
+        "pir_armed": False,
+        "pir_timeout": 17,
     },
 ]
 
@@ -88,8 +88,8 @@ def compose_outgoing_msg(vc_state: dict) -> str:
         | int(vc_state["twinkle"]) << 1
         | int(vc_state["transform"]) << 2
         | int(vc_state["all_twinkle_colors_are_current"]) << 3
-        | int(vc_state["pir"]) << 4
-        | int(vc_state["armed"]) << 5
+        | int(vc_state["pir_enabled"]) << 4
+        | int(vc_state["pir_armed"]) << 5
     )
 
     palette = vc_state["palette"]
@@ -100,7 +100,7 @@ def compose_outgoing_msg(vc_state: dict) -> str:
         str(bools_byte),
         str(vc_state["ms"]),
         str(vc_state["brightness"]),
-        str(vc_state["timeout"]),
+        str(vc_state["pir_timeout"]),
         palette,
     ]
 

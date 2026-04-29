@@ -1,6 +1,6 @@
 class ServerToControllerMessenger:
-    @staticmethod
-    def compose_controller_msg(msg: dict) -> str:
-        if msg.get("name") != "on":
+    def compose_controller_msg(self, msg_data: dict) -> str:
+        super().compose_controller_msg(msg_data)
+        if msg_data.get("name") != "on":
             return ""
-        return str(int(msg["value"]))
+        return str(int(msg_data["value"]))

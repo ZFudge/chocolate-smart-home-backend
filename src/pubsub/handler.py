@@ -41,12 +41,10 @@ def mqtt_message_handler(
     except IndexError:
         device_type_name = ""
 
-    device_plugin: Dict = PluginsManager.get_plugin_by_device_type_name(
-        device_type_name
-    )
+    plugin: Dict = PluginsManager.get_plugin_by_device_type_name(device_type_name)
 
-    ControllerToServerMessenger: Callable = device_plugin["ControllerToServerMessenger"]
-    DeviceManager: Callable = device_plugin["DeviceManager"]
+    ControllerToServerMessenger: Callable = plugin["ControllerToServerMessenger"]
+    DeviceManager: Callable = plugin["DeviceManager"]
 
     # Parse message data
     try:

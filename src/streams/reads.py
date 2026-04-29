@@ -3,12 +3,12 @@ import logging
 
 from pydantic import ValidationError
 
-from src import schemas
+from src import crud, schemas
 from src.dependencies import redis_session
 from src.plugins import PluginsManager
 from src.pubsub.comm_funcs import publish, request_all_devices_data
 from src.pubsub.topics import get_format_topic_by_mqtt_id_using_device_type_name
-from . import stream_names
+from . import send, stream_names
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -19,7 +19,9 @@ async def handle_message(message_data: dict):
     if message_data.get("action") == "request_all_devices_data":
         request_all_devices_data()
         return
-
+    # convert boolean strings back to boolean type
+    if message_data["value"] in ("True", "False"):
+        message_data["value"] = message_data["value"] == "True"
     try:
         incoming_ws_msg = schemas.WebsocketMessage(**message_data)
     except ValidationError:
@@ -28,15 +30,39 @@ async def handle_message(message_data: dict):
     plugin_mapping = PluginsManager.PLUGINS[incoming_ws_msg.device_type_name]
     DeviceManager = plugin_mapping["DeviceManager"]
     if DeviceManager.is_server_side_value(incoming_ws_msg.name):
-        DeviceManager.updates_server_side_value(incoming_ws_msg.model_dump())
-        # TODO broadcast db values?
+        logger.info(
+            f'Updating server side value: "{incoming_ws_msg.name}" to {incoming_ws_msg.value}'
+        )
+        # Plugin schema should exist because only plugins that implement their own model will have server side values
+        plugin_schema = DeviceManager().update_server_side_value(
+            incoming_ws_msg.model_dump()
+        )
+        primary_device = crud.get_device_by_id(incoming_ws_msg.mqtt_id)
+        frontend_schema = schemas.DeviceFrontend(
+            mqtt_id=incoming_ws_msg.mqtt_id,
+            remote_name=primary_device.remote_name,
+            name=primary_device.name,
+            device_type_name=primary_device.device_type.name,
+            tags=[t.id for t in primary_device.tags],
+            reboots=primary_device.reboots,
+            last_seen=(
+                str(primary_device.last_seen) if primary_device.last_seen else None
+            ),
+            last_update_sent=(
+                str(primary_device.last_update_sent)
+                if primary_device.last_update_sent
+                else None
+            ),
+            plugin=plugin_schema,
+        )
+        await send.send_to_ws_service(frontend_schema)
     else:
+        format_topic_by_mqtt_id = get_format_topic_by_mqtt_id_using_device_type_name(
+            incoming_ws_msg.device_type_name
+        )
         ServerToControllerMessenger = plugin_mapping["ServerToControllerMessenger"]
         outgoing_controller_msg = ServerToControllerMessenger().compose_controller_msg(
             incoming_ws_msg.model_dump()
-        )
-        format_topic_by_mqtt_id = get_format_topic_by_mqtt_id_using_device_type_name(
-            incoming_ws_msg.device_type_name
         )
         if isinstance(incoming_ws_msg.mqtt_id, list):
             for mqtt_id in incoming_ws_msg.mqtt_id:
