@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 
 from pydantic import ValidationError
@@ -22,6 +23,13 @@ async def handle_message(message_data: dict):
     # convert boolean strings back to boolean type
     if message_data["value"] in ("True", "False"):
         message_data["value"] = message_data["value"] == "True"
+    elif isinstance(message_data["value"], str):
+        try:
+            message_data["value"] = json.loads(message_data["value"])
+        except json.decoder.JSONDecodeError:
+            pass
+    if isinstance(message_data["mqtt_id"], str):
+        message_data["mqtt_id"] = json.loads(message_data["mqtt_id"])
     try:
         incoming_ws_msg = schemas.WebsocketMessage(**message_data)
     except ValidationError:
@@ -57,6 +65,9 @@ async def handle_message(message_data: dict):
         )
         await send.send_to_ws_service(frontend_schema)
     else:
+        logger.info(
+            f'Composing controller message from data: "{incoming_ws_msg.model_dump()}'
+        )
         format_topic_by_mqtt_id = get_format_topic_by_mqtt_id_using_device_type_name(
             incoming_ws_msg.device_type_name
         )
