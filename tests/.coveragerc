@@ -1,4 +1,7 @@
 [run]
 omit =
-    # Omit specific directory
     src/plugins/device_plugins/*
+    src/plugins/conftest.py
+    src/main.py
+    src/plugins/virtual_clients/vcs_app.py
+    src/streams/stream_names.py

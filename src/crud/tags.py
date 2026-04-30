@@ -45,19 +45,19 @@ def create_tag(tag_name: str) -> TagModel:
     return new_tag
 
 
-def patch_tag(patch_tag: schemas.TagPatch) -> TagModel:
+def patch_tag(tag_patch: schemas.TagPatch) -> TagModel:
     logger.info(
-        'Updating tag of id %s and name of "%s' % (patch_tag.id, patch_tag.name)
+        'Updating tag of id %s and name of "%s' % (tag_patch.id, tag_patch.name)
     )
     db: Session = db_session.get()
 
-    tag_obj = get_tag_by_id(patch_tag.id)
+    tag_obj = get_tag_by_id(tag_patch.id)
     if tag_obj is None:
-        msg = f"Tag update failed. No Tag object with an id of {patch_tag.id} found."
+        msg = f"Tag update failed. No Tag object with an id of {tag_patch.id} found."
         logger.error(msg)
         raise NoResultFound(msg)
 
-    tag_obj.name = patch_tag.name
+    tag_obj.name = tag_patch.name
     db.add(tag_obj)
     try:
         db.commit()

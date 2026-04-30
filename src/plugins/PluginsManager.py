@@ -3,15 +3,14 @@ import logging
 
 from sqlalchemy import Column, ForeignKey, Integer
 
-from src import utils
+from src import dependencies, utils
 from src.database import Base, engine
-from src.dependencies import db_session
 from . import device_plugins
-from .BaseDeviceManager import BaseDeviceManager
 from .BaseControllerToServerMessenger import (
     BaseControllerToServerMessenger,
     DefaultControllerToServerMessenger,
 )
+from .BaseDeviceManager import BaseDeviceManager
 from .BaseServerToControllerMessenger import BaseServerToControllerMessenger
 from .utils import iter_nametag
 
@@ -251,11 +250,10 @@ class PluginsManager:
             logger.info(f"No {plugin_name}.Model module found.")
             return
         except (ImportError, AttributeError) as e:
-            logger.warning(f"Unable to import {plugin_name}.Model")
-            logger.error(e)
+            logger.warning("Unable to import %s.Model - %s" % (plugin_name, e))
             return
         except Exception as e:
-            logger.error(e)
+            logger.error("Unable to import %s.Model - %s" % (plugin_name, e))
             return
 
         model_class_name = utils.snakecase_to_pascalcase(plugin_name)
@@ -291,7 +289,9 @@ class PluginsManager:
         try:
             router_module_name = f"{plugin_path}.router"
             router_module = importlib.import_module(router_module_name)
-            router_module.db = db_session.get()
+            for x in ("db_session", "redis_session", "mqtt_client_session"):
+                if x in dir(router_module):
+                    setattr(router_module, x, getattr(dependencies, x).get())
             cls.ROUTERS.append(router_module.plugin_router)
         except ModuleNotFoundError:
             logger.info(f"No router module found for {plugin_name}.")
@@ -312,14 +312,13 @@ class PluginsManager:
             models_module_name = f"{plugin_path}.models"
             models_module = importlib.import_module(models_module_name)
         except ModuleNotFoundError:
-            logger.info(f"No {plugin_name}.models module found.")
+            logger.info("No %s.models module found." % (plugin_name))
             return
         except (ImportError, AttributeError) as e:
-            logger.warning(f"Unable to import {plugin_name}.Model")
-            logger.error(e)
+            logger.warning("Unable to import %s.Model - %s" % (plugin_name, e))
             return
         except Exception as e:
-            logger.error(e)
+            logger.error("Unable to import %s.Model - %s" % (plugin_name, e))
             return
 
         if not hasattr(models_module, "models") or not models_module.models:
@@ -356,11 +355,11 @@ class PluginsManager:
                 f"Attempting import of db_seeding module for {db_seeding_module_name}"
             )
             db_seeding_module = importlib.import_module(db_seeding_module_name)
-            db_seeding_module.seed_db(db_session.get())
+            db_seeding_module.seed_db(dependencies.db_session.get())
         except ModuleNotFoundError:
             logger.info(f"No db_seeding module found for {plugin_name}.")
         except ImportError:
-            logger.warning(f"Unable to import db_seeding from {plugin_path}.")
+            logger.warning("Unable to import db_seeding from %s." % (plugin_path))
         except Exception as e:
             logger.error(e)
             return

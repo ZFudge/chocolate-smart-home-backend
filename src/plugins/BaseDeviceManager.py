@@ -19,10 +19,10 @@ class BaseDeviceManager(ValidateFEtoBEData):
         """
         return name in cls.SERVER_SIDE_COLUMNS
 
-    def update_server_side_value(self, data: dict):
+    def update_server_side_value(self, data: dict, *args):
         self.validate_msg_data(data)
         if not self.is_server_side_value(data["name"]):
-            raise ValueError(f'{data["name"]} is not a server-side value')
+            raise ValueError(f'"{data["name"]}" is not a server-side value')
 
     def get_device_by_id(self, mqtt_id: int) -> models.Device | None:
         return crud.get_device_by_id(mqtt_id)

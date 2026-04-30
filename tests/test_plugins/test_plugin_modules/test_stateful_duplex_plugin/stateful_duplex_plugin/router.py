@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from .models import Properties
 
-db: Session | None = None
+db_session: Session | None = None
 
 plugin_router = APIRouter(prefix="/stateful_duplex_plugin")
 
@@ -23,11 +23,11 @@ def example_empty_endpoint():
 
 @plugin_router.get("/properties/")
 def get_properties():
-    global db
-    if db is None:
+    global db_session
+    if db_session is None:
         raise HTTPException(status_code=500, detail="Database not initialized.")
     try:
-        return db.query(Properties).all()
+        return db_session.query(Properties).all()
     except Exception as e:
         logger.error(e)
         raise HTTPException(status_code=500, detail="Error getting properties.")

@@ -32,7 +32,7 @@ def _get_handle_reads():
     return _handle_reads
 
 
-async def handle_reads():
+async def handle_reads():  # pragma: no cover
     _handle_reads = _get_handle_reads()
     while True:
         try:

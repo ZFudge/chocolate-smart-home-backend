@@ -194,3 +194,14 @@ async def test_pubsub_handler_handles_exception_on_coroutine(
         mock_logger.assert_called_once_with(
             "Error scheduling coroutine on redis streams event loop: oops"
         )
+
+
+@pytest.mark.asyncio
+async def test_pubsub_handler_loop_not_set(
+    mqtt_message, empty_test_db, none_asyncio_event_loop
+):
+    with patch("src.pubsub.handler.logger.warning") as mock_logger:
+        mqtt_message_handler(None, None, mqtt_message)
+        mock_logger.assert_called_once_with(
+            "Redis streams event loop not set. Cannot send message."
+        )

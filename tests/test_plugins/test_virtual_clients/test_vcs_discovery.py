@@ -101,12 +101,10 @@ def test_convergent_composer_func(vcs_module, mqtt_client, mqtt_message):
     The defaults.compose_outgoing_msg function handles the vc configuration (mqtt id, device type name, remote name).
     The vcs_module.compose_outgoing_msg function handles the device-specific state.
     """
-    with (
-        patch(
-            "src.plugins.virtual_clients.VirtualClientsManager.publish",
-            return_value=None,
-        ) as publish,
-    ):
+    with patch(
+        "src.plugins.virtual_clients.VirtualClientsManager.publish",
+        return_value=None,
+    ) as publish:
 
         def composer(vc_state: dict) -> str:
             return f'a={vc_state["a"]}'
@@ -190,12 +188,10 @@ def test_default_parse_incoming_payload_func_and_composer_func(
 
 
 def test_get_data_received_handler(vcs_module, mqtt_client, mqtt_message):
-    with (
-        patch(
-            "src.plugins.virtual_clients.VirtualClientsManager.publish",
-            return_value=None,
-        ) as publish,
-    ):
+    with patch(
+        "src.plugins.virtual_clients.VirtualClientsManager.publish",
+        return_value=None,
+    ) as publish:
         VirtualClientsManager.virtual_clients[123] = {
             "device_type_name": "cabbage_device_type",
             "mqtt_id": 123,
@@ -217,6 +213,20 @@ def test_get_data_received_handler(vcs_module, mqtt_client, mqtt_message):
         publish.assert_called_once_with(
             topic="/receive_device_state/",
             message="123,cabbage_device_type,cabbage device one",
+        )
+
+
+def test_get_data_received_handler_invalid_mqtt_id(mqtt_message):
+    with patch(
+        "src.plugins.virtual_clients.VirtualClientsManager.logger.error"
+    ) as mock_logger:
+        data_received_handler = VirtualClientsManager.get_data_received_handler(
+            lambda msg: msg.split("=")
+        )
+        mqtt_message.topic = b"/c/"
+        data_received_handler(None, None, mqtt_message)
+        mock_logger.assert_called_once_with(
+            "Invalid mqtt_id: : invalid literal for int() with base 10: ''"
         )
 
 

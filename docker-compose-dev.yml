@@ -143,6 +143,6 @@ services:
       csm-redis-dev: # initial startup publish triggers data streaming with redis
         condition: service_healthy
     environment:
-      MQTT_CLIENT_ID_SUFFIX: virtual-clients
+      MQTT_CLIENT_ID_PREFIX: virtual-clients
       LOGGER: vcs
       << : *environment-variables

@@ -3,11 +3,10 @@ import logging
 
 from pydantic import ValidationError
 
-from src import crud, schemas
+from src import crud, schemas, streams
 from src.plugins import PluginsManager
 from src.pubsub.comm_funcs import publish, request_all_devices_data
 from src.pubsub.topics import get_format_topic_by_mqtt_id_using_device_type_name
-from src.streams import send
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +16,12 @@ async def handle_device_update(message_data: dict):
     if message_data.get("action") == "request_all_devices_data":
         request_all_devices_data()
         return
+    if isinstance(message_data.get("mqtt_id"), str):
+        message_data["mqtt_id"] = json.loads(message_data["mqtt_id"])
+    try:
+        incoming_ws_msg = schemas.WebsocketMessage(**message_data)
+    except ValidationError:
+        return
     # convert boolean strings back to boolean type
     if message_data["value"] in ("True", "False"):
         message_data["value"] = message_data["value"] == "True"
@@ -25,12 +30,6 @@ async def handle_device_update(message_data: dict):
             message_data["value"] = json.loads(message_data["value"])
         except json.decoder.JSONDecodeError:
             pass
-    if isinstance(message_data["mqtt_id"], str):
-        message_data["mqtt_id"] = json.loads(message_data["mqtt_id"])
-    try:
-        incoming_ws_msg = schemas.WebsocketMessage(**message_data)
-    except ValidationError:
-        return
 
     plugin_mapping = PluginsManager.PLUGINS[incoming_ws_msg.device_type_name]
     DeviceManager = plugin_mapping["DeviceManager"]
@@ -46,12 +45,12 @@ async def handle_device_update(message_data: dict):
                 plugin_schema = DeviceManager().update_server_side_value(
                     incoming_ws_msg.model_dump(), mqtt_id
                 )
-                await send.broadcast_db_state_to_client(plugin_schema, mqtt_id)
+                await streams.send.broadcast_db_state_to_client(plugin_schema, mqtt_id)
         else:
             plugin_schema = DeviceManager().update_server_side_value(
                 incoming_ws_msg.model_dump(), incoming_ws_msg.mqtt_id
             )
-            await send.broadcast_db_state_to_client(
+            await streams.send.broadcast_db_state_to_client(
                 plugin_schema, incoming_ws_msg.mqtt_id
             )
     else:
@@ -69,8 +68,14 @@ async def handle_device_update(message_data: dict):
             for mqtt_id in incoming_ws_msg.mqtt_id:
                 topic = format_topic_by_mqtt_id(mqtt_id)
                 publish(topic=topic, message=outgoing_controller_msg)
-                crud.set_last_update_sent_to_current_time(mqtt_id)
+                try:
+                    crud.set_last_update_sent_to_current_time(mqtt_id)
+                except ValueError as e:
+                    logger.warning("Could not set last_update_sent - %s" % e)
         else:
             topic = format_topic_by_mqtt_id(incoming_ws_msg.mqtt_id)
             publish(topic=topic, message=outgoing_controller_msg)
-            crud.set_last_update_sent_to_current_time(incoming_ws_msg.mqtt_id)
+            try:
+                crud.set_last_update_sent_to_current_time(incoming_ws_msg.mqtt_id)
+            except ValueError as e:
+                logger.warning("Could not set last_update_sent - %s" % e)

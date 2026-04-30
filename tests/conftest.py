@@ -213,6 +213,18 @@ def mock_asyncio_event_loop():
     yield asyncio_event_loop.get()
 
 
+@pytest.fixture
+def none_asyncio_event_loop():
+    override_event_loop: ContextVar[Loop] = ContextVar(
+        "asyncio_event_loop", default=None
+    )
+
+    asyncio_event_loop.set(None)
+    app.dependency_overrides[asyncio_event_loop] = override_event_loop
+
+    yield asyncio_event_loop.get()
+
+
 def redis_closure():
     redis_client: Redis | None = None
 

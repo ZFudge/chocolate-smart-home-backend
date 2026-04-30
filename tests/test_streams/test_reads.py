@@ -25,7 +25,7 @@ async def test_streams_reads__get_handle_reads_calls_xread(
     mock_redis_session.xread.return_value = messages
     handle_reads = streams.reads._get_handle_reads()
     await handle_reads()
-    mock_redis_session.xread.assert_called_once_with(
+    mock_redis_session.xread.assert_awaited_once_with(
         {"BACKEND_STREAM_NAME": "$"},
         count=1,
         block=1000,

@@ -53,6 +53,45 @@ def test_route_get_devices_returns_500_when_raises_exception(populated_test_db):
         }
 
 
+def test_route_get_devices_deletes_mqtt_id_and_id_from_plugin_db_data(
+    populated_test_db,
+):
+    plugin_data = {
+        "id": 1,
+        "mqtt_id": 1,
+        "plugin_setting": 1,
+    }
+    device_data = {
+        "plugin": plugin_data,
+        "tag_ids": [],
+        "mqtt_id": 1,
+        "name": "",
+        "remote_name": "",
+        "device_type_name": "",
+        "reboots": 0,
+        "last_seen": "",
+        "last_update_sent": "",
+    }
+    with patch("src.routers.devices.crud.get_devices", return_value=[device_data]):
+        resp = client.get("/devices")
+        assert resp.status_code == 200
+        assert resp.json() == [
+            {
+                "plugin": {
+                    "plugin_setting": 1,
+                },
+                "tags": [],
+                "mqtt_id": 1,
+                "name": "",
+                "remote_name": "",
+                "device_type_name": "",
+                "reboots": 0,
+                "last_seen": None,
+                "last_update_sent": None,
+            }
+        ]
+
+
 def test_route_get_device_by_id_returns_500_when_raises_exception(
     populated_test_db,
 ):

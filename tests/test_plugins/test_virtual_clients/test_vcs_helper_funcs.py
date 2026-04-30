@@ -1,3 +1,5 @@
+from unittest.mock import Mock, patch
+
 from src.plugins.virtual_clients.helper_funcs import (
     import_vcs_module,
     validate_virtual_client_module,
@@ -72,7 +74,7 @@ def test_validate_virtual_client_module_parse_incoming_payload_signature_invalid
     assert not validate_virtual_client_module(vcs_module)
 
 
-def test_validate_virtual_client_module_parse_incoming_payload_signature_valid(
+def test_validate_virtual_client_module_returns_true(
     vcs_module,
 ):
     def parse_incoming_payload(payload: str) -> tuple[None, None]:
@@ -94,7 +96,7 @@ def test_validate_virtual_client_module_parse_incoming_payload_signature_valid(
     assert validate_virtual_client_module(vcs_module)
 
 
-def test_validate_virtual_client_module_invalid_compose_outgoing_msg(
+def test_validate_virtual_client_module_returns_false_when_passed_invalid_compose_outgoing_msg_type(
     vcs_module,
 ):
     setattr(vcs_module, "compose_outgoing_msg", None)
@@ -106,6 +108,16 @@ def test_validate_virtual_client_module_invalid_compose_outgoing_msg(
     setattr(vcs_module, "compose_outgoing_msg", 1.0)
     assert not validate_virtual_client_module(vcs_module)
     setattr(vcs_module, "compose_outgoing_msg", True)
+    assert not validate_virtual_client_module(vcs_module)
+
+
+def test_validate_virtual_client_module_returns_false_when_passed_invalid_compose_outgoing_msg_signature(
+    vcs_module,
+):
+    def compose_outgoing_msg(payload: str) -> tuple[None, None]:
+        pass
+
+    setattr(vcs_module, "compose_outgoing_msg", compose_outgoing_msg)
     assert not validate_virtual_client_module(vcs_module)
 
 
@@ -132,3 +144,14 @@ def test_validate_virtual_client_module_still_passes_without_parse_incoming_payl
 
 def test_import_vcs_module_returns_none_if_module_does_not_exist():
     assert import_vcs_module("does_not_exist") is None
+
+
+def test_import_vcs_module_returns_return_value_from_import_module():
+    with (
+        patch(
+            "src.plugins.virtual_clients.helper_funcs.importlib.import_module"
+        ) as import_module,
+    ):
+        mock_imported_module = Mock()
+        import_module.return_value = mock_imported_module
+        assert import_vcs_module("something") is mock_imported_module

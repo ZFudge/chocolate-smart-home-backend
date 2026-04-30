@@ -80,15 +80,14 @@ class VirtualClientsManager(metaclass=SingletonMeta):
             def compose_outgoing_msg(msg: str):
                 root_msg = defaults.default_compose_outgoing_msg(msg)
                 state_msg = vcs_module.compose_outgoing_msg(msg)
+                if not state_msg:
+                    return root_msg
                 msg = ",".join(
                     [
                         root_msg,
                         state_msg,
                     ]
                 )
-                while msg[-1] == ",":
-                    # if plugin's composer returns an empty string, remove trailing comma
-                    msg = msg[:-1]
                 return msg
 
         else:
@@ -146,10 +145,10 @@ class VirtualClientsManager(metaclass=SingletonMeta):
             try:
                 vc: dict | None = cls.virtual_clients.get(int(mqtt_id))
             except ValueError as e:
-                logger.error("Invalid mqtt_id: %s: %s", mqtt_id, e)
+                logger.error("Invalid mqtt_id: %s: %s" % (mqtt_id, e))
                 return
             if vc is None:
-                logger.error(f"Virtual client not found for mqtt_id: {mqtt_id}")
+                logger.error("Virtual client not found for mqtt_id: %s" % mqtt_id)
                 return
 
             payload = message.payload.decode()

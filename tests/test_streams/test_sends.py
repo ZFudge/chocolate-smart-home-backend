@@ -20,7 +20,7 @@ async def test_streams_sends_send_to_ws_service(mock_redis_session):
             plugin=None,
         )
     )
-    mock_redis_session.xadd.assert_called_once_with(
+    mock_redis_session.xadd.assert_awaited_once_with(
         streams.stream_names.WEBSOCKETS_STREAM_NAME,
         {
             "message": (
