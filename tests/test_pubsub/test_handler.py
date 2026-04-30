@@ -1,8 +1,41 @@
 from unittest.mock import MagicMock, Mock, patch
 
+import pytest
+
 from src.plugins.PluginsManager import DEFAULT_PLUGIN
 from src.pubsub.handler import mqtt_message_handler
 from src import schemas
+
+
+def test_pubsub_handler_returns_early_when_passed_none_payload(mqtt_message):
+    mqtt_message.payload = None
+    with (
+        patch(
+            "src.pubsub.handler.PluginsManager.get_plugin_by_device_type_name"
+        ) as get_plugin_by_device_type_name,
+        patch(
+            "src.pubsub.handler.crud.set_last_seen_to_current_time"
+        ) as set_last_seen_to_current_time,
+    ):
+        assert mqtt_message_handler(None, None, mqtt_message) is None
+        get_plugin_by_device_type_name.assert_not_called()
+        set_last_seen_to_current_time.assert_not_called()
+
+
+def test_pubsub_handler_returns_expected_schema_when_passed_payload_of_only_mqtt_id(
+    mqtt_message, empty_test_db
+):
+    mqtt_message.payload = b"777"
+    device_frontend_schema = mqtt_message_handler(None, None, mqtt_message)
+    assert device_frontend_schema.mqtt_id == 777
+    assert device_frontend_schema.device_type_name == ""
+    assert device_frontend_schema.remote_name == ""
+    assert device_frontend_schema.name == ""
+    assert device_frontend_schema.plugin is None
+    assert device_frontend_schema.tags == []
+    assert device_frontend_schema.reboots == 0
+    assert device_frontend_schema.last_seen is None
+    assert device_frontend_schema.last_update_sent is None
 
 
 def test_pubsub_handler_calls_get_plugin_by_device_type_name(
@@ -98,21 +131,6 @@ def test_pubsub_handler_calls_set_last_seen_to_current_time(
         set_last_seen_to_current_time.assert_called_once_with(123)
 
 
-def test_pubsub_handler_returns_when_passed_none_payload(mqtt_message):
-    mqtt_message.payload = None
-    with (
-        patch(
-            "src.pubsub.handler.PluginsManager.get_plugin_by_device_type_name"
-        ) as get_plugin_by_device_type_name,
-        patch(
-            "src.pubsub.handler.crud.set_last_seen_to_current_time"
-        ) as set_last_seen_to_current_time,
-    ):
-        assert mqtt_message_handler(None, None, mqtt_message) is None
-        get_plugin_by_device_type_name.assert_not_called()
-        set_last_seen_to_current_time.assert_not_called()
-
-
 def test_pubsub_handler_returns_early_when_passed_invalid_payload(mqtt_message):
     mqtt_message.payload = b"invalid"
     with (
@@ -130,17 +148,49 @@ def test_pubsub_handler_returns_early_when_passed_invalid_payload(mqtt_message):
         mock_logger.assert_called_once_with('Received invalid payload: "invalid"')
 
 
-def test_pubsub_handler_returns_expected_schema_when_passed_payload_of_only_mqtt_id(
-    mqtt_message, empty_test_db
+@pytest.mark.asyncio
+async def test_pubsub_handler_calls_send_to_ws_service(
+    mqtt_message, mock_asyncio_event_loop, empty_test_db
 ):
-    mqtt_message.payload = b"777"
-    device_frontend_schema = mqtt_message_handler(None, None, mqtt_message)
-    assert device_frontend_schema.mqtt_id == 777
-    assert device_frontend_schema.device_type_name == ""
-    assert device_frontend_schema.remote_name == ""
-    assert device_frontend_schema.name == ""
-    assert device_frontend_schema.plugin is None
-    assert device_frontend_schema.tags == []
-    assert device_frontend_schema.reboots == 0
-    assert device_frontend_schema.last_seen is None
-    assert device_frontend_schema.last_update_sent is None
+    with (
+        patch(
+            "src.pubsub.handler.asyncio.run_coroutine_threadsafe",
+        ) as run_coroutine_threadsafe,
+        patch("src.pubsub.handler.schemas.DeviceFrontend") as DeviceFrontend,
+        patch(
+            "src.pubsub.handler.send_to_ws_service",
+            # this avoids RuntimeWarning regarding coroutine not being awaited
+            new_callable=lambda: Mock(),
+        ) as send_to_ws_service,
+    ):
+        DeviceFrontend.return_value = Mock()
+        assert (
+            mqtt_message_handler(None, None, mqtt_message)
+            is DeviceFrontend.return_value
+        )
+        run_coroutine_threadsafe.assert_called_once()
+        send_to_ws_service.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_pubsub_handler_handles_exception_on_coroutine(
+    mqtt_message, mock_asyncio_event_loop, empty_test_db
+):
+    with (
+        patch(
+            "src.pubsub.handler.asyncio.run_coroutine_threadsafe",
+            side_effect=Exception("oops"),
+        ),
+        patch("src.pubsub.handler.schemas.DeviceFrontend") as DeviceFrontend,
+        patch(
+            "src.pubsub.handler.send_to_ws_service",
+            # this avoids RuntimeWarning regarding coroutine not being awaited
+            new_callable=lambda: Mock(),
+        ),
+        patch("src.pubsub.handler.logger.error") as mock_logger,
+    ):
+        DeviceFrontend.return_value = Mock()
+        mqtt_message_handler(None, None, mqtt_message)
+        mock_logger.assert_called_once_with(
+            "Error scheduling coroutine on redis streams event loop: oops"
+        )

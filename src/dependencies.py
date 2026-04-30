@@ -86,20 +86,20 @@ redis_session: ContextVar[Redis] = ContextVar(
 )
 
 
-def event_loop_closure():
-    event_loop: Loop | None = None
+def asyncio_event_loop_closure():
+    asyncio_event_loop: Loop | None = None
 
-    def event_loop_func():
-        nonlocal event_loop
-        if event_loop is None and "PYTEST_VERSION" not in os.environ:
-            event_loop = asyncio.get_event_loop()
-        yield event_loop
+    def asyncio_event_loop_func():
+        nonlocal asyncio_event_loop
+        if asyncio_event_loop is None and "PYTEST_VERSION" not in os.environ:
+            asyncio_event_loop = asyncio.get_event_loop()
+        yield asyncio_event_loop
 
-    return event_loop_func
+    return asyncio_event_loop_func
 
 
-get_loop = event_loop_closure()
+get_asyncio_loop = asyncio_event_loop_closure()
 
-redis_event_loop: ContextVar[Loop] = ContextVar(
-    "redis_event_loop", default=next(get_loop())
+asyncio_event_loop: ContextVar[Loop] = ContextVar(
+    "asyncio_event_loop", default=next(get_asyncio_loop())
 )

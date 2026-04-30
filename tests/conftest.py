@@ -16,11 +16,11 @@ from src.dependencies import (
     db_session,
     engine,
     get_db,
-    get_loop,
+    get_asyncio_loop,
     get_mqtt_client,
     get_redis,
     mqtt_client_session,
-    redis_event_loop,
+    asyncio_event_loop,
     redis_session,
 )
 from src.main import app
@@ -199,18 +199,18 @@ def event_loop_closure():
 
 
 @pytest.fixture
-def event_loop():
+def mock_asyncio_event_loop():
     override_get_loop = event_loop_closure()
-    app.dependency_overrides[get_loop] = override_get_loop
+    app.dependency_overrides[get_asyncio_loop] = override_get_loop
 
     override_event_loop: ContextVar[Loop] = ContextVar(
-        "redis_event_loop", default=next(override_get_loop())
+        "asyncio_event_loop", default=next(override_get_loop())
     )
 
-    redis_event_loop.set(next(override_get_loop()))
-    app.dependency_overrides[redis_event_loop] = override_event_loop
+    asyncio_event_loop.set(next(override_get_loop()))
+    app.dependency_overrides[asyncio_event_loop] = override_event_loop
 
-    yield redis_event_loop.get()
+    yield asyncio_event_loop.get()
 
 
 def redis_closure():
@@ -229,7 +229,7 @@ def redis_closure():
 
 
 @pytest.fixture
-def mock_redis_session(event_loop):
+def mock_redis_session(mock_asyncio_event_loop):
     override_get_redis = redis_closure()
     app.dependency_overrides[get_redis] = override_get_redis
 

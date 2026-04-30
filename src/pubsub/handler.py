@@ -5,7 +5,7 @@ import os
 from paho.mqtt.client import Client, MQTTMessage
 
 from src import crud, models, schemas
-from src.dependencies import redis_event_loop
+from src.dependencies import asyncio_event_loop
 from src.plugins import PluginsManager
 from src.streams.send import send_to_ws_service
 
@@ -83,10 +83,10 @@ def mqtt_message_handler(
     )
 
     # Schedule the coroutine on the main event loop from the MQTT thread
-    if redis_event_loop.get() is not None:
+    if asyncio_event_loop.get() is not None:
         try:
             asyncio.run_coroutine_threadsafe(
-                send_to_ws_service(device_frontend_schema), redis_event_loop.get()
+                send_to_ws_service(device_frontend_schema), asyncio_event_loop.get()
             )
         except Exception as e:
             logger.error(
