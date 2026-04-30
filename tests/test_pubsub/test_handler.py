@@ -5,7 +5,7 @@ from src.pubsub.handler import mqtt_message_handler
 from src import schemas
 
 
-def test_get_plugin_by_device_type_name_called_mqtt_message_handler(
+def test_pubsub_handler_calls_get_plugin_by_device_type_name(
     mqtt_message, empty_test_db
 ):
     with patch(
@@ -15,9 +15,7 @@ def test_get_plugin_by_device_type_name_called_mqtt_message_handler(
         get_plugin_by_device_type_name.assert_called_once_with("test_device_type_name")
 
 
-def test_ControllerToServerMessenger_called_mqtt_message_handler(
-    mqtt_message, empty_test_db
-):
+def test_pubsub_handler_calls_ControllerToServerMessenger(mqtt_message, empty_test_db):
     controller_to_server_messenger = MagicMock()
     ControllerToServerMessenger = Mock(return_value=controller_to_server_messenger)
     with patch.dict(
@@ -34,9 +32,29 @@ def test_ControllerToServerMessenger_called_mqtt_message_handler(
         )
 
 
-def test_DeviceManager_create_device_called_mqtt_message_handler(
+def test_pubsub_handler_returns_early_when_parse_controller_msg_raises_Exception(
     mqtt_message, empty_test_db
 ):
+    controller_to_server_messenger = MagicMock()
+    ControllerToServerMessenger = Mock(return_value=controller_to_server_messenger)
+    with (
+        patch.dict(
+            DEFAULT_PLUGIN,
+            {
+                "ControllerToServerMessenger": ControllerToServerMessenger,
+                "DeviceManager": MagicMock(),
+            },
+        ),
+        patch("src.pubsub.handler.logger.error") as mock_logger,
+    ):
+        error = Exception("whoops")
+        controller_to_server_messenger.parse_controller_msg = Mock(side_effect=error)
+
+        assert mqtt_message_handler(None, None, mqtt_message) is None
+        mock_logger.assert_called_once_with(error)
+
+
+def test_pubsub_handler_DeviceManager_calls_create_device(mqtt_message, empty_test_db):
     device_manager = MagicMock()
     DeviceManager = Mock(return_value=device_manager)
     with patch.dict(DEFAULT_PLUGIN, {"DeviceManager": DeviceManager}):
@@ -52,7 +70,7 @@ def test_DeviceManager_create_device_called_mqtt_message_handler(
         )
 
 
-def test_DeviceManager_update_device_called_mqtt_message_handler(
+def test_pubsub_handler_DeviceManager_calls_update_device(
     mqtt_message, populated_test_db
 ):
     device_manager = MagicMock()
@@ -70,7 +88,7 @@ def test_DeviceManager_update_device_called_mqtt_message_handler(
         )
 
 
-def test_set_last_seen_to_current_time_called_mqtt_message_handler(
+def test_pubsub_handler_calls_set_last_seen_to_current_time(
     mqtt_message, empty_test_db
 ):
     with patch(
@@ -80,7 +98,7 @@ def test_set_last_seen_to_current_time_called_mqtt_message_handler(
         set_last_seen_to_current_time.assert_called_once_with(123)
 
 
-def test_none_payload_mqtt_message_handler(mqtt_message):
+def test_pubsub_handler_returns_when_passed_none_payload(mqtt_message):
     mqtt_message.payload = None
     with (
         patch(
@@ -90,12 +108,12 @@ def test_none_payload_mqtt_message_handler(mqtt_message):
             "src.pubsub.handler.crud.set_last_seen_to_current_time"
         ) as set_last_seen_to_current_time,
     ):
-        mqtt_message_handler(None, None, mqtt_message)
+        assert mqtt_message_handler(None, None, mqtt_message) is None
         get_plugin_by_device_type_name.assert_not_called()
         set_last_seen_to_current_time.assert_not_called()
 
 
-def test_invalid_payload_mqtt_message_handler(mqtt_message):
+def test_pubsub_handler_returns_early_when_passed_invalid_payload(mqtt_message):
     mqtt_message.payload = b"invalid"
     with (
         patch(
@@ -106,13 +124,13 @@ def test_invalid_payload_mqtt_message_handler(mqtt_message):
             "src.pubsub.handler.crud.set_last_seen_to_current_time"
         ) as set_last_seen_to_current_time,
     ):
+        assert mqtt_message_handler(None, None, mqtt_message) is None
         set_last_seen_to_current_time.assert_not_called()
-        mqtt_message_handler(None, None, mqtt_message)
         get_plugin_by_device_type_name.assert_not_called()
         mock_logger.assert_called_once_with('Received invalid payload: "invalid"')
 
 
-def test_no_device_type_or_remote_name_payload_mqtt_message_handler(
+def test_pubsub_handler_returns_expected_schema_when_passed_payload_of_only_mqtt_id(
     mqtt_message, empty_test_db
 ):
     mqtt_message.payload = b"777"
