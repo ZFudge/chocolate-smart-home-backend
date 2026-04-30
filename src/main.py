@@ -9,7 +9,7 @@ from src.plugins import PluginsManager
 from src.pubsub import connect_to_mqtt_broker, subscribe, topics
 from src.pubsub.handler import mqtt_message_handler
 from src.routers import APP_ROUTERS
-from src.streams import handle_reads as handle_redis_stream_reads
+from src.streams import reads
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
         await asyncio.sleep(3)
         connect_to_mqtt_broker()
     subscribe(topic=topics.RECEIVE_DEVICE_DATA, handler=mqtt_message_handler)
-    asyncio.create_task(handle_redis_stream_reads())
+    asyncio.create_task(reads.handle_reads())
     yield
 
 

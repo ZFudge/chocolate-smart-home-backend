@@ -221,6 +221,7 @@ def redis_closure():
         if redis_client is None:
             redis_client = AsyncMock(spec=Redis)
             redis_client.xadd = AsyncMock()
+            redis_client.xread = AsyncMock()
 
         yield redis_client
 
@@ -228,7 +229,7 @@ def redis_closure():
 
 
 @pytest.fixture
-def redis_client(event_loop):
+def mock_redis_session(event_loop):
     override_get_redis = redis_closure()
     app.dependency_overrides[get_redis] = override_get_redis
 

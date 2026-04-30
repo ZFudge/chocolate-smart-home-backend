@@ -18,6 +18,8 @@ async def send_to_ws_service(device_data: schemas.DeviceFrontend):
 
 async def broadcast_db_state_to_client(plugin_schema, mqtt_id):
     primary_device = crud.get_device_by_id(mqtt_id)
+    if primary_device is None:
+        raise ValueError("mqtt id %s is not associated with a primary device" % mqtt_id)
     frontend_schema = schemas.DeviceFrontend(
         mqtt_id=mqtt_id,
         remote_name=primary_device.remote_name,
