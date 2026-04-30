@@ -11,7 +11,6 @@ from src.pubsub.topics import get_format_topic_by_mqtt_id_using_device_type_name
 from . import send, stream_names
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 
 async def handle_message(message_data: dict):

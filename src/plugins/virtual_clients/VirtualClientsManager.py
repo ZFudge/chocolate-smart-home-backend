@@ -4,7 +4,6 @@ import re
 from random import random
 from time import sleep
 from types import ModuleType
-from typing import Callable, Dict
 
 from src import SingletonMeta
 from src.plugins import device_plugins, utils
@@ -122,7 +121,7 @@ class VirtualClientsManager(metaclass=SingletonMeta):
             )
 
     @classmethod
-    def init_vc_state_from_seed(cls, seed_state: Dict, device_type_name: str) -> None:
+    def init_vc_state_from_seed(cls, seed_state: dict, device_type_name: str) -> None:
         vc_state = seed_state | dict(
             mqtt_id=cls.mqtt_id, device_type_name=device_type_name
         )
@@ -130,13 +129,13 @@ class VirtualClientsManager(metaclass=SingletonMeta):
 
     @classmethod
     def subscribe_vc(
-        cls, format_topic_by_mqtt_id: Callable, data_received_handler: Callable
+        cls, format_topic_by_mqtt_id: callable, data_received_handler: callable
     ) -> None:
         topic = format_topic_by_mqtt_id(cls.mqtt_id)
         subscribe(topic=topic, handler=data_received_handler)
 
     @classmethod
-    def get_data_received_handler(cls, parse_incoming_payload: Callable) -> Callable:
+    def get_data_received_handler(cls, parse_incoming_payload: callable) -> callable:
         def data_received_handler(_client, _userdata, message):
             logger.info(f"Received message: {message.topic} {message.payload.decode()}")
 
@@ -145,7 +144,7 @@ class VirtualClientsManager(metaclass=SingletonMeta):
             device_type_name = re.sub(r"[^A-Za-z|_]", "", topic)
 
             try:
-                vc: Dict | None = cls.virtual_clients.get(int(mqtt_id))
+                vc: dict | None = cls.virtual_clients.get(int(mqtt_id))
             except ValueError as e:
                 logger.error("Invalid mqtt_id: %s: %s", mqtt_id, e)
                 return

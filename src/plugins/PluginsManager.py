@@ -1,6 +1,5 @@
 import importlib
 import logging
-from typing import Dict
 
 from sqlalchemy import Column, ForeignKey, Integer
 
@@ -367,5 +366,5 @@ class PluginsManager:
             return
 
     @classmethod
-    def get_plugin_by_device_type_name(cls, plugin_name: str) -> Dict:
+    def get_plugin_by_device_type_name(cls, plugin_name: str) -> dict:
         return cls.PLUGINS[plugin_name.lower()]

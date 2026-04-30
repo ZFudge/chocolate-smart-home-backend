@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Any
+from typing import Any
 
 
 class DeviceId(BaseModel):
@@ -22,7 +22,7 @@ class DeviceReceived(BaseModel):
 
 class DeviceFrontend(DeviceId, DeviceBase):
     device_type_name: str
-    tags: List[int] | None = None
+    tags: list[int] | None = None
     last_seen: str | None = None
     last_update_sent: str | None = None
     plugin: Any = None
@@ -30,7 +30,7 @@ class DeviceFrontend(DeviceId, DeviceBase):
 
 class DevicePatch(BaseModel):
     mqtt_id: int
-    tags: List[int] | None = None
+    tags: list[int] | None = None
     name: str | None = None
 
 

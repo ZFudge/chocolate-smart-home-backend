@@ -1,4 +1,4 @@
-from typing import Callable, List
+from typing import Callable
 
 
 # Incoming data from controllers
@@ -13,12 +13,12 @@ SEND_DEVICE_DATA_TEMPLATE = "/{device_type}/{{mqtt_id}}/"
 
 def get_format_topic_by_mqtt_id_using_device_type_name(
     device_type_name: str,
-) -> Callable[[int | List[int]], str | List[str]]:
+) -> Callable[[int | list[int]], str | list[str]]:
     DEVICE_TOPIC_TEMPLATE = SEND_DEVICE_DATA_TEMPLATE.format(
         device_type=device_type_name
     )
 
-    def format_topic_by_mqtt_id(mqtt_id: int | List[int]) -> str | List[str]:
+    def format_topic_by_mqtt_id(mqtt_id: int | list[int]) -> str | list[str]:
         if isinstance(mqtt_id, list):
             return [
                 DEVICE_TOPIC_TEMPLATE.format(mqtt_id=mqtt_id) for mqtt_id in mqtt_id

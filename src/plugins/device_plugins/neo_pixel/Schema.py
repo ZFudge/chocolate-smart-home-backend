@@ -1,5 +1,3 @@
-from typing import Tuple
-
 from pydantic import BaseModel, Field
 
 
@@ -10,7 +8,7 @@ class NeoPixel(BaseModel):
     transform: bool = None
     ms: int = Field(None, ge=0, le=255)
     brightness: int = Field(None, ge=0, le=255)
-    palette: Tuple[*([str] * 9)] = None
+    palette: tuple[*([str] * 9)] = None
     scheduled_palette_rotation: bool = None
     # PIR values
     pir_enabled: bool = None

@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime as dt
-from typing import Dict, List, Tuple, Type
+from typing import Type
 
 from sqlalchemy import text
 from sqlalchemy.engine.result import MappingResult
@@ -27,7 +27,7 @@ def commit_db_object(device: Type[Base]) -> Type[Base]:
     return device
 
 
-def get_device_type_names_with_model_exists() -> List[Dict]:
+def get_device_type_names_with_model_exists() -> list[dict]:
     results = db_session.get().execute(
         text(
             """
@@ -46,7 +46,7 @@ def get_device_type_names_with_model_exists() -> List[Dict]:
     return results.mappings().all()
 
 
-def get_devices() -> Tuple[MappingResult]:
+def get_devices() -> tuple[MappingResult]:
     models_exist_by_device_type = get_device_type_names_with_model_exists()
     PLUGIN_CASE_WHENS = ""
     PLUGIN_TABLE_LEFT_JOINS = ""

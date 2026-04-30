@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import os
-from typing import Callable, Dict
 
 from paho.mqtt.client import Client, MQTTMessage
 
@@ -40,10 +39,10 @@ def mqtt_message_handler(
     except IndexError:
         device_type_name = ""
 
-    plugin: Dict = PluginsManager.get_plugin_by_device_type_name(device_type_name)
+    plugin: dict = PluginsManager.get_plugin_by_device_type_name(device_type_name)
 
-    ControllerToServerMessenger: Callable = plugin["ControllerToServerMessenger"]
-    DeviceManager: Callable = plugin["DeviceManager"]
+    ControllerToServerMessenger: callable = plugin["ControllerToServerMessenger"]
+    DeviceManager: callable = plugin["DeviceManager"]
 
     # Parse message data
     try:

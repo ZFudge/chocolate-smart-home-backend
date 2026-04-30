@@ -1,5 +1,4 @@
 from types import ModuleType
-from typing import Tuple
 
 import pytest
 
@@ -31,7 +30,7 @@ def vcs_module():
 
     test_vcs_module.compose_outgoing_msg = composer
 
-    def parser(payload: str) -> Tuple[str, str]:
+    def parser(payload: str) -> tuple[str, str]:
         return payload.split("=")
 
     test_vcs_module.parse_incoming_payload = parser

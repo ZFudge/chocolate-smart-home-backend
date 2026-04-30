@@ -1,5 +1,5 @@
 import logging
-from typing import Iterable, Tuple
+from typing import Iterable
 
 from src.models import Device as models_Device
 from src.schemas import (
@@ -16,7 +16,7 @@ class BaseControllerToServerMessenger:
     def parse_controller_msg(
         self,
         raw_msg: str,
-    ) -> Tuple[DeviceReceivedSchema, Iterable[str]]:
+    ) -> tuple[DeviceReceivedSchema, Iterable[str]]:
         """Parse message from remote controller."""
         msg_seq: Iterable[str] = iter(raw_msg.split(","))
         mqtt_id: int = int(next(msg_seq))

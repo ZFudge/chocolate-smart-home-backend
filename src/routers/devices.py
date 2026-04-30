@@ -1,20 +1,16 @@
-# import asyncio
 import logging
-from typing import Tuple
 
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.exc import NoResultFound
 
 from src import crud, schemas
 
-# from src.websocket.dynamic_broadcast import broadcast_deleted_device, dynamic_broadcast
-
 logger = logging.getLogger(__name__)
 
 device_router = APIRouter(prefix="/devices")
 
 
-@device_router.get("/", response_model=Tuple[schemas.DeviceFrontend, ...])
+@device_router.get("/", response_model=tuple[schemas.DeviceFrontend, ...])
 def get_devices():
     try:
         devices = crud.get_devices()

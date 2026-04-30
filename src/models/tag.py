@@ -1,5 +1,4 @@
 from __future__ import annotations
-from typing import List
 
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship, Mapped
@@ -15,6 +14,6 @@ class Tag(Base, ModelStrFormatter):
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
 
-    devices: Mapped[List[Device]] = relationship(  # noqa: F821
+    devices: Mapped[list[Device]] = relationship(  # noqa: F821
         secondary=device_tags, back_populates="tags"
     )

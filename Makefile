@@ -96,7 +96,7 @@ black:
       'black /backend' || \
       docker run -it --rm \
       -v $(shell pwd):/backend \
-      -v $(shell pwd)/csm.sh:/etc/profile.d/csm.sh \
+      -v $(shell pwd)/scripts/csm.sh:/etc/profile.d/csm.sh \
       csm-backend:latest ash -l -c \
       'black /backend'
 
@@ -106,7 +106,7 @@ ruffcheck:
       'ruff check /backend' || \
       docker run -it --rm \
       -v $(shell pwd):/backend \
-      -v $(shell pwd)/csm.sh:/etc/profile.d/csm.sh \
+      -v $(shell pwd)/scripts/csm.sh:/etc/profile.d/csm.sh \
       csm-backend:latest ash -l -c \
       'ruff check /backend'
 

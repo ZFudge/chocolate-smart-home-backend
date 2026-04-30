@@ -1,5 +1,3 @@
-from typing import List
-
 from sqlalchemy import Column, DateTime, ForeignKey, func, Integer, String
 from sqlalchemy.orm import relationship, Mapped
 
@@ -19,7 +17,7 @@ class Device(Base):
     device_type_id = Column(Integer, ForeignKey("device_types.id"))
     device_type = relationship("DeviceType", back_populates="devices")
 
-    tags: Mapped[List[Tag]] = relationship(
+    tags: Mapped[list[Tag]] = relationship(
         secondary=device_tags, back_populates="devices"
     )
 

@@ -1,5 +1,3 @@
-from typing import Tuple
-
 from src.plugins.virtual_clients.helper_funcs import (
     import_vcs_module,
     validate_virtual_client_module,
@@ -53,21 +51,21 @@ def test_validate_virtual_client_module_parse_incoming_payload_signature_invalid
     setattr(vcs_module, "parse_incoming_payload", parse_incoming_payload)
 
     # invalid parameter annotation
-    def parse_incoming_payload(payload: int) -> Tuple[None, None]:
+    def parse_incoming_payload(payload: int) -> tuple[None, None]:
         pass
 
     setattr(vcs_module, "parse_incoming_payload", parse_incoming_payload)
     assert not validate_virtual_client_module(vcs_module)
 
     # fewer than 2 elements in tuple annotation
-    def parse_incoming_payload(payload: str) -> Tuple[None]:
+    def parse_incoming_payload(payload: str) -> tuple[None]:
         pass
 
     setattr(vcs_module, "parse_incoming_payload", parse_incoming_payload)
     assert not validate_virtual_client_module(vcs_module)
 
     # more than 2 elements in tuple annotation
-    def parse_incoming_payload(payload: str) -> Tuple[None, None, None]:
+    def parse_incoming_payload(payload: str) -> tuple[None, None, None]:
         pass
 
     setattr(vcs_module, "parse_incoming_payload", parse_incoming_payload)
@@ -77,19 +75,19 @@ def test_validate_virtual_client_module_parse_incoming_payload_signature_invalid
 def test_validate_virtual_client_module_parse_incoming_payload_signature_valid(
     vcs_module,
 ):
-    def parse_incoming_payload(payload: str) -> Tuple[None, None]:
+    def parse_incoming_payload(payload: str) -> tuple[None, None]:
         pass
 
     setattr(vcs_module, "parse_incoming_payload", parse_incoming_payload)
     assert validate_virtual_client_module(vcs_module)
 
-    def parse_incoming_payload(payload: str) -> Tuple[str, str]:
+    def parse_incoming_payload(payload: str) -> tuple[str, str]:
         pass
 
     setattr(vcs_module, "parse_incoming_payload", parse_incoming_payload)
     assert validate_virtual_client_module(vcs_module)
 
-    def parse_incoming_payload(payload: str) -> Tuple[bool, bool]:
+    def parse_incoming_payload(payload: str) -> tuple[bool, bool]:
         pass
 
     setattr(vcs_module, "parse_incoming_payload", parse_incoming_payload)

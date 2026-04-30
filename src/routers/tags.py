@@ -1,5 +1,4 @@
 import logging
-from typing import Tuple
 
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.exc import IntegrityError, NoResultFound
@@ -11,7 +10,7 @@ logger = logging.getLogger(__name__)
 tags_router = APIRouter(prefix="/tags")
 
 
-@tags_router.get("/", response_model=Tuple[schemas.Tag, ...])
+@tags_router.get("/", response_model=tuple[schemas.Tag, ...])
 def get_tags():
     try:
         return tuple(

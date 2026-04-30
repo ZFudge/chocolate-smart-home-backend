@@ -1,12 +1,12 @@
 import logging
-from typing import Iterator, List, Tuple
+from typing import Iterator
 
 logger = logging.getLogger(__name__)
 
 
 def received_controller_palette_value_to_hex_str_tuple(
     msg_seq: Iterator[str],
-) -> Tuple[int, ...]:
+) -> tuple[int, ...]:
     """Convert iterator of 27 byte strings to named tuple of 9 hex strings."""
     try:
         complete_hex_strs = []
@@ -39,7 +39,7 @@ def hex_to_byte(x: str) -> int:
     return int(x, 16)
 
 
-def hex_list_to_byte_tuple(palette: List[str]) -> Tuple[int, ...]:
+def hex_list_to_byte_tuple(palette: list[str]) -> tuple[int, ...]:
     """Convert a list of 9 hex strings to a tuple of 27 bytes."""
     palette_bytes = []
     for hex_str in palette:
@@ -48,13 +48,13 @@ def hex_list_to_byte_tuple(palette: List[str]) -> Tuple[int, ...]:
     return tuple(palette_bytes)
 
 
-def convert_9_hex_to_27_byte_str(palette: List[str]) -> str:
+def convert_9_hex_to_27_byte_str(palette: list[str]) -> str:
     """Convert a list of 9 hex strings to a comma separated string of 27 bytes."""
     palette_bytes = hex_list_to_byte_tuple(palette)
     return ",".join(map(str, palette_bytes))
 
 
-def convert_27_byte_int_to_9_hex_str(palette) -> Tuple[str, ...]:
+def convert_27_byte_int_to_9_hex_str(palette) -> tuple[str, ...]:
     """Convert a tuple of 27 bytes to a list of 9 hex strings."""
     hex_strings = []
     for i in range(9):

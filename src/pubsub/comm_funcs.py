@@ -1,6 +1,5 @@
 import logging
 import os
-from typing import Callable, Tuple
 
 from paho.mqtt import MQTTException
 from paho.mqtt.client import MQTTErrorCode
@@ -28,20 +27,20 @@ def publish(*, topic: str, message: str = "0", **kwargs) -> None:
     logger.info("Success")
 
 
-def publish_all(*, topics: Tuple[str, ...], message: str = "", **kwargs) -> None:
+def publish_all(*, topics: tuple[str, ...], message: str = "", **kwargs) -> None:
     for topic in topics:
         publish(topic=topic, message=message, **kwargs)
 
 
 @validate_client_connection
-def subscribe(*, topic: str, handler: Callable, **kwargs) -> None:
+def subscribe(*, topic: str, handler: callable, **kwargs) -> None:
     mqtt_client = kwargs.get("mqtt_client")
     logger.info("Subscribing to topic: %s" % topic)
     mqtt_client.subscribe(topic=topic)
     mqtt_client.message_callback_add(sub=topic, callback=handler)
 
 
-def subscribe_all(*, topics: Tuple[str, ...], handler: Callable, **kwargs) -> None:
+def subscribe_all(*, topics: tuple[str, ...], handler: callable, **kwargs) -> None:
     for topic_for_sub in topics:
         subscribe(topic=topic_for_sub, handler=handler, **kwargs)
 
