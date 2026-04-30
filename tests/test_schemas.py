@@ -1,7 +1,7 @@
 from src import models, schemas
 
 
-def test_device_mod_obj_to_frontend_schema_with_tags(populated_test_db):
+def test_schemas_device_mod_obj_to_frontend_schema_with_tags(populated_test_db):
     device = (
         populated_test_db.query(models.Device).where(models.Device.mqtt_id == 123).one()
     )
@@ -17,7 +17,7 @@ def test_device_mod_obj_to_frontend_schema_with_tags(populated_test_db):
     )
 
 
-def test_device_mod_obj_to_frontend_schema_empty_tag(populated_test_db):
+def test_schemas_device_mod_obj_to_frontend_schema_empty_tag(populated_test_db):
     device = (
         populated_test_db.query(models.Device).where(models.Device.mqtt_id == 234).one()
     )
@@ -33,5 +33,5 @@ def test_device_mod_obj_to_frontend_schema_empty_tag(populated_test_db):
     )
 
 
-def test_device_mod_obj_to_frontend_schema_empty_schema():
+def test_schemas_device_mod_obj_to_frontend_schema_empty_schema():
     assert schemas.device_mod_obj_to_frontend_schema(None) is None

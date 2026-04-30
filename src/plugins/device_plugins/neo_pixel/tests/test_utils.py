@@ -1,13 +1,13 @@
 from .. import utils
 
 
-def test_hex_to_byte():
+def test_neo_pixel_hex_to_byte():
     assert utils.hex_to_byte("ff") == 255
     assert utils.hex_to_byte("00") == 0
     assert utils.hex_to_byte("12") == 18
 
 
-def test_convert_9_hex_to_27_byte_str():
+def test_neo_pixel_convert_9_hex_to_27_byte_str():
     assert utils.convert_9_hex_to_27_byte_str(
         [
             "#001122",
@@ -33,7 +33,7 @@ def test_convert_9_hex_to_27_byte_str():
     )
 
 
-def test_convert_27_byte_int_to_9_hex_str():
+def test_neo_pixel_convert_27_byte_int_to_9_hex_str():
     assert utils.convert_27_byte_int_to_9_hex_str(
         (
             "0",
@@ -77,7 +77,7 @@ def test_convert_27_byte_int_to_9_hex_str():
     )
 
 
-def test_received_controller_palette_value_to_hex_str_tuple():
+def test_neo_pixel_received_controller_palette_value_to_hex_str_tuple():
     raw_msg = (
         "0,17,34,"
         "34,51,68,"
@@ -93,7 +93,7 @@ def test_received_controller_palette_value_to_hex_str_tuple():
     utils.received_controller_palette_value_to_hex_str_tuple(msg)
 
 
-def test_StopIteration_empty_response_received_controller_palette_value_to_hex_str_tuple():
+def test_neo_pixel_StopIteration_empty_response_received_controller_palette_value_to_hex_str_tuple():
     raw_msg = (
         "0,17,34,"
         "34,51,68,"
@@ -119,7 +119,7 @@ def test_StopIteration_empty_response_received_controller_palette_value_to_hex_s
     )
 
 
-def test_ValueError_empty_response_received_controller_palette_value_to_hex_str_tuple():
+def test_neo_pixel_ValueError_empty_response_received_controller_palette_value_to_hex_str_tuple():
     raw_msg = (
         "0,17,34,"
         "34,51,68,"

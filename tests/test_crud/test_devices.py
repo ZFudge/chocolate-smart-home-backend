@@ -49,7 +49,7 @@ def test_crud_delete_device_fails_when_device_does_not_exist(empty_test_db):
         crud.delete_device(mqtt_id=123)
 
 
-def test_crud_create_device_creates_a_new_device(empty_test_db):
+def test_crud_create_device_creates_device(empty_test_db):
     crud.create_device(
         schemas.DeviceReceived(
             device_type_name="test_device_type_name",
@@ -83,7 +83,7 @@ def test_crud_create_device_does_not_set_last_seen_or_last_update_sent_values(
     assert device.last_update_sent is None
 
 
-def test_crud_create_device_initializes_reboots_with_zero_value(empty_test_db):
+def test_crud_create_device_sets_reboots_with_zero_value(empty_test_db):
     crud.create_device(
         schemas.DeviceReceived(
             device_type_name="test_device_type_name",

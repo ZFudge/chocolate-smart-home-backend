@@ -42,7 +42,7 @@ def test_route_get_devices_returns_devices(populated_test_db):
     ]
 
 
-def test_route_getting_devices_returns_500_when_raises_exception(populated_test_db):
+def test_route_get_devices_returns_500_when_raises_exception(populated_test_db):
     with patch(
         "src.routers.devices.crud.get_devices", side_effect=Exception("Test exception")
     ):
@@ -53,7 +53,7 @@ def test_route_getting_devices_returns_500_when_raises_exception(populated_test_
         }
 
 
-def test_route_getting_device_by_id_returns_500_when_raises_exception(
+def test_route_get_device_by_id_returns_500_when_raises_exception(
     populated_test_db,
 ):
     with patch(
@@ -67,7 +67,7 @@ def test_route_getting_device_by_id_returns_500_when_raises_exception(
         }
 
 
-def test_route_getting_device_by_id_returns_device(populated_test_db):
+def test_route_get_device_by_id_returns_device(populated_test_db):
     resp = client.get("/devices/123")
     assert resp.status_code == 200
     assert resp.json() == {

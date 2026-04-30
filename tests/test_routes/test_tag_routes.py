@@ -70,7 +70,7 @@ def test_route_get_tag_by_id_returns_500_when_raises_exception(populated_test_db
         }
 
 
-def test_route_create_tag_creates_tag(empty_test_db):
+def test_route_post_create_tag_creates_tag(empty_test_db):
     resp = client.post("/tags/", json={"name": "New Tag"})
     assert resp.status_code == 200
     assert resp.json() == {
@@ -79,7 +79,7 @@ def test_route_create_tag_creates_tag(empty_test_db):
     }
 
 
-def test_route_create_tag_returns_500_on_duplicate_tag(empty_test_db):
+def test_route_post_create_tag_returns_500_on_duplicate_tag(empty_test_db):
     resp = client.post("/tags/", json={"name": "New Tag"})
     resp = client.post("/tags/", json={"name": "New Tag"})
     assert resp.status_code == 500
@@ -88,7 +88,7 @@ def test_route_create_tag_returns_500_on_duplicate_tag(empty_test_db):
     }
 
 
-def test_route_create_tag_returns_500_when_raises_exception(populated_test_db):
+def test_route_post_create_tag_returns_500_when_raises_exception(populated_test_db):
     with patch(
         "src.routers.tags.crud.create_tag", side_effect=Exception("Test exception")
     ):
@@ -99,7 +99,7 @@ def test_route_create_tag_returns_500_when_raises_exception(populated_test_db):
         }
 
 
-def test_route_create_tag_returns_500_when_none_returned(populated_test_db):
+def test_route_post_create_tag_returns_500_when_none_returned(populated_test_db):
     with patch("src.routers.tags.crud.create_tag", return_value=None):
         resp = client.post("/tags/", json={"name": "New Tag"})
         assert resp.status_code == 500

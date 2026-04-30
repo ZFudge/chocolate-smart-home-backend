@@ -6,7 +6,9 @@ from src import streams
 
 
 @pytest.mark.asyncio
-async def test__get_handle_reads_calls_xread(mock_redis_session, populated_test_db):
+async def test_streams_reads__get_handle_reads_calls_xread(
+    mock_redis_session, populated_test_db
+):
     message_data = {
         "mqtt_id": 123,
         "device_type_name": "device_type",
@@ -31,7 +33,9 @@ async def test__get_handle_reads_calls_xread(mock_redis_session, populated_test_
 
 
 @pytest.mark.asyncio
-async def test__get_handle_reads_calls_handle_input_message(mock_redis_session):
+async def test_streams_reads__get_handle_reads_calls_handle_input_message(
+    mock_redis_session,
+):
     message_data = {
         "mqtt_id": 123,
         "device_type_name": "device_type",

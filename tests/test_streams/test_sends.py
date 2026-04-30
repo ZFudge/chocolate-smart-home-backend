@@ -6,7 +6,7 @@ from src import schemas, streams
 
 
 @pytest.mark.asyncio
-async def test_send_to_ws_service(mock_redis_session):
+async def test_streams_sends_send_to_ws_service(mock_redis_session):
     await streams.send.send_to_ws_service(
         schemas.DeviceFrontend(
             device_type_name="example_device_type_name",
@@ -41,7 +41,7 @@ async def test_send_to_ws_service(mock_redis_session):
 
 
 @pytest.mark.asyncio
-async def test_broadcast_db_state_to_client_calls_send_to_ws_service_with_device_frontend_schema(
+async def test_streams_sends_broadcast_db_state_to_client_calls_send_to_ws_service_with_device_frontend_schema(
     mock_redis_session, populated_test_db
 ):
     plugin_schema = None
@@ -55,7 +55,7 @@ async def test_broadcast_db_state_to_client_calls_send_to_ws_service_with_device
 
 
 @pytest.mark.asyncio
-async def test_broadcast_db_state_to_client_calls_device_frontend_schema_with_expected_parameters(
+async def test_streams_sends_broadcast_db_state_to_client_calls_device_frontend_schema_with_expected_parameters(
     mock_redis_session, populated_test_db
 ):
     plugin_schema = None
@@ -79,7 +79,7 @@ async def test_broadcast_db_state_to_client_calls_device_frontend_schema_with_ex
 
 
 @pytest.mark.asyncio
-async def test_broadcast_db_state_to_client_raises_ValueError_when_given_invalid_mqtt_id(
+async def test_streams_sends_broadcast_db_state_to_client_raises_ValueError_when_given_invalid_mqtt_id(
     mock_redis_session, empty_test_db
 ):
     with pytest.raises(ValueError):
