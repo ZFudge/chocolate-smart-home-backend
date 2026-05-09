@@ -1,4 +1,5 @@
 from datetime import datetime as dt
+from unittest.mock import patch
 
 import pytest
 from sqlalchemy.exc import NoResultFound
@@ -21,6 +22,108 @@ def test_crud_get_device_by_id_returns_none_when_device_does_not_exist(empty_tes
 
 def test_crud_get_devices_returns_empty(empty_test_db):
     assert crud.get_devices() == ()
+
+
+def test_crud_get_devices_query_basic(empty_test_db):
+    expected_sql = """
+        SELECT
+            d.mqtt_id,
+            d.name,
+            d.remote_name,
+            d.reboots,
+            d.last_seen,
+            d.last_update_sent,
+            dt.name AS device_type_name,
+            dtags.tag_ids
+        FROM
+            devices d
+        LEFT JOIN
+            device_types dt ON d.device_type_id = dt.id
+        LEFT JOIN
+            (
+                SELECT
+                    mqtt_id,
+                    JSON_AGG(tag_id)::TEXT AS tag_ids
+                FROM
+                    device_tags
+                GROUP BY
+                    mqtt_id
+            ) dtags ON d.mqtt_id = dtags.mqtt_id
+        GROUP BY
+            d.mqtt_id,
+            dt.name,
+            dtags.tag_ids
+        ORDER BY
+            dt.name,
+            d.mqtt_id;"""
+    with (
+        patch("src.crud.devices.db_session") as db_session,
+        patch("src.crud.devices.logger.info") as mock_logger,
+    ):
+        crud.get_devices()
+        assert db_session.get().execute.call_count == 2
+        mock_logger.assert_called_once_with(expected_sql)
+
+
+def test_crud_get_devices_query_with_cases(populated_test_db):
+    expected_sql = """
+        SELECT
+            d.mqtt_id,
+            d.name,
+            d.remote_name,
+            d.reboots,
+            d.last_seen,
+            d.last_update_sent,
+            dt.name AS device_type_name,
+            dtags.tag_ids,
+            CASE
+                WHEN dt.name = 'example_plugin' THEN row_to_json(ep)
+                ELSE null
+            END AS plugin
+        FROM
+            devices d
+        LEFT JOIN
+            device_types dt ON d.device_type_id = dt.id
+        LEFT JOIN
+            (
+                SELECT
+                    mqtt_id,
+                    JSON_AGG(tag_id)::TEXT AS tag_ids
+                FROM
+                    device_tags
+                GROUP BY
+                    mqtt_id
+            ) dtags ON d.mqtt_id = dtags.mqtt_id
+        LEFT JOIN
+            example_plugin ep ON d.mqtt_id = ep.mqtt_id AND dt.name = 'example_plugin'
+        GROUP BY
+            d.mqtt_id,
+            dt.name,
+            dtags.tag_ids,
+            ep.*
+        ORDER BY
+            dt.name,
+            d.mqtt_id;"""
+    with (
+        patch("src.crud.devices.db_session") as db_session,
+        patch(
+            "src.crud.devices.get_device_type_names_with_model_exists",
+            return_value=[
+                {
+                    "device_type_name": "example_plugin",
+                    "has_plugin_model": True,
+                },
+                {
+                    "device_type_name": "example_no_model_plugin",
+                    "has_plugin_model": False,
+                },
+            ],
+        ),
+        patch("src.crud.devices.logger.info") as mock_logger,
+    ):
+        crud.get_devices()
+        mock_logger.assert_called_once_with(expected_sql)
+        db_session.get().execute.assert_called_once()
 
 
 def test_crud_get_devices_returns_devices(populated_test_db):
@@ -110,6 +213,17 @@ def test_crud_create_device_sets_created_date(empty_test_db):
         empty_test_db.query(models.Device).where(models.Device.mqtt_id == 123).first()
     )
     assert device.created_date > d
+
+
+def test_crud_update_device_raises_ValueError(empty_test_db):
+    with pytest.raises(ValueError):
+        crud.update_device(
+            schemas.DeviceReceived(
+                device_type_name="TEST_DEVICE_TYPE_NAME_1",
+                mqtt_id=123,
+                remote_name="new_test_remote_name",
+            )
+        )
 
 
 def test_crud_update_device_sets_remote_name(populated_test_db):

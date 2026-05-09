@@ -1,7 +1,8 @@
 [run]
 omit =
-    src/plugins/device_plugins/*
-    src/plugins/conftest.py
     src/main.py
+    src/plugins/conftest.py
+    src/plugins/device_plugins/*
     src/plugins/virtual_clients/vcs_app.py
+    src/pubsub/connect.py
     src/streams/stream_names.py

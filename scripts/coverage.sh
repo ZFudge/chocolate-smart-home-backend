@@ -8,5 +8,6 @@ function checkPluginCoverage() {
     pytest \
       --cov=$PLUGIN_DIRECTORY \
       --cov-report=term-missing \
+      --cov-config=src/plugins/.plugin-coveragerc \
       $PLUGIN_DIRECTORY/tests/
 }
