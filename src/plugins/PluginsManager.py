@@ -1,5 +1,6 @@
 import importlib
 import logging
+from types import ModuleType
 
 from sqlalchemy import Column, ForeignKey, Integer
 
@@ -64,6 +65,24 @@ def pluginnamefrompath(f):
     return wrapper
 
 
+def import_plugin_module(plugin_path, name) -> ModuleType | None:
+    logger.info(f"Checking for {name} module in {plugin_path}...")
+    module_name = f"{plugin_path}.{name}"
+    try:
+        module: ModuleType = importlib.import_module(module_name)
+        return module
+    except ModuleNotFoundError:
+        logger.info(f"No {module_name} module found.")
+    except (ImportError, AttributeError):
+        logger.warning(f"Unable to import {module_name}.")
+    except Exception as e:
+        logger.error(e)
+
+
+def has_valid_callable(module: ModuleType, name: str) -> bool:
+    return hasattr(module, name) and callable(getattr(module, name))
+
+
 class PluginsManager:
     PLUGINS = PluginsMapper()
     ROUTERS = []
@@ -115,37 +134,25 @@ class PluginsManager:
     @classmethod
     @pluginnamefrompath
     def check_device_manager(cls, plugin_path: str, *, plugin_name=None):
-        """Check for the presence of a DeviceManager module in the plugin's subdirectory.
-        If found, import the module and create a dynamic plugin class that inherits from BaseDeviceManager and the plugin's DeviceManager class.
-        If not found, use the BaseDeviceManager class.
         """
-        logger.info(f"Checking for DeviceManager module in {plugin_path}...")
-        plugin = cls.PLUGINS[plugin_name]
+        Dynamically creates a new class that inherits from the plugin's
+        DeviceManager class and the BaseDeviceManager.
+        If a plugin class is not found, use the BaseDeviceManager class.
+        """
+        device_manager_module: ModuleType | None = import_plugin_module(
+            plugin_path, "DeviceManager"
+        )
         DeviceManager = BaseDeviceManager
-        try:
-            device_manager_module_name = f"{plugin_path}.DeviceManager"
-            device_manager_module = importlib.import_module(device_manager_module_name)
-            PluginDeviceManager = device_manager_module.DeviceManager
+        if has_valid_callable(device_manager_module, "DeviceManager"):
             DeviceManager = type(
                 "DeviceManager",
                 (
-                    PluginDeviceManager,
+                    device_manager_module.DeviceManager,
                     BaseDeviceManager,
                 ),
                 {},
             )
-        except ModuleNotFoundError:
-            logger.info(
-                f"No DeviceManager module found for {plugin_path}. Using BaseDeviceManager."
-            )
-        except (ImportError, AttributeError) as e:
-            logger.warning(
-                f"Unable to import DeviceManager from {plugin_path}. Using BaseDeviceManager."
-            )
-            logger.warning(e)
-        except Exception as e:
-            logger.error(e)
-
+        plugin = cls.PLUGINS[plugin_name]
         plugin["DeviceManager"] = DeviceManager
 
     @classmethod
@@ -153,25 +160,25 @@ class PluginsManager:
     def check_controller_to_server_messenger(
         cls, plugin_path: str, *, plugin_name=None
     ):
-        """Check for the presence of a ControllerToServerMessenger module in the plugin's subdirectory.
-        If found, import the module and create a dynamic plugin class that inherits from DefaultControllerToServerMessenger and the plugin's ControllerToServerMessenger class.
-        If not found, use the DefaultControllerToServerMessenger class.
         """
-        logger.info(
-            f"Checking for ControllerToServerMessenger module in {plugin_path}..."
+        Dynamically creates a new class that inherits from the plugin's
+        ControllerToServerMessenger class and DefaultControllerToServerMessenger.
+        If a plugin class not found, use the DefaultControllerToServerMessenger class.
+        """
+        ctos_module: ModuleType | None = import_plugin_module(
+            plugin_path, "ControllerToServerMessenger"
         )
-        plugin = cls.PLUGINS[plugin_name]
-        ControllerToServerMessenger = DefaultControllerToServerMessenger
-        try:
-            ctos_messenger_module_name = f"{plugin_path}.ControllerToServerMessenger"
-            ctos_messenger_module = importlib.import_module(ctos_messenger_module_name)
-            PluginControllerToServerMessenger = (
-                ctos_messenger_module.ControllerToServerMessenger
-            )
+        if not isinstance(ctos_module, ModuleType):
+            logger.info("Using DefaultControllerToServerMessenger.")
+            ControllerToServerMessenger = DefaultControllerToServerMessenger
+        else:
+            PluginControllerToServerMessenger = ctos_module.ControllerToServerMessenger
             _BaseControllerToServerMessenger = BaseControllerToServerMessenger
             # if plugin device does not have its own device-specific values to parse,
             # defer to DefaultControllerToServerMessenger to be sure parse_controller_msg returns a device schema
-            if not hasattr(PluginControllerToServerMessenger, "parse_controller_msg"):
+            if not has_valid_callable(
+                PluginControllerToServerMessenger, "parse_controller_msg"
+            ):
                 _BaseControllerToServerMessenger = DefaultControllerToServerMessenger
             # Creating dynamic plugin classes in place gives access to the super proxy
             ControllerToServerMessenger = type(
@@ -182,18 +189,8 @@ class PluginsManager:
                 ),
                 {},
             )
-        except ModuleNotFoundError:
-            logger.info(
-                f"No ControllerToServerMessenger module found for {plugin_path}. Using DefaultControllerToServerMessenger."
-            )
-        except (ImportError, AttributeError):
-            logger.warning(
-                f"Unable to import ControllerToServerMessenger from {plugin_path}. Using DefaultControllerToServerMessenger."
-            )
-        except Exception as e:
-            logger.error(e)
-            return
 
+        plugin = cls.PLUGINS[plugin_name]
         plugin["ControllerToServerMessenger"] = ControllerToServerMessenger
 
     @classmethod
@@ -201,59 +198,45 @@ class PluginsManager:
     def check_server_to_controller_messenger(
         cls, plugin_path: str, *, plugin_name=None
     ):
-        """Check for the presence of a ServerToControllerMessenger module in the plugin's subdirectory.
-        If found, import the module and create a dynamic plugin class that inherits from BaseServerToControllerMessenger and the plugin's ServerToControllerMessenger class.
-        If not found, use the BaseServerToControllerMessenger class.
         """
-        logger.info(
-            f"Checking for ServerToControllerMessenger module in {plugin_path}..."
+        Dynamically creates a new class that inherits from the plugin's
+        ServerToControllerMessenger class and BaseServerToControllerMessenger.
+        If a plugin class not found, use the BaseServerToControllerMessenger
+        class.
+        """
+        stoc_module: ModuleType | None = import_plugin_module(
+            plugin_path, "ServerToControllerMessenger"
         )
-        plugin_name = plugin_path.split(".").pop()
-        plugin = cls.PLUGINS[plugin_name]
         ServerToControllerMessenger = BaseServerToControllerMessenger
-        try:
-            stoc_messenger_module_name = f"{plugin_path}.ServerToControllerMessenger"
-            stoc_messenger_module = importlib.import_module(stoc_messenger_module_name)
-            PluginServerToControllerMessenger = (
-                stoc_messenger_module.ServerToControllerMessenger
-            )
+        if isinstance(stoc_module, ModuleType) and has_valid_callable(
+            stoc_module, "ServerToControllerMessenger"
+        ):
             ServerToControllerMessenger = type(
                 "ServerToControllerMessenger",
                 (
-                    PluginServerToControllerMessenger,
+                    stoc_module.ServerToControllerMessenger,
                     BaseServerToControllerMessenger,
                 ),
                 {},
             )
-        except ModuleNotFoundError:
-            logger.info(
-                f"No ServerToControllerMessenger module found for {plugin_path}. Using BaseServerToControllerMessenger."
-            )
-        except (ImportError, AttributeError):
-            logger.warning(
-                f"Unable to import ServerToControllerMessenger from {plugin_path}. Using BaseServerToControllerMessenger."
-            )
-        except Exception as e:
-            logger.error(e)
-            return
-
+        else:
+            logger.info(f"{plugin_name} using BaseServerToControllerMessenger")
+        plugin = cls.PLUGINS[plugin_name]
         plugin["ServerToControllerMessenger"] = ServerToControllerMessenger
 
     @classmethod
     @pluginnamefrompath
     def check_model(cls, plugin_path: str, *, plugin_name=None):
-        logger.info(f"Checking for {plugin_path}.Model module.")
-        try:
-            model_module_name = f"{plugin_path}.Model"
-            model_module = importlib.import_module(model_module_name)
-        except ModuleNotFoundError:
-            logger.info(f"No {plugin_name}.Model module found.")
-            return
-        except (ImportError, AttributeError) as e:
-            logger.warning("Unable to import %s.Model - %s" % (plugin_name, e))
-            return
-        except Exception as e:
-            logger.error("Unable to import %s.Model - %s" % (plugin_name, e))
+        """
+        Dynamically creates a new model class that inherits from the plugin's
+        PluginModel class and the database Base class.
+        """
+        model_module: ModuleType | None = import_plugin_module(plugin_path, "Model")
+        if not has_valid_callable(model_module, "PluginModel"):
+            if isinstance(model_module, ModuleType):
+                logger.info(
+                    f'{plugin_name}.Model module exists but does not have a valid "PluginModel" class.'
+                )
             return
 
         model_class_name = utils.snakecase_to_pascalcase(plugin_name)
@@ -279,52 +262,30 @@ class PluginsManager:
         Base.metadata.create_all(bind=engine)
 
     @classmethod
-    @pluginnamefrompath
-    def check_router(cls, plugin_path: str, *, plugin_name=None):
-        """Check for the presence of a router module in the plugin's subdirectory.
-        If found, import the module and add the router to the PluginsManager.ROUTERS list.
-        If not found, use the default router class.
+    def check_router(cls, plugin_path: str):
         """
-        logger.info(f"Checking for router module in {plugin_path}...")
-        try:
-            router_module_name = f"{plugin_path}.router"
-            router_module = importlib.import_module(router_module_name)
-            for x in ("db_session", "redis_session", "mqtt_client_session"):
-                if x in dir(router_module):
-                    setattr(router_module, x, getattr(dependencies, x).get())
-            cls.ROUTERS.append(router_module.plugin_router)
-        except ModuleNotFoundError:
-            logger.info(f"No router module found for {plugin_name}.")
-        except (ImportError, AttributeError):
-            logger.warning(f"Unable to import router from {plugin_path}.")
-        except Exception as e:
-            logger.error(e)
+        Expose dependencies to router endpoints and add router to the PluginsManager.ROUTERS list.
+        """
+        router_module: ModuleType | None = import_plugin_module(plugin_path, "router")
+        if not isinstance(router_module, ModuleType):
             return
+        dependency_names = ("db_session", "redis_session", "mqtt_client_session")
+        for dn in dependency_names:
+            if dn in dir(router_module):
+                setattr(router_module, dn, getattr(dependencies, dn).get())
+        cls.ROUTERS.append(router_module.plugin_router)
 
     @classmethod
     @pluginnamefrompath
     def check_extra_models(cls, plugin_path: str, *, plugin_name=None):
-        """Check for the presence of extra models in the plugin's subdirectory.
-        If found, import, and dynamically patch new models by combining the Base class with
-        each of these extra models, using inheritance."""
-        logger.info(f"Checking for {plugin_path}.models module.")
-        try:
-            models_module_name = f"{plugin_path}.models"
-            models_module = importlib.import_module(models_module_name)
-        except ModuleNotFoundError:
-            logger.info("No %s.models module found." % (plugin_name))
-            return
-        except (ImportError, AttributeError) as e:
-            logger.warning("Unable to import %s.Model - %s" % (plugin_name, e))
-            return
-        except Exception as e:
-            logger.error("Unable to import %s.Model - %s" % (plugin_name, e))
-            return
-
-        if not hasattr(models_module, "models") or not models_module.models:
-            logger.info(
-                f"No models tuple found for {plugin_name}.models module. Skipping."
-            )
+        """
+        Dynamically create new model classes by inheriting from the
+        plugin's extra model classes and the database Base class.
+        """
+        models_module: ModuleType | None = import_plugin_module(plugin_path, "models")
+        if not isinstance(models_module, ModuleType) or not hasattr(
+            models_module, "models"
+        ):
             return
 
         for ExtraModel in models_module.models:
@@ -334,7 +295,7 @@ class PluginsManager:
                 or ModelClassName in Base.metadata.tables
             ):
                 logger.info(
-                    f"Model {ModelClassName} for {plugin_name} already exists. Skipping."
+                    f"{plugin_name} model {ModelClassName} already exists.ms Skipping."
                 )
                 continue
             NewExtraModel = type(ModelClassName, (ExtraModel, Base), {})
@@ -344,25 +305,15 @@ class PluginsManager:
     @classmethod
     @pluginnamefrompath
     def check_db_seeding(cls, plugin_path: str, *, plugin_name=None):
-        """Check for the presence of a db_seeding module in the plugin's subdirectory.
-        If found, import the module and call the seed_db function.
-        If not found, log a message.
-        """
-        logger.info(f"Checking for db_seeding module in {plugin_path}...")
-        try:
-            db_seeding_module_name = f"{plugin_path}.db_seeding"
-            logger.info(
-                f"Attempting import of db_seeding module for {db_seeding_module_name}"
-            )
-            db_seeding_module = importlib.import_module(db_seeding_module_name)
-            db_seeding_module.seed_db(dependencies.db_session.get())
-        except ModuleNotFoundError:
-            logger.info(f"No db_seeding module found for {plugin_name}.")
-        except ImportError:
-            logger.warning("Unable to import db_seeding from %s." % (plugin_path))
-        except Exception as e:
-            logger.error(e)
+        """Seeds values into the database."""
+        db_seeding_module = import_plugin_module(plugin_path, "db_seeding")
+        if not has_valid_callable(db_seeding_module, "seed_db"):
+            if isinstance(db_seeding_module, ModuleType):
+                logger.info(
+                    f'{plugin_name}.db_seeding module exists but does not have a valid "seed_db" function.'
+                )
             return
+        db_seeding_module.seed_db(dependencies.db_session.get())
 
     @classmethod
     def get_plugin_by_device_type_name(cls, plugin_name: str) -> dict:
