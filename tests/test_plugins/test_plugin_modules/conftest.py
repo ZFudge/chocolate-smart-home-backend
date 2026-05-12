@@ -1,6 +1,6 @@
 import pytest
 
-from src.plugins.PluginsManager import (
+from src.plugins.manager.PluginsManager import (
     PluginsManager,
     PluginsMapper,
 )

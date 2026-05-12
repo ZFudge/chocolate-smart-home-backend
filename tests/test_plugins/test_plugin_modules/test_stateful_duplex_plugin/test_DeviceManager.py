@@ -18,7 +18,7 @@ def test_stateful_duplex_PluginDeviceManager_is_subclass_of_BaseDeviceManager(
 
 def test_stateful_duplex_ModuleNotFoundError_exception_falls_back_on_BaseDeviceManager():
     with patch(
-        "src.plugins.PluginsManager.importlib.import_module",
+        "src.plugins.manager.utils.importlib.import_module",
         return_value=ModuleNotFoundError(),
     ) as import_module:
         PluginsManager.map_new_plugin("test_plugin")
@@ -30,7 +30,7 @@ def test_stateful_duplex_ModuleNotFoundError_exception_falls_back_on_BaseDeviceM
 
 def test_stateful_duplex_Exception_falls_back_on_BaseDeviceManager():
     with patch(
-        "src.plugins.PluginsManager.importlib.import_module", return_value=Exception()
+        "src.plugins.manager.utils.importlib.import_module", return_value=Exception()
     ) as import_module:
         PluginsManager.map_new_plugin("test_plugin")
         PluginsManager.check_device_manager("test_plugin")

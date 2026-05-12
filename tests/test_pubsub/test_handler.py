@@ -2,7 +2,7 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-from src.plugins.PluginsManager import DEFAULT_PLUGIN
+from src.plugins.manager.utils import DEFAULT_PLUGIN
 from src.pubsub.handler import mqtt_message_handler
 from src import schemas
 

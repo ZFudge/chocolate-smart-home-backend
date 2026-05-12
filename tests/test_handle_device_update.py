@@ -117,7 +117,7 @@ async def test_handle_device_update_is_server_side_value_single(
 ):
     with (
         patch(
-            "src.plugins.BaseDeviceManager.BaseDeviceManager.is_server_side_value",
+            "src.plugins.bases.BaseDeviceManager.BaseDeviceManager.is_server_side_value",
             return_value=True,
         ),
         patch(
@@ -142,7 +142,7 @@ async def test_handle_device_update_is_server_side_value_multiple(
 ):
     with (
         patch(
-            "src.plugins.BaseDeviceManager.BaseDeviceManager.is_server_side_value",
+            "src.plugins.bases.BaseDeviceManager.BaseDeviceManager.is_server_side_value",
             return_value=True,
         ),
         patch(

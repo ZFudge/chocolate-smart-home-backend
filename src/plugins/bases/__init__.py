@@ -1,16 +1,13 @@
-from .bases import (
+from .BaseControllerToServerMessenger import (
     BaseControllerToServerMessenger,
-    BaseDeviceManager,
-    BaseServerToControllerMessenger,
     DefaultControllerToServerMessenger,
 )
-from .manager.PluginsManager import PluginsManager
-
+from .BaseDeviceManager import BaseDeviceManager
+from .BaseServerToControllerMessenger import BaseServerToControllerMessenger
 
 __all__ = [
     "BaseControllerToServerMessenger",
     "BaseDeviceManager",
     "BaseServerToControllerMessenger",
     "DefaultControllerToServerMessenger",
-    "PluginsManager",
 ]

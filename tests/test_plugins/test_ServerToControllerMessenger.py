@@ -1,6 +1,6 @@
 import pytest
 
-from src.plugins.BaseServerToControllerMessenger import BaseServerToControllerMessenger
+from src.plugins.bases import BaseServerToControllerMessenger
 
 
 def test_BaseServerToControllerMessenger_compose_controller_msg_raises_ValueError():

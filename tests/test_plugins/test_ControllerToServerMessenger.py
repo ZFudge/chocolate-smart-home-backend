@@ -6,7 +6,7 @@ from src.models import (
     Device as DeviceModel,
     DeviceType as DeviceTypeModel,
 )
-from src.plugins.BaseControllerToServerMessenger import (
+from src.plugins.bases import (
     BaseControllerToServerMessenger,
     DefaultControllerToServerMessenger,
 )

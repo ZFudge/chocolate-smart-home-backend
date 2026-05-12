@@ -1,5 +1,6 @@
 import pytest
-from src.plugins.ValidateFEtoBEData import ValidateFEtoBEData
+
+from src.plugins.bases.ValidateFEtoBEData import ValidateFEtoBEData
 
 
 def test_ValidateFEtoBEData_validate_msg_data_raises_ValueError_when_passed_empty_dict():

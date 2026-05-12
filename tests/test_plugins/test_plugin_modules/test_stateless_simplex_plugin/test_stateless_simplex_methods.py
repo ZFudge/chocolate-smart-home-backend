@@ -53,7 +53,7 @@ def test_stateless_simplex_ModuleNotFoundError_exception_falls_back_on_BaseServe
     stateless_simplex_plugin_path,
 ):
     with patch(
-        "src.plugins.PluginsManager.importlib.import_module",
+        "src.plugins.manager.utils.importlib.import_module",
         side_effect=ModuleNotFoundError(),
     ):
         PluginsManager.map_new_plugin(stateless_simplex_plugin_path)
@@ -72,7 +72,7 @@ def test_stateless_simplex_Exception_falls_back_on_BaseServerToControllerMesseng
     stateless_simplex_plugin_path,
 ):
     with patch(
-        "src.plugins.PluginsManager.importlib.import_module", side_effect=Exception()
+        "src.plugins.manager.utils.importlib.import_module", side_effect=Exception()
     ):
         PluginsManager.map_new_plugin(stateless_simplex_plugin_path)
         PluginsManager.check_server_to_controller_messenger(

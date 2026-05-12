@@ -27,7 +27,7 @@ def test_stateful_duplex_PluginControllerToServerMessenger_subclassed_from_BaseC
 
 def test_stateful_duplex_ModuleNotFoundError_exception_falls_back_on_BaseControllerToServerMessenger():
     with patch(
-        "src.plugins.PluginsManager.importlib.import_module",
+        "src.plugins.manager.utils.importlib.import_module",
         return_value=ModuleNotFoundError(),
     ) as import_module:
         PluginsManager.map_new_plugin("test_plugin")
@@ -41,7 +41,7 @@ def test_stateful_duplex_ModuleNotFoundError_exception_falls_back_on_BaseControl
 
 def test_stateful_duplex_Exception_falls_back_on_BaseControllerToServerMessenger():
     with patch(
-        "src.plugins.PluginsManager.importlib.import_module", return_value=Exception()
+        "src.plugins.manager.utils.importlib.import_module", return_value=Exception()
     ) as import_module:
         PluginsManager.map_new_plugin("test_plugin")
         PluginsManager.check_controller_to_server_messenger("test_plugin")
