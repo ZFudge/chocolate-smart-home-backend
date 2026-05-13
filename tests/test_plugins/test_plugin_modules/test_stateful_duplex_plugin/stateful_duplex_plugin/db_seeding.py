@@ -10,7 +10,7 @@ PROPERTY_SEEDS = (
 )
 
 
-def seed_db(db: Session):
+def seed_db(db: Session) -> bool:
     commit = False
     for pname, pvalue in PROPERTY_SEEDS:
         try:
@@ -20,9 +20,4 @@ def seed_db(db: Session):
         except SQLAlchemyError as e:
             print(e)
             continue
-    if not commit:
-        return
-    try:
-        db.commit()
-    except SQLAlchemyError:
-        db.rollback()
+    return commit

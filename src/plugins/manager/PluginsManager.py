@@ -2,6 +2,7 @@ import logging
 from types import ModuleType
 
 from sqlalchemy import Column, ForeignKey, Integer
+from sqlalchemy.exc import SQLAlchemyError
 
 from src import dependencies, utils
 from src.database import Base, engine
@@ -256,7 +257,12 @@ class PluginsManager:
                     f'{plugin_name}.db_seeding module exists but does not have a valid "seed_db" function.'
                 )
             return
-        db_seeding_module.seed_db(dependencies.db_session.get())
+        db = dependencies.db_session.get()
+        if db_seeding_module.seed_db(db):
+            try:
+                db.commit()
+            except SQLAlchemyError:
+                db.rollback()
 
     @classmethod
     def get_plugin_by_device_type_name(cls, plugin_name: str) -> dict:
