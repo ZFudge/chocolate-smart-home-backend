@@ -16,6 +16,8 @@ pytest-asyncio = "*"
 redis = "*"
 fastapi = {extras = ["standard"], version = "*"}
 uvicorn = {extras = ["standard"], version = "*"}
+apscheduler = "*"
+pytz = "*"
 
 [dev-packages]
 

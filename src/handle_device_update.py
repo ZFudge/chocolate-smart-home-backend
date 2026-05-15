@@ -18,6 +18,11 @@ async def handle_device_update(message_data: dict):
         return
     if isinstance(message_data.get("mqtt_id"), str):
         message_data["mqtt_id"] = json.loads(message_data["mqtt_id"])
+    if isinstance(message_data.get("value"), str):
+        try:
+            message_data["value"] = eval(message_data["value"])
+        except SyntaxError:
+            pass
     try:
         incoming_ws_msg = schemas.WebsocketMessage(**message_data)
     except ValidationError:

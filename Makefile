@@ -53,6 +53,7 @@ devclean:
 devlogs:
 	@docker compose -f docker-compose-dev.yml logs -f \
       csm-backend-dev \
+      csm-scheduler-dev \
       virtual-clients
 
 .PHONY: mqttlogs

@@ -1,50 +1,12 @@
 import importlib
 import logging
+import os
 from types import ModuleType
 
-from ..bases import (
-    BaseDeviceManager,
-    BaseServerToControllerMessenger,
-    DefaultControllerToServerMessenger,
-)
+from src import dependencies
 
 
 logger = logging.getLogger()
-
-
-DEFAULT_PLUGIN = {
-    "ControllerToServerMessenger": DefaultControllerToServerMessenger,
-    "ServerToControllerMessenger": BaseServerToControllerMessenger,
-    "DeviceManager": BaseDeviceManager,
-}
-
-
-class PluginsMapper(dict):
-    """A dictionary-like mapping object that guarantees key lookups resolve to
-    DEFAULT_PLUGIN if the intended plugin cannot be found. This guarantees the
-    bare minimum needed for a device to be visible in the application, without
-    having to implement any plugin code for it, so long as the client abides by
-    the configuration format expected by these defaults.
-
-    I know some folks consider it bad form to subclass dict, *BUT*, because the
-    python runtime explicitly provides __missing__ for use in dict subclassing,
-    and this subclass only implements __missing__, I can forgive myself <3.
-    """
-
-    def __missing__(self, plugin_name):
-        logger.warning(
-            f"Key lookup for {plugin_name} plugin failed. Falling back to DEFAULT_PLUGIN."
-        )
-        return DEFAULT_PLUGIN
-
-
-class PluginDict(dict):
-    """A dictionary-like mapping object that tries to retrieve failed key lookups from DEFAULT_PLUGIN.
-    Same excuse as above.
-    """
-
-    def __missing__(self, key):
-        return DEFAULT_PLUGIN.get(key)
 
 
 def pluginnamefrompath(f):
@@ -74,3 +36,21 @@ def import_plugin_module(plugin_path, name) -> ModuleType | None:
 
 def has_valid_callable(module: ModuleType, name: str) -> bool:
     return hasattr(module, name) and callable(getattr(module, name))
+
+
+def inject_dependencies(module: ModuleType) -> bool:
+    dependency_names = (
+        "asyncio_event_loop",
+        "db_session",
+        "mqtt_client_session",
+        "redis_session",
+    )
+    for dn in dependency_names:
+        if dn in dir(module):
+            setattr(module, dn, getattr(dependencies, dn).get())
+
+
+def has_scheduling_module(plugin_path: str) -> bool:
+    return os.path.exists(
+        os.path.join("/backend/", plugin_path.replace(".", "/")) + "/scheduling.py"
+    )

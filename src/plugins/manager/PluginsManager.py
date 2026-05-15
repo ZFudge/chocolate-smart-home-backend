@@ -6,6 +6,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from src import dependencies, utils
 from src.database import Base, engine
+from src.scheduler import add_job
 from .. import device_plugins
 from ..bases import (
     BaseControllerToServerMessenger,
@@ -14,16 +15,18 @@ from ..bases import (
     DefaultControllerToServerMessenger,
 )
 from ..utils import iter_nametag
+from .classes import PluginDict, PluginsMapper
 from .utils import (
-    PluginDict,
-    PluginsMapper,
     pluginnamefrompath,
     import_plugin_module,
     has_valid_callable,
+    inject_dependencies,
+    has_scheduling_module,
 )
 
 
 logger = logging.getLogger()
+scheduler_logger = logging.getLogger("scheduler")
 
 
 class PluginsManager:
@@ -68,7 +71,24 @@ class PluginsManager:
         cls.check_extra_models(plugin_path)
         cls.check_router(plugin_path)
         cls.check_db_seeding(plugin_path)
-        cls.check_scheduling(plugin_path)
+
+    @classmethod
+    def discover_scheduling(cls):
+        scheduler_logger.info("Checking for discoverable device plugin modules...")
+        for _finder, plugin_path, _ispkg in iter_nametag(device_plugins):
+            if not has_scheduling_module(plugin_path):
+                continue
+            plugin_name = plugin_path.split(".").pop()
+            scheduler_logger.info(
+                f'Found discoverable device plugin "{plugin_name}" with scheduling module: {plugin_path}/scheduling.py'
+            )
+            try:
+                cls.map_new_plugin(plugin_path)
+                cls.check_model(plugin_path)
+                cls.check_extra_models(plugin_path)
+                cls.check_scheduling(plugin_path)
+            except Exception as e:
+                scheduler_logger.error(e)
 
     @classmethod
     @pluginnamefrompath
@@ -213,10 +233,7 @@ class PluginsManager:
         router_module: ModuleType | None = import_plugin_module(plugin_path, "router")
         if not isinstance(router_module, ModuleType):
             return
-        dependency_names = ("db_session", "redis_session", "mqtt_client_session")
-        for dn in dependency_names:
-            if dn in dir(router_module):
-                setattr(router_module, dn, getattr(dependencies, dn).get())
+        inject_dependencies(router_module)
         cls.ROUTERS.append(router_module.plugin_router)
 
     @classmethod
@@ -276,5 +293,11 @@ class PluginsManager:
         )
         if not isinstance(sched_module, ModuleType):
             return
-        elif not hasattr(sched_module, "schedule_jobs"):
+        elif not hasattr(sched_module, "jobs"):
             return
+        inject_dependencies(sched_module)
+
+        jobs = sched_module.jobs
+        for job in jobs:
+            scheduler_logger.info(f"{plugin_name=} Adding job {job=}")
+            add_job(**job)

@@ -64,7 +64,6 @@ services:
       - 6379:6379
     volumes:
       - csm-redis-data-dev:/data
-    restart: always
     healthcheck:
       test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
       interval: 5s
@@ -96,16 +95,20 @@ services:
       csm-redis-dev:
         condition: service_healthy
     command: [
-      "pipenv", "run", "uvicorn", "src.main:app",
+      "pipenv", "run", "uvicorn",
+      "src.main:app",
       "--host", "0.0.0.0",
       "--reload",
       "--reload-dir", "src",
-      "--reload-exclude", "plugins/virtual_clients/*",
       "--reload-exclude", "plugins/device_plugins/*/tests/*",
+      "--reload-exclude", "plugins/device_plugins/*/scheduling.py",
+      "--reload-exclude", "plugins/virtual_clients/*",
+      "--reload-exclude", "scheduler/*",
       "--log-level", "debug",
       "--log-config", "logs.ini"
     ]
     environment:
+      TZ: "UTC"
       << : *environment-variables
     healthcheck:
       test: ["CMD-SHELL", "curl -i http://localhost:8000/healthcheck | grep '200 OK'"]
@@ -113,9 +116,45 @@ services:
       timeout: 5s
       retries: 3
       start_period: 5s
+  csm-scheduler-dev:
+    << : *common-attrs
+    build: .
+    image: csm-backend
+    container_name: csm-scheduler-dev
+    ports:
+      - 8100:8100
+    volumes:
+      - type: bind
+        source: ./
+        target: /backend/
+      - type: bind
+        source: /tmp/logs/
+        target: /var/logs/csm/
+    command: [
+      "pipenv", "run", "uvicorn",
+      "src.scheduler.sched_app:sched_app",
+      "--host", "0.0.0.0",
+      "--reload",
+      "--reload-dir", "src/scheduler/",
+      "--port=8100",
+      "--workers", "1",
+      "--log-level", "debug",
+      "--log-config", "logs.ini"
+    ]
+    depends_on:
+      csm-mosquitto-dev:
+        condition: service_healthy
+      csm-postgres-db-dev:
+        condition: service_healthy
+      csm-backend-dev:
+        condition: service_healthy
+      csm-redis-dev:
+        condition: service_healthy
+    environment:
+      << : *environment-variables
   virtual-clients:
     << : *common-attrs
-    build: backend
+    build: .
     image: csm-backend
     container_name: virtual-clients
     volumes:
@@ -128,7 +167,7 @@ services:
     command: [
       "pipenv", "run", "uvicorn",
       "src.plugins.virtual_clients.vcs_app:vcs_manager",
-      "--port=8001",
+      "--port=8200",
       "--workers", "1",
       "--log-level", "debug",
       "--log-config", "logs.ini"

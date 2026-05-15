@@ -31,6 +31,7 @@ async def lifespan(app: FastAPI):
         connect_to_mqtt_broker()
     subscribe(topic=topics.RECEIVE_DEVICE_DATA, handler=mqtt_message_handler)
     asyncio.create_task(reads.handle_reads())
+    logger.info("Including routers...")
     yield
 
 
@@ -38,6 +39,5 @@ app = FastAPI(lifespan=lifespan)
 
 PluginsManager.discover_plugins()
 
-logger.info("Including routers...")
 for router in APP_ROUTERS + tuple(PluginsManager.ROUTERS):
     app.include_router(router)
