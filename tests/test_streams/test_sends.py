@@ -41,7 +41,7 @@ async def test_streams_sends_send_to_ws_service(mock_redis_session):
 
 
 @pytest.mark.asyncio
-async def test_streams_sends_broadcast_db_state_to_client_calls_send_to_ws_service_with_device_frontend_schema(
+async def test_streams_sends_broadcast_db_state_to_ws_client_calls_send_to_ws_service_with_device_frontend_schema(
     mock_redis_session, populated_test_db
 ):
     plugin_schema = None
@@ -50,12 +50,12 @@ async def test_streams_sends_broadcast_db_state_to_client_calls_send_to_ws_servi
         patch("src.streams.send.schemas.DeviceFrontend") as DeviceFrontend,
     ):
         DeviceFrontend.return_value = "expected_return_value"
-        await streams.send.broadcast_db_state_to_client(plugin_schema, 123)
+        await streams.send.broadcast_db_state_to_ws_client(plugin_schema, 123)
         send_to_ws_service.assert_called_once_with("expected_return_value")
 
 
 @pytest.mark.asyncio
-async def test_streams_sends_broadcast_db_state_to_client_calls_device_frontend_schema_with_expected_parameters(
+async def test_streams_sends_broadcast_db_state_to_ws_client_calls_device_frontend_schema_with_expected_parameters(
     mock_redis_session, populated_test_db
 ):
     plugin_schema = None
@@ -64,7 +64,7 @@ async def test_streams_sends_broadcast_db_state_to_client_calls_device_frontend_
         patch("src.streams.send.schemas") as schemas,
     ):
         schemas.DeviceFrontend = Mock()
-        await streams.send.broadcast_db_state_to_client(plugin_schema, 123)
+        await streams.send.broadcast_db_state_to_ws_client(plugin_schema, 123)
         schemas.DeviceFrontend.assert_called_once_with(
             mqtt_id=123,
             remote_name="Remote Name 1 - 1",
@@ -79,8 +79,8 @@ async def test_streams_sends_broadcast_db_state_to_client_calls_device_frontend_
 
 
 @pytest.mark.asyncio
-async def test_streams_sends_broadcast_db_state_to_client_raises_ValueError_when_given_invalid_mqtt_id(
+async def test_streams_sends_broadcast_db_state_to_ws_client_raises_ValueError_when_given_invalid_mqtt_id(
     mock_redis_session, empty_test_db
 ):
     with pytest.raises(ValueError):
-        await streams.send.broadcast_db_state_to_client(None, 123)
+        await streams.send.broadcast_db_state_to_ws_client(None, 123)

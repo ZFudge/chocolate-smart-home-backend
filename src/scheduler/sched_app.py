@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from src.plugins.manager import PluginsManager
 from src.scheduler.router import scheduler_router
 from src.scheduler.scheduler import scheduler
+from src.scheduler.crud import load_jobs_from_db
 
 logger = logging.getLogger("scheduler")
 
@@ -14,6 +15,7 @@ logger = logging.getLogger("scheduler")
 async def lifespan(app: FastAPI):
     logger.info("Starting scheduler...")
     scheduler.start()
+    load_jobs_from_db()
     yield
     logger.info("Stopping scheduler...")
     scheduler.shutdown()

@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 async def handle_device_update(message_data: dict):
+    """Handles outgoing message publishing to device clients"""
     logger.info(f"Handling message: {message_data}")
     if message_data.get("action") == "request_all_devices_data":
         request_all_devices_data()
@@ -50,12 +51,14 @@ async def handle_device_update(message_data: dict):
                 plugin_schema = DeviceManager().update_server_side_value(
                     incoming_ws_msg.model_dump(), mqtt_id
                 )
-                await streams.send.broadcast_db_state_to_client(plugin_schema, mqtt_id)
+                await streams.send.broadcast_db_state_to_ws_client(
+                    plugin_schema, mqtt_id
+                )
         else:
             plugin_schema = DeviceManager().update_server_side_value(
                 incoming_ws_msg.model_dump(), incoming_ws_msg.mqtt_id
             )
-            await streams.send.broadcast_db_state_to_client(
+            await streams.send.broadcast_db_state_to_ws_client(
                 plugin_schema, incoming_ws_msg.mqtt_id
             )
     else:

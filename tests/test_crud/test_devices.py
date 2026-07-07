@@ -58,10 +58,12 @@ def test_crud_get_devices_query_basic(empty_test_db):
             d.mqtt_id;"""
     with (
         patch("src.crud.devices.db_session") as db_session,
+        patch("src.crud.utils.db_session") as utils_db_session,
         patch("src.crud.devices.logger.info") as mock_logger,
     ):
         crud.get_devices()
-        assert db_session.get().execute.call_count == 2
+        assert db_session.get().execute.call_count == 1
+        assert utils_db_session.get().execute.call_count == 1
         mock_logger.assert_called_once_with(expected_sql)
 
 
@@ -128,8 +130,8 @@ def test_crud_get_devices_query_with_cases(populated_test_db):
 
 def test_crud_get_devices_returns_devices(populated_test_db):
     devices = crud.get_devices()
-    assert len(devices) == 2
-    device_1, device_2 = devices
+    assert len(devices) == 3
+    device_1, device_2, device_3 = devices
     assert device_1.mqtt_id == 123
     assert device_1.device_type_name == "TEST_DEVICE_TYPE_NAME_1"
     assert device_1.remote_name == "Remote Name 1 - 1"
@@ -138,13 +140,22 @@ def test_crud_get_devices_returns_devices(populated_test_db):
     assert device_2.device_type_name == "TEST_DEVICE_TYPE_NAME_2"
     assert device_2.remote_name == "Remote Name 2 - 2"
     assert device_2.name == "Test Device Name 2"
+    assert device_3.mqtt_id == 345
+    assert device_3.device_type_name == "TEST_DEVICE_TYPE_NAME_2"
+    assert device_3.remote_name == "Remote Name 3 - 3"
+    assert device_3.name == "Test Device Name 3"
 
 
 def test_crud_delete_device_deletes_device(populated_test_db):
     crud.delete_device(mqtt_id=123)
-    assert len(crud.get_devices()) == 1
+    assert len(crud.get_devices()) == 2
     crud.delete_device(mqtt_id=234)
-    assert len(crud.get_devices()) == 0
+    assert len(crud.get_devices()) == 1
+
+
+def test_crud_delete_device_with_schedule_job(populated_test_db):
+    crud.delete_device(mqtt_id=345)
+    assert crud.get_device_by_id(345) is None
 
 
 def test_crud_delete_device_fails_when_device_does_not_exist(empty_test_db):

@@ -34,3 +34,12 @@ def get_device_type_by_name(device_type_name: str) -> DeviceTypeModel | None:
         .where(DeviceTypeModel.name == device_type_name)
         .one_or_none()
     )
+
+
+def get_device_type_by_id(device_type_id: str) -> DeviceTypeModel | None:
+    return (
+        db_session.get()
+        .query(DeviceTypeModel)
+        .where(DeviceTypeModel.id == device_type_id)
+        .one_or_none()
+    )

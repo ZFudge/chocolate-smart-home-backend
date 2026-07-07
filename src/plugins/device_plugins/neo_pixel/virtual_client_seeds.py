@@ -37,7 +37,7 @@ seeds = [
         "brightness": 255,
         "ms": 11,
         "twinkle": False,
-        "all_twinkle_colors_are_current": False,
+        "all_twinkle_colors_are_current": True,
         "transform": True,
         "palette": [
             "#0000FF",
@@ -61,7 +61,7 @@ seeds = [
         "brightness": 255,
         "ms": 3,
         "twinkle": True,
-        "all_twinkle_colors_are_current": False,
+        "all_twinkle_colors_are_current": True,
         "transform": False,
         "palette": [
             "#0000FF",

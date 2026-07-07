@@ -28,12 +28,11 @@ scheduler.configure(
 )
 
 
-def add_job(func: callable, **kwargs) -> Job:
+def add_serializable_job(func: callable, **kwargs) -> Job:
     logger.info(f"{scheduler=} Adding job {func=} with {kwargs=}")
     new_job: Job = scheduler.add_job(
         func,
         trigger="cron",
-        jobstore="sql",
         replace_existing=True,
         **kwargs,
     )

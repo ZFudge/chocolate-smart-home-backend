@@ -3,22 +3,17 @@ import logging
 import os
 import random
 
-from redis.asyncio import Redis
-from sqlalchemy.orm import Session
-from uvloop import Loop
-
 from .Model import PluginModel as NeoPixel
 from .models import Palette
+from src.dependencies import db_session, redis_session, asyncio_event_loop
 
 logger = logging.getLogger("scheduler")
 
 BACKEND_STREAM_NAME = os.getenv("BACKEND_STREAM_NAME")
-db_session: Session | None = None
-redis_session: Redis | None = None
-asyncio_event_loop: Loop | None = None
 
 
 def rotate_palette():
+    logger.info("Checking NeoPixel palette rotation")
     if db_session is None:
         raise ValueError("Database session not initialized")
     if redis_session is None:
@@ -33,6 +28,9 @@ def rotate_palette():
     if len(scheduled_devices) == 0 or not all(
         [d.all_twinkle_colors_are_current is True for d in scheduled_devices]
     ):
+        logger.info(
+            "No scheduled devices or all twinkle colors are not current, skipping palette rotation"
+        )
         return
     mqtt_ids: list[int] = [d.mqtt_id for d in scheduled_devices]
     palette_presets = db_session.query(Palette).all()
@@ -46,7 +44,7 @@ def rotate_palette():
         "name": "palette",
         "value": str(new_palette),
     }
-    logger.info(f"Palette rotation message data: {message_data}")
+    logger.info(f"Sending palette rotation message: {message_data}")
     asyncio.run_coroutine_threadsafe(
         redis_session.xadd(
             BACKEND_STREAM_NAME,
@@ -60,6 +58,6 @@ jobs = (
     {
         "func": rotate_palette,
         "id": "neo_pixel_palette_rotation",
-        "minute": "*/6",
+        "minute": "*/3",
     },
 )

@@ -2,6 +2,7 @@ from sqlalchemy import Column, DateTime, ForeignKey, func, Integer, String
 from sqlalchemy.orm import relationship, Mapped
 
 from src.database import Base
+from src.scheduler.model import job_devices, ApschedulerJobsNonSerializable
 from .device_tags import device_tags
 from .tag import Tag
 
@@ -19,6 +20,9 @@ class Device(Base):
 
     tags: Mapped[list[Tag]] = relationship(
         secondary=device_tags, back_populates="devices"
+    )
+    scheduled_jobs: Mapped[list[ApschedulerJobsNonSerializable]] = relationship(
+        secondary=job_devices, back_populates="devices"
     )
 
     created_date = Column(DateTime, default=func.now())

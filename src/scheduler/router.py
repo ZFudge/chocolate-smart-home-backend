@@ -3,20 +3,18 @@ import logging
 from apscheduler.job import Job
 from fastapi import APIRouter, HTTPException
 
-from . import schemas
-from .scheduler import scheduler as sched, add_job
-from .utils import serialize_job
+from . import crud, model, schemas
 
 scheduler_router = APIRouter(prefix="/scheduler")
 
 logger = logging.getLogger("scheduler")
 
 
-@scheduler_router.get("/jobs")
+@scheduler_router.get("/")
 def get_jobs():
     try:
-        jobs: list[Job] = sched.get_jobs("sql")
-        return tuple(map(serialize_job, jobs))
+        jobs: list[model.ApschedulerJobsNonSerializable | Job] = crud.get_jobs()
+        return tuple(map(crud.serialize_job, jobs))
     except Exception as e:
         logger.error(e)
         raise HTTPException(
@@ -24,54 +22,61 @@ def get_jobs():
         )
 
 
-@scheduler_router.get("/job/{job_id}")
+@scheduler_router.get("/{job_id}")
 def get_job(job_id: str):
     try:
-        job: Job = sched.get_job(job_id, "sql")
-        return serialize_job(job)
+        job: model.ApschedulerJobsNonSerializable | Job | None = crud.get_job_by_id(
+            job_id
+        )
     except Exception as e:
         logger.error(e)
         raise HTTPException(
             status_code=500, detail="Error getting scheduled job with id %s." % job_id
         )
-
-
-@scheduler_router.post("/job")
-def create_job(job: schemas.NewJob):
-    try:
-        job = add_job(
-            job.message, job.schedule.trigger, jobstore="sql", **job.schedule.kwargs
+    if job is None:
+        raise HTTPException(
+            status_code=404, detail="Job with id %s not found." % job_id
         )
-        return serialize_job(job)
+    return crud.serialize_job(job)
+
+
+@scheduler_router.post("/", response_model=schemas.JobResponse)
+def create_job(new_job: schemas.JobToSchedule):
+    try:
+        job: model.ApschedulerJobsNonSerializable = crud.create_job(new_job)
+        return crud.serialize_job(job)
     except Exception as e:
         logger.error(e)
         raise HTTPException(
             status_code=500,
-            detail="Error creating scheduled job with id %s." % job.job_id,
+            detail="Error creating scheduled job with id",
         )
 
 
-@scheduler_router.patch("/job/{job_id}")
-def patch_job(job: schemas.PatchJob):
-    try:
-        job = sched.modify_job(
-            job.job_id, job.schedule.trigger, jobstore="sql", **job.schedule.kwargs
-        )
-        return serialize_job(job)
-    except Exception as e:
-        logger.error(e)
-        raise HTTPException(
-            status_code=500,
-            detail="Error patching scheduled job with id %s." % job.job_id,
-        )
-
-
-@scheduler_router.delete("/job/{job_id}", response_model=None, status_code=204)
+@scheduler_router.delete("/{job_id}", response_model=None, status_code=204)
 def delete_job(job_id: str):
     try:
-        sched.remove_job(job_id, jobstore="sql")
+        crud.delete_job_by_id(job_id)
     except Exception as e:
         logger.error(e)
         raise HTTPException(
             status_code=500, detail="Error deleting scheduled job with id %s." % job_id
         )
+
+
+@scheduler_router.patch("/{job_id}", response_model=schemas.JobResponse)
+def modify_job(job_id: str, modified_job: schemas.ModifyJob):
+    try:
+        job: model.ApschedulerJobsNonSerializable | None = crud.modify_job_by_id(
+            job_id, modified_job
+        )
+    except Exception as e:
+        logger.error(e)
+        raise HTTPException(
+            status_code=500, detail="Error modifying scheduled job with id %s." % job_id
+        )
+    if job is None:
+        raise HTTPException(
+            status_code=404, detail="Job with id %s not found." % job_id
+        )
+    return crud.serialize_job(job)

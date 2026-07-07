@@ -39,6 +39,17 @@ def test_route_get_devices_returns_devices(populated_test_db):
             "last_update_sent": "2025-01-02 00:00:00",
             "plugin": None,
         },
+        {
+            "mqtt_id": 345,
+            "remote_name": "Remote Name 3 - 3",
+            "name": "Test Device Name 3",
+            "reboots": 0,
+            "device_type_name": "TEST_DEVICE_TYPE_NAME_2",
+            "tags": None,
+            "last_seen": "2025-01-01 00:00:00",
+            "last_update_sent": "2025-01-01 00:00:00",
+            "plugin": None,
+        },
     ]
 
 

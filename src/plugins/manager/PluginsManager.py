@@ -4,9 +4,9 @@ from types import ModuleType
 from sqlalchemy import Column, ForeignKey, Integer
 from sqlalchemy.exc import SQLAlchemyError
 
-from src import dependencies, utils
+from src import dependencies, scheduler, utils
 from src.database import Base, engine
-from src.scheduler import add_job
+
 from .. import device_plugins
 from ..bases import (
     BaseControllerToServerMessenger,
@@ -75,6 +75,20 @@ class PluginsManager:
     @classmethod
     def discover_scheduling(cls):
         scheduler_logger.info("Checking for discoverable device plugin modules...")
+        cls.discover_plugins_scheduling()
+        cls.discover_scheduling_jobs_model()
+
+    @classmethod
+    def discover_scheduling_jobs_model(cls):
+        for _finder, model_path, _ispkg in iter_nametag(scheduler):
+            if not model_path.endswith("model"):
+                continue
+            import_plugin_module(model_path, "model")
+            break
+        Base.metadata.create_all(bind=engine)
+
+    @classmethod
+    def discover_plugins_scheduling(cls):
         for _finder, plugin_path, _ispkg in iter_nametag(device_plugins):
             if not has_scheduling_module(plugin_path):
                 continue
@@ -300,4 +314,4 @@ class PluginsManager:
         jobs = sched_module.jobs
         for job in jobs:
             scheduler_logger.info(f"{plugin_name=} Adding job {job=}")
-            add_job(**job)
+            scheduler.add_serializable_job(jobstore="default", **job)

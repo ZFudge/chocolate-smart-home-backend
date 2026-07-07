@@ -1,49 +1,17 @@
 import logging
 from datetime import datetime as dt
-from typing import Type
 
 from sqlalchemy import text
 from sqlalchemy.engine.result import MappingResult
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
-from src import crud, models, schemas, utils
-from src.database import Base
+from src import crud, models, schemas
 from src.dependencies import db_session
+from src.scheduler.crud import schedule_job_from_db_obj
+from .utils import commit_db_object, get_device_type_names_with_model_exists
 
 logger = logging.getLogger()
-
-
-def commit_db_object(device: Type[Base]) -> Type[Base]:
-    db: Session = db_session.get()
-    db.add(device)
-    try:
-        db.commit()
-    except:
-        db.rollback()
-        raise
-
-    db.refresh(device)
-    return device
-
-
-def get_device_type_names_with_model_exists() -> list[dict]:
-    results = db_session.get().execute(
-        text(
-            """
-        SELECT
-            name AS device_type_name,
-            EXISTS (
-                SELECT 1
-                FROM information_schema.tables
-                WHERE table_schema = 'public'
-                AND table_name = name
-            ) AS has_plugin_model
-        FROM
-            device_types;"""
-        )
-    )
-    return results.mappings().all()
 
 
 def get_devices() -> tuple[MappingResult]:
@@ -114,6 +82,15 @@ def get_device_by_id(mqtt_id: int) -> models.Device | None:
     )
 
 
+def get_devices_by_ids(mqtt_ids: list[int]) -> list[models.Device]:
+    return (
+        db_session.get()
+        .query(models.Device)
+        .where(models.Device.mqtt_id.in_(mqtt_ids))
+        .all()
+    )
+
+
 def delete_device(mqtt_id: int) -> None:
     """Dynamically delete row of any device model."""
     logger.info(f"Deleting Device with mqtt id of {mqtt_id}")
@@ -127,6 +104,12 @@ def delete_device(mqtt_id: int) -> None:
         )
         logger.error(msg)
         raise NoResultFound(msg)
+
+    if device.scheduled_jobs:
+        for job in device.scheduled_jobs:
+            job.devices.remove(device)
+            schedule_job_from_db_obj(job)
+            commit_db_object(job)
 
     db.delete(device)
     db.flush()
@@ -206,23 +189,7 @@ def update_device(device: schemas.DeviceReceived, *_) -> models.Device:
     return updated_device
 
 
-def get_plugin_model_class_using_device_type_name(
-    device_type_name: str,
-) -> models.Device | None:
-    plugin_model_class_name = utils.snakecase_to_pascalcase(device_type_name)
-    for mapper in Base.registry.mappers:
-        if mapper.class_.__name__ == plugin_model_class_name:
-            return mapper.class_
-
-
-def get_plugin_db_obj_using_device_type_and_mqtt_id(
-    device_type_name: str, mqtt_id: int
-) -> models.Device | None:
-    Table = get_plugin_model_class_using_device_type_name(device_type_name)
-    return db_session.get().query(Table).where(Table.mqtt_id == mqtt_id).one_or_none()
-
-
-def set_last_update_sent_to_current_time(mqtt_id: int):
+def set_last_update_sent_to_current_time(mqtt_id: int) -> models.Device:
     db_device: models.Device = get_device_by_id(mqtt_id)
     if db_device is None:
         raise ValueError(f"Device with mqtt_id {mqtt_id} not found")
@@ -233,7 +200,7 @@ def set_last_update_sent_to_current_time(mqtt_id: int):
     return updated_device
 
 
-def set_last_seen_to_current_time(mqtt_id: int):
+def set_last_seen_to_current_time(mqtt_id: int) -> models.Device | None:
     db_device: models.Device = get_device_by_id(mqtt_id)
     if db_device is None:
         return

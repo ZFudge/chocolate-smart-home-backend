@@ -13,17 +13,21 @@ from uvloop import Loop
 from src import models
 from src.database import Base
 from src.dependencies import (
+    asyncio_event_loop,
     db_session,
     engine,
-    get_db,
     get_asyncio_loop,
+    get_db,
     get_mqtt_client,
     get_redis,
     mqtt_client_session,
-    asyncio_event_loop,
     redis_session,
 )
 from src.main import app
+from src.scheduler import (
+    crud as sched_crud,
+    model as scheduler_model,
+)
 from src.SingletonMeta import SingletonMeta
 
 
@@ -82,6 +86,10 @@ def clear_test_db():
 
     if "device_tags" in Base.metadata.tables:
         try:
+            db_session.get().query(scheduler_model.job_devices).delete()
+            db_session.get().query(
+                scheduler_model.ApschedulerJobsNonSerializable
+            ).delete()
             db_session.get().query(models.device_tags).delete()
             db_session.get().query(models.Device).delete()
             db_session.get().query(models.Tag).delete()
@@ -130,6 +138,15 @@ def populated_test_db(empty_test_db):
         last_update_sent=NEWER_DATE,
     )
 
+    device_3 = models.Device(
+        mqtt_id=345,
+        remote_name="Remote Name 3 - 3",
+        name="Test Device Name 3",
+        device_type=type_2,
+        last_seen=OLDER_DATE,
+        last_update_sent=OLDER_DATE,
+    )
+
     test_db.add(type_1)
     test_db.add(type_2)
     test_db.add(tag_1)
@@ -137,6 +154,29 @@ def populated_test_db(empty_test_db):
     test_db.add(tag_3)
     test_db.add(device_1)
     test_db.add(device_2)
+    test_db.add(device_3)
+    test_db.commit()
+
+    test_db.refresh(type_1)
+    test_db.refresh(device_3)
+
+    job_1 = scheduler_model.ApschedulerJobsNonSerializable(
+        job_id="test_job_id",
+        name="Test Job 1",
+        device_type_id=type_1.id,
+        devices=[device_3],
+        message_kvp=dict(
+            key="test_key",
+            value=True,
+        ),
+        scheduler_kwargs=dict(
+            trigger="cron",
+            # trigger_value="0 0 * * *",
+            minute="*/3",
+        ),
+        active=True,
+    )
+    test_db.add(job_1)
 
     test_db.commit()
 
@@ -253,3 +293,10 @@ def mock_redis_session(mock_asyncio_event_loop):
     app.dependency_overrides[redis_session] = override_redis_session
 
     yield redis_session.get()
+
+
+@pytest.fixture
+def job_loaded_scheduler():
+    sched_crud.load_jobs_from_db()
+    yield sched_crud.sched
+    sched_crud.sched.remove_all_jobs()

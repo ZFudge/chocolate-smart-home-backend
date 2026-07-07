@@ -121,8 +121,8 @@ async def test_handle_device_update_is_server_side_value_single(
             return_value=True,
         ),
         patch(
-            "src.handle_device_update.streams.send.broadcast_db_state_to_client"
-        ) as broadcast_db_state_to_client,
+            "src.handle_device_update.streams.send.broadcast_db_state_to_ws_client"
+        ) as broadcast_db_state_to_ws_client,
     ):
         await handle_device_update(
             {
@@ -132,7 +132,7 @@ async def test_handle_device_update_is_server_side_value_single(
                 "value": "",
             }
         )
-        broadcast_db_state_to_client.assert_awaited_once()
+        broadcast_db_state_to_ws_client.assert_awaited_once()
 
 
 @pytest.mark.asyncio
@@ -146,8 +146,8 @@ async def test_handle_device_update_is_server_side_value_multiple(
             return_value=True,
         ),
         patch(
-            "src.handle_device_update.streams.send.broadcast_db_state_to_client"
-        ) as broadcast_db_state_to_client,
+            "src.handle_device_update.streams.send.broadcast_db_state_to_ws_client"
+        ) as broadcast_db_state_to_ws_client,
     ):
         await handle_device_update(
             {
@@ -157,4 +157,4 @@ async def test_handle_device_update_is_server_side_value_multiple(
                 "value": "",
             }
         )
-        broadcast_db_state_to_client.call_count == 2
+        broadcast_db_state_to_ws_client.call_count == 2

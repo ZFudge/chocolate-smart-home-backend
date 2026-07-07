@@ -1,28 +1,48 @@
+from typing import Any
+
 from pydantic import BaseModel
 
 
-class Schedule(BaseModel):
-    trigger: str
-    cron: str = None
-    dt: str = None
-
-
 class MQTTIds(BaseModel):
-    mqtt_ids: list[int] | None
+    mqtt_ids: list[int]
 
 
-class Job(MQTTIds):
+class JobId(BaseModel):
     job_id: str
-    message: dict
-    schedule: Schedule
 
 
-class NewJob(MQTTIds):
-    job_id: str
-    message: dict
-    schedule: Schedule
+class JobName(BaseModel):
+    name: str
 
 
-class PatchJob(MQTTIds):
-    job_id: str
-    message: dict
+class KVP(BaseModel):
+    key: str = None
+    value: Any = None
+
+
+class MessageKVP(BaseModel):
+    message_kvp: KVP
+
+
+class SchedulerKwargs(BaseModel):
+    scheduler_kwargs: dict[str, Any]
+
+
+class JobToSchedule(MQTTIds, MessageKVP, SchedulerKwargs):
+    job_id: str = None
+    name: str = None
+    device_type_name: str
+    active: bool = True
+
+
+class JobResponse(JobId, MQTTIds, JobName, MessageKVP, SchedulerKwargs):
+    device_type_id: int
+    active: bool = True
+
+
+class ModifyJob(BaseModel):
+    name: str = None
+    mqtt_ids: list[int] = None
+    message_kvp: KVP = None
+    scheduler_kwargs: dict[str, Any] = None
+    active: bool = None
