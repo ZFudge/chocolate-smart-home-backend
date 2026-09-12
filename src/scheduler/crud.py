@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 
@@ -6,7 +7,7 @@ from apscheduler.jobstores.base import JobLookupError
 
 from src.crud.device_types import get_device_type_by_name, get_device_type_by_id
 from src.crud.utils import commit_db_object
-from src.dependencies import db_session, redis_session
+from src.dependencies import asyncio_event_loop, db_session, redis_session
 from src import models
 from . import model, schemas
 from .scheduler import scheduler as sched
@@ -33,17 +34,20 @@ def serialize_job(job: model.ApschedulerJobsNonSerializable) -> dict:
 
 
 def schedule_memory_job(job: schemas.JobToSchedule) -> Job:
-    message = {
+    message_data = {
         "device_type_name": job.device_type_name,
-        "mqtt_ids": job.mqtt_ids,
-        "key": job.message_kvp.key,
-        "value": job.message_kvp.value,
+        "mqtt_id": str(job.mqtt_ids),
+        "name": job.message_kvp.key,
+        "value": str(job.message_kvp.value),
     }
 
     def func():
-        redis_session.xadd(
-            BACKEND_STREAM_NAME,
-            message,
+        asyncio.run_coroutine_threadsafe(
+            redis_session.get().xadd(
+                BACKEND_STREAM_NAME,
+                message_data,
+            ),
+            asyncio_event_loop.get(),
         )
 
     scheduled_job = sched.add_job(

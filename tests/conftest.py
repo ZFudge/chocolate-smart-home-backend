@@ -171,7 +171,6 @@ def populated_test_db(empty_test_db):
         ),
         scheduler_kwargs=dict(
             trigger="cron",
-            # trigger_value="0 0 * * *",
             minute="*/3",
         ),
         active=True,
