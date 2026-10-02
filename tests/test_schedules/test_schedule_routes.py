@@ -54,9 +54,9 @@ def test_route_get_job_invalid_id_returns_404(populated_test_db):
     assert resp.json() == {"detail": "Job with id INVALID_JOB_ID not found."}
 
 
-def test_route_post_job_creates_job(populated_test_db, job_loaded_scheduler):
+def test_route_post_job_creates_cron_job(populated_test_db, job_loaded_scheduler):
     post_data = {
-        "name": "Test Job 2",
+        "name": "Test Cron Job",
         "device_type_name": "TEST_DEVICE_TYPE_NAME_2",
         "mqtt_ids": [234],
         "message_kvp": {
@@ -72,7 +72,7 @@ def test_route_post_job_creates_job(populated_test_db, job_loaded_scheduler):
     resp = sched_client.post("/scheduler", json=post_data)
     assert resp.status_code == 200
     resp_data = resp.json()
-    assert resp_data["name"] == "Test Job 2"
+    assert resp_data["name"] == "Test Cron Job"
     assert resp_data["device_type_id"] == 2
     assert resp_data["mqtt_ids"] == [234]
     assert resp_data["message_kvp"] == {
@@ -86,6 +86,38 @@ def test_route_post_job_creates_job(populated_test_db, job_loaded_scheduler):
     assert resp_data["active"] is True
 
 
+def test_route_post_job_creates_date_job(populated_test_db, job_loaded_scheduler):
+    post_data = {
+        "name": "Test Date Job",
+        "device_type_name": "TEST_DEVICE_TYPE_NAME_2",
+        "mqtt_ids": [234],
+        "message_kvp": {
+            "key": "test_key_2",
+            "value": "test_value_2",
+        },
+        "scheduler_kwargs": {
+            "run_date": "2027-01-01 00:00:00",
+            "trigger": "date",
+        },
+        "active": True,
+    }
+    resp = sched_client.post("/scheduler", json=post_data)
+    assert resp.status_code == 200
+    resp_data = resp.json()
+    assert resp_data["name"] == "Test Date Job"
+    assert resp_data["device_type_id"] == 2
+    assert resp_data["mqtt_ids"] == [234]
+    assert resp_data["message_kvp"] == {
+        "key": "test_key_2",
+        "value": "test_value_2",
+    }
+    assert resp_data["scheduler_kwargs"] == {
+        "run_date": "2027-01-01 00:00:00",
+        "trigger": "date",
+    }
+    assert resp_data["active"] is True
+
+
 def test_route_delete_job_deletes_job(populated_test_db, job_loaded_scheduler):
     resp = sched_client.delete("/scheduler/test_job_id")
     assert resp.status_code == 204
@@ -93,41 +125,49 @@ def test_route_delete_job_deletes_job(populated_test_db, job_loaded_scheduler):
     assert len(crud.get_jobs()) == 0
 
 
-def test_route_patch_job_modifies_job(populated_test_db, job_loaded_scheduler):
-    patch_data = {
+def test_route_put_job_modifies_job(populated_test_db, job_loaded_scheduler):
+    put_data = {
+        "job_id": "test_job_id",
+        "name": "New Test Job Name",
+        "device_type_name": "TEST_DEVICE_TYPE_NAME_2",
+        "mqtt_ids": [234, 345],
         "message_kvp": {
             "key": "test_key_2",
             "value": "test_value_2",
         },
         "scheduler_kwargs": {
-            "minute": "*/3",
+            "minute": "*",
             "trigger": "cron",
         },
         "active": False,
     }
-    resp = sched_client.patch("/scheduler/test_job_id", json=patch_data)
+    resp = sched_client.put("/scheduler/", json=put_data)
     assert resp.status_code == 200
     assert resp.json() == {
         "job_id": "test_job_id",
-        "name": "Test Job 1",
+        "name": "New Test Job Name",
         "device_type_id": 1,
-        "mqtt_ids": [345],
+        "mqtt_ids": [345, 234],
         "message_kvp": {
             "key": "test_key_2",
             "value": "test_value_2",
         },
         "scheduler_kwargs": {
-            "minute": "*/3",
+            "minute": "*",
             "trigger": "cron",
         },
         "active": False,
     }
 
 
-def test_route_patch_job_fails_with_nonexistent_job_id(
+def test_route_put_job_fails_with_nonexistent_job_id(
     populated_test_db, job_loaded_scheduler
 ):
-    patch_data = {
+    put_data = {
+        "job_id": "nonexistent_job_id",
+        "name": "New Test Job Name",
+        "device_type_name": "TEST_DEVICE_TYPE_NAME_2",
+        "mqtt_ids": [234, 345],
         "message_kvp": {
             "key": "test_key_2",
             "value": "test_value_2",
@@ -138,5 +178,5 @@ def test_route_patch_job_fails_with_nonexistent_job_id(
         },
         "active": False,
     }
-    resp = sched_client.patch("/scheduler/nonexistent_job_id", json=patch_data)
+    resp = sched_client.put("/scheduler/", json=put_data)
     assert resp.status_code == 404

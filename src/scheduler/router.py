@@ -64,19 +64,20 @@ def delete_job(job_id: str):
         )
 
 
-@scheduler_router.patch("/{job_id}", response_model=schemas.JobResponse)
-def modify_job(job_id: str, modified_job: schemas.ModifyJob):
+@scheduler_router.put("/", response_model=schemas.JobResponse)
+def update_job(updated_job: schemas.UpdateJob):
     try:
-        job: model.ApschedulerJobsNonSerializable | None = crud.modify_job_by_id(
-            job_id, modified_job
+        job: model.ApschedulerJobsNonSerializable | None = crud.update_job_by_id(
+            updated_job.job_id, updated_job
         )
     except Exception as e:
         logger.error(e)
         raise HTTPException(
-            status_code=500, detail="Error modifying scheduled job with id %s." % job_id
+            status_code=500,
+            detail="Error modifying scheduled job with id %s." % updated_job.job_id,
         )
     if job is None:
         raise HTTPException(
-            status_code=404, detail="Job with id %s not found." % job_id
+            status_code=404, detail="Job with id %s not found." % updated_job.job_id
         )
     return crud.serialize_job(job)

@@ -40,9 +40,9 @@ class JobResponse(JobId, MQTTIds, JobName, MessageKVP, SchedulerKwargs):
     active: bool = True
 
 
-class ModifyJob(BaseModel):
-    name: str = None
+class UpdateJob(JobId, BaseModel):
+    name: str
     mqtt_ids: list[int] = None
-    message_kvp: KVP = None
-    scheduler_kwargs: dict[str, Any] = None
-    active: bool = None
+    message_kvp: KVP
+    scheduler_kwargs: dict[str, Any]
+    active: bool

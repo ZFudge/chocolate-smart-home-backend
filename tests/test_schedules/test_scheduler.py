@@ -4,9 +4,9 @@ from unittest.mock import call, patch
 from src.scheduler import schemas, crud
 
 
-def test_create_job_creates_and_returns_new_job(populated_test_db):
+def test_create_cron_job_creates_and_returns_new_job(populated_test_db):
     schema = schemas.JobToSchedule(
-        job_id="test",
+        job_id="cron-test",
         device_type_name="TEST_DEVICE_TYPE_NAME_1",
         mqtt_ids=[123],
         message_kvp=schemas.KVP(
@@ -20,13 +20,48 @@ def test_create_job_creates_and_returns_new_job(populated_test_db):
     )
     job = crud.create_job(schema)
     assert job is not None
-    assert job.job_id == "test"
+    assert job.job_id == "cron-test"
     assert job.device_type_id == 1
     assert len(job.devices) == 1
     assert job.devices[0].mqtt_id == 123
     assert job.message_kvp == {
         "key": "test",
         "value": True,
+    }
+    assert job.scheduler_kwargs == {
+        "minute": "*/3",
+        "trigger": "cron",
+    }
+    assert job.active is True
+
+
+def test_create_date_job_creates_and_returns_new_job(populated_test_db):
+    schema = schemas.JobToSchedule(
+        job_id="date-test",
+        device_type_name="TEST_DEVICE_TYPE_NAME_1",
+        mqtt_ids=[123],
+        message_kvp=schemas.KVP(
+            key="test",
+            value=True,
+        ),
+        scheduler_kwargs=dict(
+            trigger="date",
+            run_date="2027-01-01 00:00:00",
+        ),
+    )
+    job = crud.create_job(schema)
+    assert job is not None
+    assert job.job_id == "date-test"
+    assert job.device_type_id == 1
+    assert len(job.devices) == 1
+    assert job.devices[0].mqtt_id == 123
+    assert job.message_kvp == {
+        "key": "test",
+        "value": True,
+    }
+    assert job.scheduler_kwargs == {
+        "trigger": "date",
+        "run_date": "2027-01-01 00:00:00",
     }
     assert job.active is True
 
@@ -61,8 +96,8 @@ def test_create_job_invalid_mqtt_ids_raises_error(populated_test_db):
             value=True,
         ),
         scheduler_kwargs=dict(
-            key="test",
-            value=True,
+            trigger="date",
+            run_date="2027-01-01 00:00:00",
         ),
         active=True,
     )
@@ -121,18 +156,33 @@ def test_delete_job_by_id_invalid_id_does_not_raise_error(populated_test_db):
         )
 
 
-def test_modify_job_by_id_modifies_job(populated_test_db, job_loaded_scheduler):
-    modified_job = schemas.ModifyJob(
+def test_update_job_by_id_updates_job(populated_test_db, job_loaded_scheduler):
+    updated_job = schemas.UpdateJob(
+        job_id="test_job_id",
+        name="New Test Job Name",
+        device_type_name="TEST_DEVICE_TYPE_NAME_1",
+        mqtt_ids=[234, 345],
         message_kvp=schemas.KVP(
             key="test_key_2",
             value=5,
         ),
+        scheduler_kwargs=dict(
+            minute="*",
+            trigger="cron",
+        ),
         active=False,
     )
-    job = crud.modify_job_by_id("test_job_id", modified_job)
+    job = crud.update_job_by_id("test_job_id", updated_job)
     assert job is not None
+    assert job.name == "New Test Job Name"
+    assert job.device_type_id == 1
+    assert [d.mqtt_id for d in job.devices] == [345, 234]
     assert job.message_kvp == {
         "key": "test_key_2",
         "value": 5,
+    }
+    assert job.scheduler_kwargs == {
+        "minute": "*",
+        "trigger": "cron",
     }
     assert job.active is False
