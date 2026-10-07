@@ -1,60 +1,42 @@
-from pydantic import BaseModel, field_validator
-from typing import List
-
-from src.schemas.device_type import DeviceType
-from src.schemas.tag import Tag
+from pydantic import BaseModel
+from typing import Any
 
 
 class DeviceId(BaseModel):
-    id: int
+    mqtt_id: int
 
 
 class DeviceBase(BaseModel):
-    mqtt_id: str | int
     remote_name: str
     name: str
-    device_type: DeviceType
-    tags: List[Tag] | None
     reboots: int
-
-    @field_validator("tags", mode="before")
-    @classmethod
-    def none_to_empty(cls, v: object) -> object:
-        if v is None:
-            return []
-        return v
-
-
-class Device(DeviceId, DeviceBase):
-    pass
-
-
-class DeviceUpdate(BaseModel):
-    mqtt_id: int
-    device_type_name: str
-
-
-class UpdateDeviceName(BaseModel):
-    name: str
 
 
 class DeviceReceived(BaseModel):
     mqtt_id: int
+    device_type_name: str = ""
+    remote_name: str = ""
+    name: str = ""
+    plugin: Any = None
+
+
+class DeviceFrontend(DeviceId, DeviceBase):
     device_type_name: str
-    remote_name: str
-    name: str | None = None
-
-
-class DeviceFrontend(DeviceReceived):
+    tags: list[int] | None = None
     last_seen: str | None = None
     last_update_sent: str | None = None
-    tags: List[Tag] | None = None
+    plugin: Any = None
+
+
+class DevicePatch(BaseModel):
+    mqtt_id: int
+    tags: list[int] | None = None
+    name: str | None = None
 
 
 __all__ = [
     "DeviceBase",
-    "Device",
-    "DeviceReceived",
-    "DeviceUpdate",
     "DeviceFrontend",
+    "DevicePatch",
+    "DeviceReceived",
 ]

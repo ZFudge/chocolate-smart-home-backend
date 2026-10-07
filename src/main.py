@@ -4,45 +4,40 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from src.mqtt import get_mqtt_client
-from src.plugins.discovered_plugins import (
-    PLUGIN_ROUTERS,
-    discover_and_import_device_plugin_modules,
-)
+from src.dependencies import mqtt_client_session
+from src.plugins import PluginsManager
+from src.pubsub import connect_to_mqtt_broker, subscribe, topics
+from src.pubsub.handler import mqtt_message_handler
 from src.routers import APP_ROUTERS
-from src.websocket.WebsocketServiceConnector import WebsocketServiceConnector
+from src.streams import reads
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+
+
+class EndpointFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        return "/healthcheck" not in record.getMessage()
+
+
+logging.getLogger("uvicorn.access").addFilter(EndpointFilter())
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Initialize websocket service connection on startup."""
-    mqtt_client = get_mqtt_client()
-    # Wait for the MQTT client to connect
+    mqtt_client = mqtt_client_session.get()
     while not mqtt_client.is_connected():
         logger.info("Waiting for the initial MQTT client connection...")
-        mqtt_client.connect()
-
-    wsc = WebsocketServiceConnector(mqtt_client)
-    # Store the event loop reference for thread-safe coroutine execution
-    WebsocketServiceConnector.set_event_loop(asyncio.get_event_loop())
-    # Start the websocket service connection task
-    asyncio.create_task(wsc.connect_to_websocket_service())
+        await asyncio.sleep(3)
+        connect_to_mqtt_broker()
+    subscribe(topic=topics.RECEIVE_DEVICE_DATA, handler=mqtt_message_handler)
+    asyncio.create_task(reads.handle_reads())
+    logger.info("Including routers...")
     yield
-    mqtt_client.disconnect()
-    await wsc.disconnect()
 
 
 app = FastAPI(lifespan=lifespan)
 
-# Plugin modules import the MQTT client context, and the MQTT message handler
-# imports plugins, so plugin module imports are deferred until after the MQTT
-# client is connected and its context is set.
-discover_and_import_device_plugin_modules()
+PluginsManager.discover_plugins()
 
-logger.info("Including routers...")
-# With plugins imported, their endpoints can be included.
-for router in APP_ROUTERS + tuple(PLUGIN_ROUTERS):
+for router in APP_ROUTERS + tuple(PluginsManager.ROUTERS):
     app.include_router(router)

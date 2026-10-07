@@ -1,137 +1,62 @@
+from unittest.mock import Mock
+
 import pytest
-from datetime import datetime as dt
 
-from src import models
-from src.plugins.device_plugins.neo_pixel.model import NeoPixel, Palette
-
-
-OLDER_DATE = dt.fromisoformat("2025-01-01 00:00:00.000000")
-NEWER_DATE = dt.fromisoformat("2025-01-02 00:00:00.000000")
+from ..ControllerToServerMessenger import ControllerToServerMessenger
+from ..DeviceManager import DeviceManager, Model
+from ..ServerToControllerMessenger import ServerToControllerMessenger
 
 
-@pytest.fixture
-def empty_test_db(empty_test_db):
-    """Modifies empty_test_db fixture from ../conftest to drop NeoPixel
-    rows before dropping foreign Device/DeviceType rows."""
-    yield empty_test_db
+@pytest.fixture()
+def ControllerToServerMessengerWithSuper():
+    class BaseControllerToServerMessenger:
+        def parse_controller_msg(
+            self,
+            raw_msg: str,
+        ):
+            return Mock(), iter(raw_msg.split(",")[3:])
 
-    empty_test_db.query(NeoPixel).delete()
-    empty_test_db.query(Palette).delete()
-    empty_test_db.commit()
+    class ControllerToServerMessengerWithSuper(
+        ControllerToServerMessenger, BaseControllerToServerMessenger
+    ):
+        pass
+
+    yield ControllerToServerMessengerWithSuper
 
 
-@pytest.fixture
-def populated_test_db(empty_test_db):
-    device_type = models.DeviceType(name="neo_pixel")
+@pytest.fixture()
+def ServerToControllerMessengerWithSuper():
+    class BaseServerToControllerMessenger:
+        def compose_controller_msg(self, msg_data: dict) -> str | None:
+            return ""
 
-    tag = models.Tag(name="NeoPixel Tag")
+        @staticmethod
+        def _compose_param(key: str, val: str) -> str:
+            return f"{key}={val};"
 
-    device__id_1 = models.Device(
-        remote_name="Test Neo Pixel Device - 1",
-        mqtt_id=123,
-        device_type=device_type,
-        name="Test Neo Pixel Device One",
-        last_seen=NEWER_DATE,
-        last_update_sent=OLDER_DATE,
+    class PluginServerToControllerMessenger(
+        ServerToControllerMessenger, BaseServerToControllerMessenger
+    ):
+        pass
+
+    yield PluginServerToControllerMessenger
+
+
+@pytest.fixture()
+def DeviceManagerWithSuper_and_mocked_PluginModel():
+    Model.PluginModel = Mock()
+
+    class BaseDeviceManager(Mock):
+        pass
+
+    BaseDeviceManager.create_device = Mock(return_value="create_db_device")
+    BaseDeviceManager.update_device = Mock(return_value="updated_db_device")
+    BaseDeviceManager.update_server_side_value = Mock(
+        return_value="update_server_side_value"
     )
-    device__id_1.tags.append(tag)
+    BaseDeviceManager.commit_db_object = Mock()
 
-    device__id_2 = models.Device(
-        remote_name="Test Neo Pixel Device - 2",
-        mqtt_id=456,
-        device_type=device_type,
-        name="Test Neo Pixel Device Two",
-        last_seen=NEWER_DATE,
-        last_update_sent=OLDER_DATE,
-    )
+    class DeviceManagerWithSuper(DeviceManager, BaseDeviceManager):
+        pass
 
-    neo_pixel_device__id_1 = NeoPixel(
-        on=True,
-        twinkle=True,
-        scheduled_palette_rotation=True,
-        transform=True,
-        ms=5,
-        brightness=255,
-        palette=[
-            "#000102",
-            "#030405",
-            "#060708",
-            "#090a0b",
-            "#0c0d0e",
-            "#0f1011",
-            "#121314",
-            "#d2dce6",
-            "#f0faff",
-        ],
-        armed=True,
-        timeout=172,
-        device=device__id_1,
-    )
-    neo_pixel_device__id_2 = NeoPixel(
-        on=False,
-        twinkle=True,
-        transform=False,
-        ms=55,
-        brightness=123,
-        palette=[
-            "#000102",
-            "#030405",
-            "#060708",
-            "#090a0b",
-            "#0c0d0e",
-            "#0f1011",
-            "#121314",
-            "#d2dce6",
-            "#f0faff",
-        ],
-        device=device__id_2,
-    )
-
-    db = empty_test_db
-
-    db.add(device_type)
-    db.add(tag)
-
-    db.add(device__id_1)
-    db.add(device__id_2)
-
-    db.add(neo_pixel_device__id_1)
-    db.add(neo_pixel_device__id_2)
-
-    palette = Palette(
-        name="Test Palette",
-        palette=[
-            0,
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            7,
-            8,
-            9,
-            10,
-            11,
-            12,
-            13,
-            14,
-            15,
-            16,
-            17,
-            18,
-            19,
-            20,
-            21,
-            22,
-            23,
-            24,
-            25,
-            26,
-        ],
-    )
-    db.add(palette)
-
-    db.commit()
-
-    yield db
+    yield DeviceManagerWithSuper, Model.PluginModel

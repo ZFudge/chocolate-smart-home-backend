@@ -1,5 +1,6 @@
-# seed data for virtual clients, to simulate On/Off Virtual Client
-# controllers during development
+import logging
+
+logger = logging.getLogger("vcs")
 
 seeds = [
     {
@@ -33,24 +34,11 @@ seeds = [
 ]
 
 
-def translate_vc_dict_to_mqtt_msg(seed: dict) -> str:
+def compose_outgoing_msg(vc_state: dict) -> str:
     """Mocks the controller state expected by the CSM server"""
-    # cast bool to int
-    on = int(seed["on"])
-
-    msg_values = [
-        # Add configs
-        seed["mqtt_id"],
-        seed["device_type_name"],
-        seed["name"],
-        # Add state
-        on,
-    ]
-
-    msg_values = map(str, msg_values)
-
-    return ",".join(msg_values)
+    return str(int(vc_state["on"]))
 
 
-def parse_payload(payload: str) -> dict:
+def parse_incoming_payload(payload: str) -> tuple[str, str]:
+    logger.info(f"Received on/off plugin virtual client payload: {payload}")
     return "on", payload

@@ -1,25 +1,46 @@
 from contextvars import ContextVar
 from datetime import datetime as dt
+from unittest.mock import AsyncMock, Mock
 
 import pytest
+from paho.mqtt.client import CallbackAPIVersion, Client, MQTT_ERR_SUCCESS, MQTTMessage
+from redis.asyncio import Redis
+from sqlalchemy.exc import InternalError, ProgrammingError
 from sqlalchemy.orm import Session, sessionmaker
+from uvloop import Loop
+
 
 from src import models
 from src.database import Base
-from src.dependencies import db_session, engine, get_db
+from src.dependencies import (
+    asyncio_event_loop,
+    db_session,
+    engine,
+    get_asyncio_loop,
+    get_db,
+    get_mqtt_client,
+    get_redis,
+    mqtt_client_session,
+    redis_session,
+)
 from src.main import app
+from src.scheduler import (
+    crud as sched_crud,
+    model as scheduler_model,
+)
+from src.SingletonMeta import SingletonMeta
 
 
-OLDER_DATE = dt.fromisoformat("2025-01-01 00:00:00.000000")
-NEWER_DATE = dt.fromisoformat("2025-01-02 00:00:00.000000")
+@pytest.fixture(scope="function", autouse=True)
+def singleton_instance_cleanup():
+    SingletonMeta._SINGLETONS = {}
+    yield
 
 
 def db_closure():
-
     TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
+    Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
-
     db: Session | None = None
 
     def db_func():
@@ -35,7 +56,7 @@ def db_closure():
 
 
 @pytest.fixture
-def empty_test_db():
+def empty_test_db(clear_test_db):
     override_get_db = db_closure()
     app.dependency_overrides[get_db] = override_get_db
 
@@ -47,13 +68,41 @@ def empty_test_db():
 
     yield db_session.get()
 
-    db_session.get().query(models.device_tags).delete()
-    db_session.get().query(models.Device).delete()
-    db_session.get().query(models.DeviceType).delete()
-    db_session.get().query(models.Tag).delete()
-    db_session.get().commit()
 
-    Base.metadata.drop_all(bind=engine)
+@pytest.fixture
+def clear_test_db():
+    yield
+    drop = False
+
+    for mapper in Base.registry.mappers:
+        if mapper.class_.__name__.lower().endswith("plugin"):
+            try:
+                ModelClass = mapper.class_
+                db_session.get().query(ModelClass).delete()
+                db_session.get().commit()
+            except Exception as e:
+                print(e)
+            drop = True
+
+    if "device_tags" in Base.metadata.tables:
+        try:
+            db_session.get().query(scheduler_model.job_devices).delete()
+            db_session.get().query(
+                scheduler_model.ApschedulerJobsNonSerializable
+            ).delete()
+            db_session.get().query(models.device_tags).delete()
+            db_session.get().query(models.Device).delete()
+            db_session.get().query(models.Tag).delete()
+            db_session.get().query(models.DeviceType).delete()
+            db_session.get().commit()
+            Base.metadata.drop_all(bind=engine)
+            drop = True
+        except (ProgrammingError, InternalError) as e:
+            print(e)
+            pass
+
+    if drop:
+        Base.metadata.drop_all(bind=engine)
 
 
 @pytest.fixture
@@ -67,6 +116,9 @@ def populated_test_db(empty_test_db):
     tag_2 = models.Tag(name="Other Tag")
     tag_3 = models.Tag(name="Third Tag")
 
+    OLDER_DATE = dt.fromisoformat("2025-01-01 00:00:00.000000")
+    NEWER_DATE = dt.fromisoformat("2025-01-02 00:00:00.000000")
+
     device_1 = models.Device(
         mqtt_id=123,
         remote_name="Remote Name 1 - 1",
@@ -78,12 +130,21 @@ def populated_test_db(empty_test_db):
     )
 
     device_2 = models.Device(
-        mqtt_id=456,
+        mqtt_id=234,
         remote_name="Remote Name 2 - 2",
         name="Test Device Name 2",
         device_type=type_2,
         last_seen=OLDER_DATE,
         last_update_sent=NEWER_DATE,
+    )
+
+    device_3 = models.Device(
+        mqtt_id=345,
+        remote_name="Remote Name 3 - 3",
+        name="Test Device Name 3",
+        device_type=type_2,
+        last_seen=OLDER_DATE,
+        last_update_sent=OLDER_DATE,
     )
 
     test_db.add(type_1)
@@ -93,7 +154,148 @@ def populated_test_db(empty_test_db):
     test_db.add(tag_3)
     test_db.add(device_1)
     test_db.add(device_2)
+    test_db.add(device_3)
+    test_db.commit()
+
+    test_db.refresh(type_1)
+    test_db.refresh(device_3)
+
+    job_1 = scheduler_model.ApschedulerJobsNonSerializable(
+        job_id="test_job_id",
+        name="Test Job 1",
+        device_type_id=type_1.id,
+        devices=[device_3],
+        message_kvp=dict(
+            key="test_key",
+            value=True,
+        ),
+        scheduler_kwargs=dict(
+            trigger="cron",
+            minute="*/3",
+        ),
+        active=True,
+    )
+    test_db.add(job_1)
 
     test_db.commit()
 
     yield test_db
+
+
+def mqtt_client_closure():
+    mqtt_client: Client | None = None
+
+    def mqtt_client_func():
+        nonlocal mqtt_client
+        if mqtt_client is None:
+            mqtt_client = Mock(
+                spec=Client(
+                    CallbackAPIVersion.VERSION2, client_id="testing_mqtt_client"
+                )
+            )
+            mqtt_client.publish.return_value = (MQTT_ERR_SUCCESS, None)
+            mqtt_client.is_connected.return_value = True
+        try:
+            yield mqtt_client
+        finally:
+            mqtt_client.disconnect()
+
+    return mqtt_client_func
+
+
+@pytest.fixture
+def mqtt_client():
+    override_get_mqtt_client = mqtt_client_closure()
+    app.dependency_overrides[get_mqtt_client] = override_get_mqtt_client
+
+    override_mqtt_client_session: ContextVar[Client] = ContextVar(
+        "mqtt_client_session", default=next(override_get_mqtt_client())
+    )
+
+    mqtt_client_session.set(next(override_get_mqtt_client()))
+    app.dependency_overrides[mqtt_client_session] = override_mqtt_client_session
+
+    yield mqtt_client_session.get()
+
+
+@pytest.fixture
+def mqtt_message():
+    message = MQTTMessage()
+    message.payload = b"123,test_device_type_name,test_remote_name"
+    yield message
+
+
+def event_loop_closure():
+    event_loop: Loop | None = None
+
+    def event_loop_func():
+        nonlocal event_loop
+        if event_loop is None:
+            event_loop = AsyncMock(spec=Loop)
+        yield event_loop
+
+    return event_loop_func
+
+
+@pytest.fixture
+def mock_asyncio_event_loop():
+    override_get_loop = event_loop_closure()
+    app.dependency_overrides[get_asyncio_loop] = override_get_loop
+
+    override_event_loop: ContextVar[Loop] = ContextVar(
+        "asyncio_event_loop", default=next(override_get_loop())
+    )
+
+    asyncio_event_loop.set(next(override_get_loop()))
+    app.dependency_overrides[asyncio_event_loop] = override_event_loop
+
+    yield asyncio_event_loop.get()
+
+
+@pytest.fixture
+def none_asyncio_event_loop():
+    override_event_loop: ContextVar[Loop] = ContextVar(
+        "asyncio_event_loop", default=None
+    )
+
+    asyncio_event_loop.set(None)
+    app.dependency_overrides[asyncio_event_loop] = override_event_loop
+
+    yield asyncio_event_loop.get()
+
+
+def redis_closure():
+    redis_client: Redis | None = None
+
+    def redis_client_func():
+        nonlocal redis_client
+        if redis_client is None:
+            redis_client = AsyncMock(spec=Redis)
+            redis_client.xadd = AsyncMock()
+            redis_client.xread = AsyncMock()
+
+        yield redis_client
+
+    return redis_client_func
+
+
+@pytest.fixture
+def mock_redis_session(mock_asyncio_event_loop):
+    override_get_redis = redis_closure()
+    app.dependency_overrides[get_redis] = override_get_redis
+
+    override_redis_session: ContextVar[Redis] = ContextVar(
+        "redis_session", default=next(override_get_redis())
+    )
+
+    redis_session.set(next(override_get_redis()))
+    app.dependency_overrides[redis_session] = override_redis_session
+
+    yield redis_session.get()
+
+
+@pytest.fixture
+def job_loaded_scheduler():
+    sched_crud.load_jobs_from_db()
+    yield sched_crud.sched
+    sched_crud.sched.remove_all_jobs()

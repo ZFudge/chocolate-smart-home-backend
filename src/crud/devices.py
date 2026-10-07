@@ -1,60 +1,115 @@
-import datetime as dt
 import logging
-from typing import List
+from datetime import datetime as dt
 
-from sqlalchemy.exc import NoResultFound, SQLAlchemyError
+from sqlalchemy import text
+from sqlalchemy.engine.result import MappingResult
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
-from src import dependencies, models
-
+from src import crud, models, schemas
+from src.dependencies import db_session
+from src.scheduler.crud import schedule_job_from_db_obj
+from .utils import commit_db_object, get_device_type_names_with_model_exists
 
 logger = logging.getLogger()
 
 
-def get_all_devices_data() -> List[models.Device]:
-    db: Session = dependencies.db_session.get()
-    return db.query(models.Device).all()
+def get_devices() -> tuple[MappingResult]:
+    models_exist_by_device_type = get_device_type_names_with_model_exists()
+    PLUGIN_CASE_WHENS = ""
+    PLUGIN_TABLE_LEFT_JOINS = ""
+    PLUGIN_GROUP_BYS = ""
+    for device_type_dict in models_exist_by_device_type:
+        plugin_name = device_type_dict["device_type_name"]
+        abbreviation = "".join([w[0] for w in plugin_name.split("_")])
+        if not device_type_dict["has_plugin_model"]:
+            continue
+        PLUGIN_CASE_WHENS += f"""
+                WHEN dt.name = '{plugin_name}' THEN row_to_json({abbreviation})"""
+        PLUGIN_TABLE_LEFT_JOINS += f"""
+        LEFT JOIN
+            {plugin_name} {abbreviation} ON d.mqtt_id = {abbreviation}.mqtt_id AND dt.name = '{plugin_name}'"""
+        PLUGIN_GROUP_BYS += f""",
+            {abbreviation}.*"""
+    PLUGIN_CASES = ""
+    if PLUGIN_CASE_WHENS:
+        PLUGIN_CASES = f""",
+            CASE{PLUGIN_CASE_WHENS}
+                ELSE null
+            END AS plugin"""
+    raw_sql = f"""
+        SELECT
+            d.mqtt_id,
+            d.name,
+            d.remote_name,
+            d.reboots,
+            d.last_seen,
+            d.last_update_sent,
+            dt.name AS device_type_name,
+            dtags.tag_ids{PLUGIN_CASES}
+        FROM
+            devices d
+        LEFT JOIN
+            device_types dt ON d.device_type_id = dt.id
+        LEFT JOIN
+            (
+                SELECT
+                    mqtt_id,
+                    JSON_AGG(tag_id)::TEXT AS tag_ids
+                FROM
+                    device_tags
+                GROUP BY
+                    mqtt_id
+            ) dtags ON d.mqtt_id = dtags.mqtt_id{PLUGIN_TABLE_LEFT_JOINS}
+        GROUP BY
+            d.mqtt_id,
+            dt.name,
+            dtags.tag_ids{PLUGIN_GROUP_BYS}
+        ORDER BY
+            dt.name,
+            d.mqtt_id;"""
+    logger.info(raw_sql)
+    results = db_session.get().execute(text(raw_sql))
+    return tuple(results.mappings().all())
 
 
-def get_device_by_device_id(device_id: int) -> models.Device:
+def get_device_by_id(mqtt_id: int) -> models.Device | None:
     return (
-        dependencies.db_session.get()
+        db_session.get()
         .query(models.Device)
-        .filter(models.Device.id == device_id)
-        .one()
+        .where(models.Device.mqtt_id == mqtt_id)
+        .one_or_none()
     )
 
 
-def get_device_by_mqtt_id(mqtt_id: int) -> models.Device:
+def get_devices_by_ids(mqtt_ids: list[int]) -> list[models.Device]:
     return (
-        dependencies.db_session.get()
+        db_session.get()
         .query(models.Device)
-        .filter(models.Device.mqtt_id == mqtt_id)
-        .one()
+        .where(models.Device.mqtt_id.in_(mqtt_ids))
+        .all()
     )
 
 
-def get_devices_by_mqtt_id(
-    mqtt_id: int | List[int],
-) -> models.Device | List[models.Device]:
-    logger.info(f"getting device by mqtt_id: {mqtt_id}")
-    db: Session = dependencies.db_session.get()
-    if isinstance(mqtt_id, list):
-        return db.query(models.Device).filter(models.Device.mqtt_id.in_(mqtt_id)).all()
-    return db.query(models.Device).filter(models.Device.mqtt_id == mqtt_id).one()
-
-
-def delete_device(device_id: int) -> None:
+def delete_device(mqtt_id: int) -> None:
     """Dynamically delete row of any device model."""
-    logger.info('Deleting Device with id of "%s"' % device_id)
-    db: Session = dependencies.db_session.get()
+    logger.info(f"Deleting Device with mqtt id of {mqtt_id}")
+    db: Session = db_session.get()
 
-    try:
-        device = db.query(models.Device).filter(models.Device.id == device_id).one()
-    except NoResultFound:
-        msg = "Device deletion failed. No Device with an id of %s found." % device_id
+    device = get_device_by_id(mqtt_id)
+    if device is None:
+        msg = (
+            "Failed to delete device with mqtt id %s. No Device object with an mqtt id of %s found."
+            % (mqtt_id, mqtt_id)
+        )
         logger.error(msg)
         raise NoResultFound(msg)
+
+    if device.scheduled_jobs:
+        for job in device.scheduled_jobs:
+            job.devices.remove(device)
+            schedule_job_from_db_obj(job)
+            commit_db_object(job)
 
     db.delete(device)
     db.flush()
@@ -65,152 +120,92 @@ def delete_device(device_id: int) -> None:
         raise
 
 
-def get_tags_by_ids(tag_ids: List[int | str]) -> List[models.Tag]:
-    db: Session = dependencies.db_session.get()
-    return db.query(models.Tag).filter(models.Tag.id.in_(tag_ids)).all()
-
-
-def put_device_tags(
-    mqtt_id: int, tag_ids: List[int | str] | None
-) -> models.Device:
-    logger.info(
-        f"Putting tags for device with mqtt id {mqtt_id} with tag ids {tag_ids}"
-    )
-    if tag_ids is None:
-        tag_ids = []
-    logger.info(
-        'Adding Tag(s) id(s) of %s to Device with mqtt id of "%s"'
-        % (tag_ids, mqtt_id)
-    )
-    db: Session = dependencies.db_session.get()
-    try:
-        device = get_devices_by_mqtt_id(mqtt_id)
-    except NoResultFound as e:
-        msg = "Failed to add Tag id(s) of %s to " "Device of mqtt id %s - %s" % (
-            tag_ids,
-            mqtt_id,
-            e.args[0],
+def patch_device(patch_device: schemas.DevicePatch) -> models.Device:
+    device = get_device_by_id(patch_device.mqtt_id)
+    if device is None:
+        msg = (
+            f"Failed to patch device with mqtt id {patch_device.mqtt_id}. "
+            f"No Device object with an mqtt id of {patch_device.mqtt_id} found."
         )
         logger.error(msg)
         raise NoResultFound(msg)
 
-    device.tags = []
+    if patch_device.tags is not None:
+        tags = crud.get_tags_by_ids(patch_device.tags)
+        device.tags = list(filter(None, tags))
+    if patch_device.name is not None:
+        device.name = patch_device.name
 
-    if tag_ids:
-        tags = get_tags_by_ids(tag_ids)
-        if len(tags) == 0:
-            msg = (
-                "Failed to add Tag id(s) of %s to "
-                "Device of mqtt id %s - No Tag object(s) with id(s) %s found."
-                % (
-                    tag_ids,
-                    mqtt_id,
-                    tag_ids,
-                )
-            )
-            logger.error(msg)
-            raise NoResultFound(msg)
-        for tag in tags:
-            device.tags.append(tag)
-
+    db: Session = db_session.get()
     db.add(device)
-    db.commit()
-    db.refresh(device)
-
-    return device
-
-
-def add_device_tag(device_id: int, tag_id: int) -> models.Device:
-    logger.info(
-        'Adding Tag with id of %s to Device with id of "%s"' % (tag_id, device_id)
-    )
-    db: Session = dependencies.db_session.get()
-
     try:
-        tag = db.query(models.Tag).filter(models.Tag.id == tag_id).one()
-        device = get_device_by_device_id(device_id)
-    except NoResultFound as e:
-        msg = "Failed to add Tag of id %s to " "Device of id %s - %s" % (
-            tag_id,
-            device_id,
-            e.args[0],
-        )
-        logger.error(msg)
-        raise NoResultFound(msg)
-
-    new_tags = device.tags
-    if new_tags is None:
-        new_tags = []
-    if tag not in new_tags:
-        new_tags.append(tag)
-    device.tags = new_tags
-
-    db.add(device)
-    db.commit()
-    db.refresh(device)
-
-    return device
-
-
-def remove_device_tag(device_id: int, tag_id: int) -> models.Device:
-    logger.info(
-        'Removing Tag with id of %s from Device with id of "%s"' % (tag_id, device_id)
-    )
-    db: Session = dependencies.db_session.get()
-
-    try:
-        device = get_device_by_device_id(device_id)
-        tag = db.query(models.Tag).filter(models.Tag.id == tag_id).one()
-    except NoResultFound as e:
-        msg = "Failed to remove Tag from " "Device with id of %s - %s" % (
-            device_id,
-            e.args[0],
-        )
-        logger.error(msg)
-        raise NoResultFound(msg)
-
-    new_tags = device.tags
-    if new_tags is None:
-        new_tags = []
-    else:
-        new_tags.remove(tag)
-    device.tags = new_tags
-    db.add(device)
-    db.commit()
-    db.refresh(device)
-
-    return device
-
-
-def update_device_name(mqtt_id: int, device_name: str) -> models.Device:
-    logger.info(
-        f"Updating device name for device with mqtt id {mqtt_id} to {device_name}"
-    )
-    db: Session = dependencies.db_session.get()
-    try:
-        device = get_devices_by_mqtt_id(mqtt_id)
-    except NoResultFound as e:
-        msg = "Failed to update device name for " "Device with mqtt id of %s - %s" % (
-            mqtt_id,
-            e.args[0],
-        )
-        logger.error(msg)
-        raise NoResultFound(msg)
-    device.name = device_name
-    db.add(device)
-    db.commit()
-    db.refresh(device)
-    return device
-
-
-def update_last_update_sent_if_exists(mqtt_id: int):
-    db: Session = dependencies.db_session.get()
-    try:
-        device = db.query(models.Device).filter(models.Device.mqtt_id == mqtt_id).one()
-        device.last_update_sent = dt.datetime.now()
-        db.add(device)
         db.commit()
-    except (SQLAlchemyError, NoResultFound) as e:
-        (detail,) = e.args
+    except:
         db.rollback()
-        logger.error("Failed to update last update sent for Device with an id of %s: %s" % (mqtt_id, detail))
+        raise
+    db.refresh(device)
+    return device
+
+
+def create_device(device: schemas.DeviceReceived) -> models.Device:
+    logger.info('Creating Base device "%s"' % device.mqtt_id)
+    device_type_name: str = device.device_type_name
+    db_device_type: models.DeviceType = crud.get_device_type_by_name(
+        device_type_name
+    ) or crud.create_device_type(device_type_name)
+    # TODO: lookup existing device name from previously exported settings
+    truncated_remote_name = device.remote_name.split(" - ")[0]
+
+    device_model = models.Device(
+        mqtt_id=device.mqtt_id,
+        remote_name=device.remote_name,
+        name=truncated_remote_name,
+        device_type=db_device_type,
+    )
+    new_device = commit_db_object(device_model)
+    return new_device
+
+
+def update_device(device: schemas.DeviceReceived, *_) -> models.Device:
+    logger.info('Updating Base device "%s"' % device)
+    db_device: models.Device = get_device_by_id(device.mqtt_id)
+    if db_device is None:
+        raise ValueError(f"Device with mqtt_id {device.mqtt_id} not found")
+
+    if device.device_type_name != db_device.device_type.name:
+        logger.warning(
+            f"Device with mqtt_id {device.mqtt_id} has a different device type: {db_device.device_type.name} -> {device.device_type_name}"
+        )
+        device_type_db: models.DeviceType = crud.get_device_type_by_name(
+            device.device_type_name
+        ) or crud.create_device_type(device.device_type_name)
+        db_device.device_type = device_type_db
+
+    if db_device.remote_name != device.remote_name:
+        db_device.reboots += 1
+        db_device.remote_name = device.remote_name
+
+    updated_device = commit_db_object(db_device)
+    return updated_device
+
+
+def set_last_update_sent_to_current_time(mqtt_id: int) -> models.Device:
+    db_device: models.Device = get_device_by_id(mqtt_id)
+    if db_device is None:
+        raise ValueError(f"Device with mqtt_id {mqtt_id} not found")
+
+    db_device.last_update_sent = dt.now()
+
+    updated_device = commit_db_object(db_device)
+    return updated_device
+
+
+def set_last_seen_to_current_time(mqtt_id: int) -> models.Device | None:
+    db_device: models.Device = get_device_by_id(mqtt_id)
+    if db_device is None:
+        return
+
+    db_device.last_seen = dt.now()
+
+    updated_device = commit_db_object(db_device)
+    return updated_device

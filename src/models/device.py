@@ -1,23 +1,16 @@
-from typing import List
-
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Column, DateTime, ForeignKey, func, Integer, String
 from sqlalchemy.orm import relationship, Mapped
 
 from src.database import Base
+from src.scheduler.model import job_devices, ApschedulerJobsNonSerializable
 from .device_tags import device_tags
-from .model_str_formatter import ModelStrFormatter
 from .tag import Tag
 
 
-class Device(Base, ModelStrFormatter):
+class Device(Base):
     __tablename__ = "devices"
 
-    id = Column(Integer, primary_key=True)
-    mqtt_id = Column(Integer, unique=True)
-
-    last_seen = Column(DateTime, default=None)
-    last_update_sent = Column(DateTime, default=None)
-    reboots = Column(Integer, default=0)
+    mqtt_id = Column(Integer, primary_key=True)
 
     remote_name = Column(String)
     name = Column(String)
@@ -25,19 +18,33 @@ class Device(Base, ModelStrFormatter):
     device_type_id = Column(Integer, ForeignKey("device_types.id"))
     device_type = relationship("DeviceType", back_populates="devices")
 
-    tags: Mapped[List[Tag]] = relationship(
+    tags: Mapped[list[Tag]] = relationship(
         secondary=device_tags, back_populates="devices"
     )
+    scheduled_jobs: Mapped[list[ApschedulerJobsNonSerializable]] = relationship(
+        secondary=job_devices, back_populates="devices"
+    )
+
+    created_date = Column(DateTime, default=func.now())
+    last_seen = Column(DateTime, default=None)
+    last_update_sent = Column(DateTime, default=None)
+    reboots = Column(Integer, default=0)
 
     def __str__(self):
-        """Return ModelStrFormatter.__str__ result of both the Device object and
-        its corresponding DeviceType object."""
-        attrs = [
-            super().__str__(),
-            str(self.device_type),
-            str(self.tags) if self.tags else "Tag=None",
-        ]
-        return "\n".join(attrs)
+        return (
+            f"Device("
+            f"mqtt_id={self.mqtt_id}, "
+            f"last_seen={self.last_seen}, "
+            f"last_update_sent={self.last_update_sent}, "
+            f"reboots={self.reboots}, "
+            f"remote_name={self.remote_name}, "
+            f"name={self.name}, "
+            f"device_type_name={self.device_type.name}, "
+            f'tags={(f'[{", ".join([tag.name for tag in self.tags])}]') if self.tags else "null"})'
+        )
+
+    def __repr__(self):
+        return str(self)
 
     class Config:
         from_attributes = True

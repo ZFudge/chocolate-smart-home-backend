@@ -2,6 +2,7 @@ class SingletonMeta(type):
     """
     Meta class for creating singleton classes.
     """
+
     _SINGLETONS = dict()
 
     def __call__(cls, *args, **kwargs):

@@ -1,62 +1,59 @@
+from unittest.mock import Mock
+
 import pytest
-from datetime import datetime as dt
 
-from src import models
-from src.plugins.device_plugins.on_off.model import OnOff
-
-
-OLDER_DATE = dt.fromisoformat("2025-01-01 00:00:00.000000")
-NEWER_DATE = dt.fromisoformat("2025-01-02 00:00:00.000000")
+from ..ControllerToServerMessenger import ControllerToServerMessenger
+from ..DeviceManager import DeviceManager, Model
+from ..ServerToControllerMessenger import ServerToControllerMessenger
 
 
-@pytest.fixture
-def empty_test_db(empty_test_db):
-    """Modifies empty_test_db fixture from ../conftest to drop OnOff
-    rows before dropping foreign Device/DeviceType rows."""
-    yield empty_test_db
+@pytest.fixture()
+def ControllerToServerMessengerWithSuper():
+    class BaseControllerToServerMessenger:
+        def parse_controller_msg(
+            self,
+            raw_msg: str,
+        ):
+            return Mock(), iter(raw_msg.split(",")[3:])
 
-    empty_test_db.query(OnOff).delete()
-    empty_test_db.commit()
+    class ControllerToServerMessengerWithSuper(
+        ControllerToServerMessenger, BaseControllerToServerMessenger
+    ):
+        pass
+
+    yield ControllerToServerMessengerWithSuper
 
 
-@pytest.fixture
-def populated_test_db(empty_test_db):
-    device_type = models.DeviceType(name="on_off")
+@pytest.fixture()
+def ServerToControllerMessengerWithSuper():
+    class BaseServerToControllerMessenger:
+        def compose_controller_msg(self, msg_data: dict) -> str | None:
+            return ""
 
-    tag = models.Tag(name="OnOff Tag")
+        @staticmethod
+        def _compose_param(key: str, val: str) -> str:
+            return f"{key}={val};"
 
-    device__id_1 = models.Device(
-        mqtt_id=123,
-        name="Test On Device",
-        remote_name="Test On Device - 1",
-        device_type=device_type,
-        tags=[tag],
-        last_seen=NEWER_DATE,
-        last_update_sent=OLDER_DATE,
-    )
-    device__id_2 = models.Device(
-        mqtt_id=456,
-        name="Test Off Device",
-        remote_name="Test Off Device - 2",
-        device_type=device_type,
-        last_seen=OLDER_DATE,
-        last_update_sent=NEWER_DATE,
-    )
+    class PluginServerToControllerMessenger(
+        ServerToControllerMessenger, BaseServerToControllerMessenger
+    ):
+        pass
 
-    on_device__id_1 = OnOff(on=True, device=device__id_1)
-    off_device__id_2 = OnOff(on=False, device=device__id_2)
+    yield PluginServerToControllerMessenger
 
-    db = empty_test_db
 
-    db.add(device_type)
-    db.add(tag)
+@pytest.fixture()
+def DeviceManagerWithSuper_and_mocked_PluginModel():
+    Model.PluginModel = Mock()
 
-    db.add(device__id_1)
-    db.add(device__id_2)
+    class BaseDeviceManager(Mock):
+        pass
 
-    db.add(on_device__id_1)
-    db.add(off_device__id_2)
+    BaseDeviceManager.create_device = Mock(return_value="create_db_device")
+    BaseDeviceManager.update_device = Mock(return_value="updated_db_device")
+    BaseDeviceManager.commit_db_object = Mock()
 
-    db.commit()
+    class DeviceManagerWithSuper(DeviceManager, BaseDeviceManager):
+        pass
 
-    yield db
+    yield DeviceManagerWithSuper, Model.PluginModel
