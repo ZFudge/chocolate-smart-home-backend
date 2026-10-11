@@ -26,7 +26,7 @@ class Device(Base):
     )
 
     created_date = Column(DateTime, default=func.now())
-    last_seen = Column(DateTime, default=None)
+    last_seen = Column(DateTime, default=func.now())
     last_update_sent = Column(DateTime, default=None)
     reboots = Column(Integer, default=0)
 

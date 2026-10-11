@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 @misc_router.head(
     "/broadcast_request_devices_state/", response_model=None, status_code=204
 )
-def broadcast_request_devices_state():
+async def broadcast_request_devices_state():
     try:
         request_all_devices_data()
     except Exception as e:

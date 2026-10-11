@@ -108,7 +108,6 @@ services:
       "--log-config", "logs.ini"
     ]
     environment:
-      TZ: "UTC"
       << : *environment-variables
     healthcheck:
       test: ["CMD-SHELL", "curl -i http://localhost:8000/healthcheck | grep '200 OK'"]

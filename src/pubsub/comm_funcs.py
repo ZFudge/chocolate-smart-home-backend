@@ -1,9 +1,12 @@
+import asyncio
+import datetime as dt
 import logging
 import os
 
 from paho.mqtt import MQTTException
 from paho.mqtt.client import MQTTErrorCode
 
+from src.dependencies import redis_session
 from .topics import REQUEST_DEVICE_DATA_ALL
 from .validate_client_connection import validate_client_connection
 
@@ -52,3 +55,4 @@ def request_all_devices_data() -> None:
     the application, using topic "/receive_device_state/"."""
     logger.info('Publishing to topic: "%s"...' % REQUEST_DEVICE_DATA_ALL)
     publish(topic=REQUEST_DEVICE_DATA_ALL, message="")
+    asyncio.create_task(redis_session.get().set('request_all_device_data_last_sent', int(dt.datetime.now().timestamp())))

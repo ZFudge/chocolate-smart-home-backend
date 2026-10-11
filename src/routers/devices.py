@@ -1,9 +1,11 @@
+import datetime as dt
 import logging
 
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.exc import NoResultFound
 
 from src import crud, schemas
+from src.dependencies import redis_session
 
 logger = logging.getLogger(__name__)
 
@@ -11,10 +13,13 @@ device_router = APIRouter(prefix="/devices")
 
 
 @device_router.get("/", response_model=tuple[schemas.DeviceFrontend, ...])
-def get_devices():
+async def get_devices():
     try:
         devices = crud.get_devices()
         devices_list = []
+        request_all_device_data_last_sent = await redis_session.get().get('request_all_device_data_last_sent')
+        if isinstance(request_all_device_data_last_sent, str) and request_all_device_data_last_sent.isdigit():
+            request_all_device_data_last_sent = dt.datetime.fromtimestamp(int(request_all_device_data_last_sent))
         for d in devices:
             plugin = d.get("plugin")
             if plugin is not None:
@@ -26,6 +31,20 @@ def get_devices():
                 # tag_ids is JSON cast to string
                 tag_ids = eval(tag_ids)
 
+            last_seen = d.get("last_seen")
+            last_update_sent = d.get("last_update_sent")
+            online = False
+
+            if all([last_update_sent, last_seen]):
+                if isinstance(request_all_device_data_last_sent, dt.datetime):
+                    if request_all_device_data_last_sent < last_seen and last_update_sent < last_seen:
+                        online = True
+            elif last_seen:
+                if isinstance(request_all_device_data_last_sent, dt.datetime):
+                    if request_all_device_data_last_sent < last_seen:
+                        online = True
+
+
             devices_list.append(
                 schemas.DeviceFrontend(
                     mqtt_id=d["mqtt_id"],
@@ -34,13 +53,14 @@ def get_devices():
                     device_type_name=d["device_type_name"],
                     tags=tag_ids,
                     reboots=d["reboots"],
-                    last_seen=str(d["last_seen"]) if d.get("last_seen") else None,
+                    last_seen=str(last_seen.astimezone()) if last_seen else None,
                     last_update_sent=(
-                        str(d["last_update_sent"])
-                        if d.get("last_update_sent")
+                        str(last_update_sent.astimezone())
+                        if last_update_sent
                         else None
                     ),
                     plugin=plugin,
+                    online=online
                 )
             )
         return tuple(devices_list)
