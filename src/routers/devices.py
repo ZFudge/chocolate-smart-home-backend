@@ -17,9 +17,16 @@ async def get_devices():
     try:
         devices = crud.get_devices()
         devices_list = []
-        request_all_device_data_last_sent = await redis_session.get().get('request_all_device_data_last_sent')
-        if isinstance(request_all_device_data_last_sent, str) and request_all_device_data_last_sent.isdigit():
-            request_all_device_data_last_sent = dt.datetime.fromtimestamp(int(request_all_device_data_last_sent))
+        request_all_device_data_last_sent = await redis_session.get().get(
+            "request_all_device_data_last_sent"
+        )
+        if (
+            isinstance(request_all_device_data_last_sent, str)
+            and request_all_device_data_last_sent.isdigit()
+        ):
+            request_all_device_data_last_sent = dt.datetime.fromtimestamp(
+                int(request_all_device_data_last_sent)
+            )
         for d in devices:
             plugin = d.get("plugin")
             if plugin is not None:
@@ -37,13 +44,15 @@ async def get_devices():
 
             if all([last_update_sent, last_seen]):
                 if isinstance(request_all_device_data_last_sent, dt.datetime):
-                    if request_all_device_data_last_sent < last_seen and last_update_sent < last_seen:
+                    if (
+                        request_all_device_data_last_sent < last_seen
+                        and last_update_sent < last_seen
+                    ):
                         online = True
             elif last_seen:
                 if isinstance(request_all_device_data_last_sent, dt.datetime):
                     if request_all_device_data_last_sent < last_seen:
                         online = True
-
 
             devices_list.append(
                 schemas.DeviceFrontend(
@@ -55,12 +64,10 @@ async def get_devices():
                     reboots=d["reboots"],
                     last_seen=str(last_seen.astimezone()) if last_seen else None,
                     last_update_sent=(
-                        str(last_update_sent.astimezone())
-                        if last_update_sent
-                        else None
+                        str(last_update_sent.astimezone()) if last_update_sent else None
                     ),
                     plugin=plugin,
-                    online=online
+                    online=online,
                 )
             )
         return tuple(devices_list)

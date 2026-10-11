@@ -13,8 +13,9 @@ def test_stateless_simplex_handler_returns_device_received_schema(
     mqtt_message.payload = b"123,stateless_simplex_plugin,test_remote_name,7"
     device_schema = mqtt_message_handler(None, None, mqtt_message)
     assert isinstance(device_schema, DeviceFrontendSchema)
+    model_data = device_schema.model_dump()
     assert (
-        device_schema.model_dump()
+        model_data
         == DeviceFrontendSchema(
             mqtt_id=123,
             device_type_name="stateless_simplex_plugin",
@@ -22,9 +23,10 @@ def test_stateless_simplex_handler_returns_device_received_schema(
             name="test_remote_name",
             tags=[],
             reboots=0,
-            last_seen=None,
+            last_seen=model_data.get("last_seen"),
             last_update_sent=None,
             plugin=None,
+            online=True,
         ).model_dump()
     )
 

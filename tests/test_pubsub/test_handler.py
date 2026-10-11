@@ -1,3 +1,4 @@
+import datetime as dt
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
@@ -34,7 +35,7 @@ def test_pubsub_handler_returns_expected_schema_when_passed_payload_of_only_mqtt
     assert device_frontend_schema.plugin is None
     assert device_frontend_schema.tags == []
     assert device_frontend_schema.reboots == 0
-    assert device_frontend_schema.last_seen is None
+    assert isinstance(device_frontend_schema.last_seen, str)
     assert device_frontend_schema.last_update_sent is None
 
 

@@ -45,7 +45,7 @@ class VirtualClientsManager(metaclass=SingletonMeta):
             logger.info("Publishing all VCS states")
             # Publish the states of all devices
             for vc_state in cls.virtual_clients.values():
-                if random() < vc_state.get('failure_rate', 0):
+                if random() < vc_state.get("failure_rate", 0):
                     # simulate client-side fault
                     return
                 composer_func = cls.outgoing_msg_composer_funcs[

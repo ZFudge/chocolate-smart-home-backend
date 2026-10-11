@@ -25,7 +25,9 @@ def test_pubsub_comm_funcs_publish_calls_mqtt_client_publish(mqtt_client):
     mqtt_client.publish.assert_called_once_with("test_topic", "test_message")
 
 
-def test_pubsub_comm_funcs_request_all_devices_data_calls_publish(mqtt_client):
+def test_pubsub_comm_funcs_request_all_devices_data_calls_publish(
+    mqtt_client, none_asyncio_event_loop
+):
     comm_funcs.request_all_devices_data()
     mqtt_client.publish.assert_called_once_with("/broadcast_request_devices_state/", "")
 

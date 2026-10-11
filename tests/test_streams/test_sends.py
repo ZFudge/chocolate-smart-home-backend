@@ -6,7 +6,7 @@ from src import schemas, streams
 
 
 @pytest.mark.asyncio
-async def test_streams_sends_send_to_ws_service(mock_redis_session):
+async def test_streams_sends_send_to_ws_service(mocked_redis_session):
     await streams.send.send_to_ws_service(
         schemas.DeviceFrontend(
             device_type_name="example_device_type_name",
@@ -20,7 +20,7 @@ async def test_streams_sends_send_to_ws_service(mock_redis_session):
             plugin=None,
         )
     )
-    mock_redis_session.xadd.assert_awaited_once_with(
+    mocked_redis_session.xadd.assert_awaited_once_with(
         streams.stream_names.WEBSOCKETS_STREAM_NAME,
         {
             "message": (
@@ -33,6 +33,7 @@ async def test_streams_sends_send_to_ws_service(mock_redis_session):
                 '"tags": null, '
                 '"last_seen": null, '
                 '"last_update_sent": null, '
+                '"online": false, '
                 '"plugin": null'
                 "}"
             )
@@ -42,7 +43,7 @@ async def test_streams_sends_send_to_ws_service(mock_redis_session):
 
 @pytest.mark.asyncio
 async def test_streams_sends_broadcast_db_state_to_ws_client_calls_send_to_ws_service_with_device_frontend_schema(
-    mock_redis_session, populated_test_db
+    mocked_redis_session, populated_test_db
 ):
     plugin_schema = None
     with (
@@ -56,7 +57,7 @@ async def test_streams_sends_broadcast_db_state_to_ws_client_calls_send_to_ws_se
 
 @pytest.mark.asyncio
 async def test_streams_sends_broadcast_db_state_to_ws_client_calls_device_frontend_schema_with_expected_parameters(
-    mock_redis_session, populated_test_db
+    mocked_redis_session, populated_test_db
 ):
     plugin_schema = None
     with (
@@ -80,7 +81,7 @@ async def test_streams_sends_broadcast_db_state_to_ws_client_calls_device_fronte
 
 @pytest.mark.asyncio
 async def test_streams_sends_broadcast_db_state_to_ws_client_raises_ValueError_when_given_invalid_mqtt_id(
-    mock_redis_session, empty_test_db
+    mocked_redis_session, empty_test_db
 ):
     with pytest.raises(ValueError):
         await streams.send.broadcast_db_state_to_ws_client(None, 123)

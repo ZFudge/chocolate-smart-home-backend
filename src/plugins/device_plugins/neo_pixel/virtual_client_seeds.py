@@ -80,7 +80,7 @@ seeds = [
     },
     {
         "name": r"85% Faulty Virtual Neo Pixel 4",
-        "failure_rate": .85,
+        "failure_rate": 0.85,
         "device_type_name": "neo_pixel",
         "on": True,
         "brightness": 255,
@@ -89,7 +89,7 @@ seeds = [
         "all_twinkle_colors_are_current": True,
         "transform": False,
         "palette": [
-            "#fa5252", 
+            "#fa5252",
             "#e64980",
             "#be4bdb",
             "#7950f2",
@@ -97,7 +97,7 @@ seeds = [
             "#228be6",
             "#15aabf",
             "#12b886",
-            "#40c057"
+            "#40c057",
         ],
         "pir_enabled": True,
         "pir_armed": False,
