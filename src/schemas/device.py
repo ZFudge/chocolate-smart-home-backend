@@ -25,6 +25,7 @@ class DeviceFrontend(DeviceId, DeviceBase):
     tags: list[int] | None = None
     last_seen: str | None = None
     last_update_sent: str | None = None
+    online: bool = False
     plugin: Any = None
 
 

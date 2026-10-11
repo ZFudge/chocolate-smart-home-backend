@@ -80,6 +80,7 @@ def mqtt_message_handler(
             else None
         ),
         plugin=device_received_schema.plugin,
+        online=True,
     )
 
     # Schedule the coroutine on the main event loop from the MQTT thread

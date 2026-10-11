@@ -45,6 +45,9 @@ class VirtualClientsManager(metaclass=SingletonMeta):
             logger.info("Publishing all VCS states")
             # Publish the states of all devices
             for vc_state in cls.virtual_clients.values():
+                if random() < vc_state.get("failure_rate", 0):
+                    # simulate client-side fault
+                    return
                 composer_func = cls.outgoing_msg_composer_funcs[
                     vc_state["device_type_name"]
                 ]
@@ -149,6 +152,10 @@ class VirtualClientsManager(metaclass=SingletonMeta):
                 return
             if vc is None:
                 logger.error("Virtual client not found for mqtt_id: %s" % mqtt_id)
+                return
+
+            if random() < vc.get("failure_rate", 0):
+                # simulate client-side fault
                 return
 
             payload = message.payload.decode()

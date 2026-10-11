@@ -25,8 +25,8 @@ class Device(Base):
         secondary=job_devices, back_populates="devices"
     )
 
-    created_date = Column(DateTime, default=func.now())
-    last_seen = Column(DateTime, default=None)
+    created_at = Column(DateTime, default=func.now())
+    last_seen = Column(DateTime, default=func.now())
     last_update_sent = Column(DateTime, default=None)
     reboots = Column(Integer, default=0)
 

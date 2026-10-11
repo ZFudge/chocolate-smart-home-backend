@@ -35,6 +35,8 @@ def serialize_job(job: model.ApschedulerJobsNonSerializable) -> dict:
 
 
 def schedule_memory_job(job: schemas.JobToSchedule) -> Job:
+    if not job.scheduler_kwargs:
+        return None
     message_data = {
         "device_type_name": job.device_type_name,
         "mqtt_id": str(job.mqtt_ids),

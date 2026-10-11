@@ -6,7 +6,9 @@ from src.handle_device_update import handle_device_update
 
 
 @pytest.mark.asyncio
-async def test_handle_device_update_calls_request_all_devices_data(mock_redis_session):
+async def test_handle_device_update_calls_request_all_devices_data(
+    mocked_redis_session,
+):
     message_data = {"action": "request_all_devices_data"}
     with patch(
         "src.handle_device_update.request_all_devices_data"

@@ -1,3 +1,4 @@
+import datetime as dt
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
@@ -7,13 +8,13 @@ from src.main import app
 client = TestClient(app)
 
 
-def test_route_get_devices_empty(empty_test_db):
+def test_route_get_devices_empty(empty_test_db, mocked_redis_session):
     resp = client.get("/devices/")
     assert resp.status_code == 200
     assert resp.json() == []
 
 
-def test_route_get_devices_returns_devices(populated_test_db):
+def test_route_get_devices_returns_devices(populated_test_db, mocked_redis_session):
     resp = client.get("/devices")
     assert resp.status_code == 200
     assert resp.json() == [
@@ -24,9 +25,10 @@ def test_route_get_devices_returns_devices(populated_test_db):
             "reboots": 0,
             "device_type_name": "TEST_DEVICE_TYPE_NAME_1",
             "tags": [1, 2],
-            "last_seen": "2025-01-02 00:00:00",
-            "last_update_sent": "2025-01-01 00:00:00",
+            "last_seen": "2025-01-02 00:00:00+00:00",
+            "last_update_sent": "2025-01-01 00:00:00+00:00",
             "plugin": None,
+            "online": False,
         },
         {
             "mqtt_id": 234,
@@ -35,9 +37,10 @@ def test_route_get_devices_returns_devices(populated_test_db):
             "reboots": 0,
             "device_type_name": "TEST_DEVICE_TYPE_NAME_2",
             "tags": None,
-            "last_seen": "2025-01-01 00:00:00",
-            "last_update_sent": "2025-01-02 00:00:00",
+            "last_seen": "2025-01-01 00:00:00+00:00",
+            "last_update_sent": "2025-01-02 00:00:00+00:00",
             "plugin": None,
+            "online": False,
         },
         {
             "mqtt_id": 345,
@@ -46,9 +49,10 @@ def test_route_get_devices_returns_devices(populated_test_db):
             "reboots": 0,
             "device_type_name": "TEST_DEVICE_TYPE_NAME_2",
             "tags": None,
-            "last_seen": "2025-01-01 00:00:00",
-            "last_update_sent": "2025-01-01 00:00:00",
+            "last_seen": "2025-01-01 00:00:00+00:00",
+            "last_update_sent": "2025-01-01 00:00:00+00:00",
             "plugin": None,
+            "online": False,
         },
     ]
 
@@ -66,6 +70,7 @@ def test_route_get_devices_returns_500_when_raises_exception(populated_test_db):
 
 def test_route_get_devices_deletes_mqtt_id_and_id_from_plugin_db_data(
     populated_test_db,
+    mocked_redis_session,
 ):
     plugin_data = {
         "id": 1,
@@ -80,7 +85,7 @@ def test_route_get_devices_deletes_mqtt_id_and_id_from_plugin_db_data(
         "remote_name": "",
         "device_type_name": "",
         "reboots": 0,
-        "last_seen": "",
+        "last_seen": dt.datetime.fromisoformat("2025-01-01 00:00:00.000000"),
         "last_update_sent": "",
     }
     with patch("src.routers.devices.crud.get_devices", return_value=[device_data]):
@@ -97,8 +102,9 @@ def test_route_get_devices_deletes_mqtt_id_and_id_from_plugin_db_data(
                 "remote_name": "",
                 "device_type_name": "",
                 "reboots": 0,
-                "last_seen": None,
+                "last_seen": "2025-01-01 00:00:00+00:00",
                 "last_update_sent": None,
+                "online": False,
             }
         ]
 
@@ -130,6 +136,7 @@ def test_route_get_device_by_id_returns_device(populated_test_db):
         "last_seen": "2025-01-02 00:00:00",
         "last_update_sent": "2025-01-01 00:00:00",
         "plugin": None,
+        "online": False,
     }
 
 
@@ -195,6 +202,7 @@ def test_route_patch_device_updates_name(populated_test_db):
         "last_seen": "2025-01-02 00:00:00",
         "last_update_sent": "2025-01-01 00:00:00",
         "plugin": None,
+        "online": False,
     }
     assert resp.json() == client.get("/devices/123").json()
 
@@ -218,6 +226,7 @@ def test_route_patch_device_updates_tags(populated_test_db):
         "last_seen": "2025-01-02 00:00:00",
         "last_update_sent": "2025-01-01 00:00:00",
         "plugin": None,
+        "online": False,
     }
     assert resp.json() == client.get("/devices/123").json()
 
@@ -242,6 +251,7 @@ def test_route_patch_device_updates_both_name_and_tags(populated_test_db):
         "last_seen": "2025-01-02 00:00:00",
         "last_update_sent": "2025-01-01 00:00:00",
         "plugin": None,
+        "online": False,
     }
     assert resp.json() == client.get("/devices/123").json()
 

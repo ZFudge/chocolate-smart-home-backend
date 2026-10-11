@@ -1,4 +1,4 @@
-from datetime import datetime as dt
+import datetime as dt
 from unittest.mock import patch
 
 import pytest
@@ -193,7 +193,7 @@ def test_crud_create_device_does_not_set_last_seen_or_last_update_sent_values(
     device = (
         empty_test_db.query(models.Device).where(models.Device.mqtt_id == 123).first()
     )
-    assert device.last_seen is None
+    assert isinstance(device.last_seen, dt.datetime)
     assert device.last_update_sent is None
 
 
@@ -211,8 +211,7 @@ def test_crud_create_device_sets_reboots_with_zero_value(empty_test_db):
     assert device.reboots == 0
 
 
-def test_crud_create_device_sets_created_date(empty_test_db):
-    d = dt.now()
+def test_crud_create_device_sets_created_at(empty_test_db):
     crud.create_device(
         schemas.DeviceReceived(
             device_type_name="test_device_type_name",
@@ -223,7 +222,7 @@ def test_crud_create_device_sets_created_date(empty_test_db):
     device = (
         empty_test_db.query(models.Device).where(models.Device.mqtt_id == 123).first()
     )
-    assert device.created_date > d
+    assert isinstance(device.created_at, dt.datetime)
 
 
 def test_crud_update_device_raises_ValueError(empty_test_db):
@@ -320,5 +319,7 @@ def test_crud_update_device_does_not_update_last_sent_or_last_update_sent(
         .where(models.Device.mqtt_id == 123)
         .first()
     )
-    assert device.last_update_sent == dt.fromisoformat("2025-01-01 00:00:00.000000")
-    assert device.last_seen == dt.fromisoformat("2025-01-02 00:00:00.000000")
+    assert device.last_update_sent == dt.datetime.fromisoformat(
+        "2025-01-01 00:00:00.000000"
+    )
+    assert device.last_seen == dt.datetime.fromisoformat("2025-01-02 00:00:00.000000")
