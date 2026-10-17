@@ -14,23 +14,15 @@ help:
 	@echo ""
 	@echo "Targets:"
 	@echo "  help                         Print this help message"
-	@echo "  build                        Build the app image"
 	@echo "  dev                          Run the app in development mode"
-	@echo "  devclean                     Stop the app in development mode"
 	@echo "  devlogs                      Follow the logs of the app in development mode"
 	@echo "  clean                        Stop the app and remove all containers and volumes"
 	@echo "  black                        Format the code using black"
 	@echo "  test                         Run ruff, black, and pytest, using pipenv"
-	@echo "  broadcast                    Broadcast request for all device states"
 	@echo "  shell                        Open shell in container"
 	@echo "  mqttlogs                     Follow the logs of the MQTT broker"
 	@echo "  testdb                       Create test database if one does not exist"
 	@echo ""
-
-
-.PHONY: build
-build:
-	@docker build . -t csm-backend
 
 _testuser:
 	@echo "Creating test user if one does not exist."
@@ -42,12 +34,10 @@ testdb: _testuser
 	@docker exec -it $(POSTGRES_CONTAINER_NAME) /bin/bash -c \
       "psql -c 'CREATE DATABASE testdb OWNER testuser;' csm 2>> /dev/null" || true
 
-logsdir:
-	@mkdir /tmp/logs 2>> /dev/null && touch /tmp/logs/mosquitto.log 2>> /dev/null || true
-
-.PHONY: devclean
-devclean:
+.PHONY: clean
+clean:
 	@docker compose -f docker-compose-dev.yml down
+	@docker compose -f docker-compose.yml down
 
 .PHONY: devlogs
 devlogs:
@@ -61,13 +51,10 @@ mqttlogs:
 	@docker compose -f docker-compose-dev.yml logs -f csm-mosquitto-dev
 
 .PHONY: dev
-dev: devclean logsdir
+dev: clean
 	@docker compose -f docker-compose-dev.yml up -d
 	@make testdb
 	@make devlogs
-
-.PHONY: clean
-clean: devclean
 
 .PHONY: shell
 shell:
@@ -110,7 +97,3 @@ ruffcheck:
       -v $(shell pwd)/scripts/csm.sh:/etc/profile.d/csm.sh \
       csm-backend:latest ash -l -c \
       'ruff check /backend'
-
-.PHONY: broadcast
-broadcast:
-	@curl --head http://localhost:8000/device/broadcast_request_devices_state/

@@ -14,11 +14,13 @@ x-common-attrs: &common-attrs
     - csm-backend-network
 
 x-environment-variables: &environment-variables
-  MQTT_HOST: csm-mosquitto
-  MQTT_CLIENT_ID: CSM-FASTAPI-SERVER
-  REDIS_HOST: csm-redis
   BACKEND_STREAM_NAME: csm-backend-stream
+  DB_HOST: csm-postgres-db
+  MQTT_CLIENT_ID: CSM-FASTAPI-SERVER
+  MQTT_HOST: csm-mosquitto
+  REDIS_HOST: csm-redis
   WEBSOCKETS_STREAM_NAME: csm-websockets-stream
+  LOG_SUFFIX: ''
 
 services:
   csm-mosquitto:
@@ -30,9 +32,7 @@ services:
     networks:
       - csm-backend-network
     volumes:
-      - type: bind
-        source: /tmp/logs/mosquitto.log
-        target: /mosquitto/log/mosquitto.log
+      - /tmp/csm-logs/:/mosquitto/log/
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "/usr/local/bin/healthcheck.sh"]
@@ -77,9 +77,7 @@ services:
     ports:
       - 8000:8000
     volumes:
-      - type: bind
-        source: /tmp/logs/
-        target: /var/logs/csm/
+      - /tmp/csm-logs/:/var/logs/csm/
     depends_on:
       csm-postgres-db:
         condition: service_healthy
@@ -118,9 +116,7 @@ services:
     ports:
       - 8100:8100
     volumes:
-      - type: bind
-        source: /tmp/logs/
-        target: /var/logs/csm/
+      - /tmp/csm-logs/:/var/logs/csm/
     command: [
       "pipenv", "run", "uvicorn",
       "src.scheduler.sched_app:sched_app",

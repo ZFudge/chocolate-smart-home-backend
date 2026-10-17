@@ -17,5 +17,6 @@ RUN for dir in src/plugins/device_plugins/*/; do \
   fi; done
 
 FROM eclipse-mosquitto:2.0.20 AS csm-mqtt
-COPY mosquitto.conf /mosquitto/config/mosquitto.conf
+COPY mosquitto/mosquitto.conf /mosquitto/config/mosquitto.conf
+COPY mosquitto/conf.d/mosquitto.conf /mosquitto/config/conf.d/mosquitto.conf
 COPY scripts/mqtt_healthcheck.sh /usr/local/bin/healthcheck.sh
