@@ -8,26 +8,28 @@ volumes:
   csm-redis-data-dev:
     driver: local
 
-x-common-attrs: &common-attrs
-  env_file: .env
+x-csm-network: &csm-network
   networks:
     - csm-backend-network-dev
+
+x-common-attrs: &common-attrs
+  env_file: .env
+  << : *csm-network
 
 x-environment-variables: &environment-variables
   BACKEND_STREAM_NAME: csm-backend-stream-dev
   DB_HOST: csm-postgres-db-dev
+  LOG_SUFFIX: -dev
   MQTT_CLIENT_ID: CSM-FASTAPI-SERVER-DEV
   MQTT_HOST: csm-mqtt-dev
   REDIS_HOST: csm-redis-dev
   WEBSOCKETS_STREAM_NAME: csm-websockets-stream-dev
-  LOG_SUFFIX: -dev
 
 services:
   csm-mqtt-dev:
     image: eclipse-mosquitto:2.0.20
     container_name: csm-mqtt-dev
-    networks:
-      - csm-backend-network-dev
+    << : *csm-network
     volumes:
       - /tmp/csm-logs/:/mosquitto/log/
       - ./mosquitto/mosquitto-dev.conf:/mosquitto/config/mosquitto.conf
@@ -71,19 +73,16 @@ services:
     << : *common-attrs
     environment:
       << : *environment-variables
+    image: csm-backend:dev
     build:
       context: .
       target: csm-backend
-    image: csm-backend:dev
     container_name: csm-backend-dev
     ports:
       - 8000:8000
     volumes:
-      - type: bind
-        source: ./
-        target: /backend/
+      - ./:/backend/
       - /tmp/csm-logs/:/var/logs/csm/
-      - ./scripts/csm.sh:/etc/profile.d/csm.sh
     depends_on:
       csm-postgres-db-dev:
         condition: service_healthy
@@ -92,8 +91,7 @@ services:
       csm-redis-dev:
         condition: service_healthy
     command: [
-      "pipenv", "run", "uvicorn",
-      "src.main:app",
+      "uvicorn", "src.main:app",
       "--host", "0.0.0.0",
       "--reload",
       "--reload-dir", "src",
@@ -114,24 +112,20 @@ services:
     << : *common-attrs
     environment:
       << : *environment-variables
-    build:
-      context: .
-      target: csm-scheduler
-    image: csm-scheduler:dev
+    image: csm-backend:dev
     container_name: csm-scheduler-dev
     ports:
       - 8100:8100
     volumes:
-      - type: bind
-        source: ./
-        target: /backend/
+      - ./:/backend/
       - /tmp/csm-logs/:/var/logs/csm/
     command: [
-      "uvicorn",
-      "src.scheduler.sched_app:sched_app",
+      "uvicorn", "src.scheduler.sched_app:sched_app",
       "--host", "0.0.0.0",
       "--reload",
-      "--reload-dir", "src/scheduler/",
+      "--reload-dir", "src/",
+      "--reload-include", "src/scheduler/",
+      "--reload-include", "src/plugins/device_plugins/*/scheduling.py",
       "--port=8100",
       "--workers", "1",
       "--log-level", "debug",
@@ -151,13 +145,10 @@ services:
     image: csm-backend:dev
     container_name: virtual-clients
     volumes:
-      - type: bind
-        source: ./
-        target: /backend/
+      - ./:/backend/
       - /tmp/csm-logs/:/var/logs/csm/
     command: [
-      "pipenv", "run", "uvicorn",
-      "src.plugins.virtual_clients.vcs_app:vcs_manager",
+      "uvicorn", "src.plugins.virtual_clients.vcs_app:vcs_manager",
       "--port=8200",
       "--workers", "1",
       "--log-level", "debug",

@@ -8,19 +8,22 @@ volumes:
   csm-redis-data:
     driver: local
 
+x-csm-network: &csm-network
+  networks:
+    - csm-backend-network-dev
+
 x-common-attrs: &common-attrs
   env_file: .env
-  networks:
-    - csm-backend-network
+  << : *csm-network
 
 x-environment-variables: &environment-variables
   BACKEND_STREAM_NAME: csm-backend-stream
   DB_HOST: csm-postgres-db
+  LOG_SUFFIX: ''
   MQTT_CLIENT_ID: CSM-FASTAPI-SERVER
   MQTT_HOST: csm-mosquitto
   REDIS_HOST: csm-redis
   WEBSOCKETS_STREAM_NAME: csm-websockets-stream
-  LOG_SUFFIX: ''
 
 services:
   csm-mosquitto:
@@ -29,8 +32,7 @@ services:
       context: .
       target: csm-mqtt
     container_name: csm-mqtt
-    networks:
-      - csm-backend-network
+    << : *csm-network
     volumes:
       - /tmp/csm-logs/:/mosquitto/log/
     restart: always
@@ -69,10 +71,12 @@ services:
       start_period: 5s
   csm-backend:
     << : *common-attrs
+    environment:
+      << : *environment-variables
+    image: csm-backend:prod
     build:
       context: .
       target: csm-backend
-    image: csm-backend:prod
     container_name: csm-backend
     ports:
       - 8000:8000
@@ -86,20 +90,8 @@ services:
       csm-redis:
         condition: service_healthy
     command: [
-      "pipenv", "run", "uvicorn",
-      "src.main:app",
-      "--host", "0.0.0.0",
-      "--reload",
-      "--reload-dir", "src",
-      "--reload-exclude", "plugins/device_plugins/*/tests/*",
-      "--reload-exclude", "plugins/device_plugins/*/scheduling.py",
-      "--reload-exclude", "plugins/virtual_clients/*",
-      "--reload-exclude", "scheduler/*",
-      "--log-level", "debug",
-      "--log-config", "logs.ini"
+      "uvicorn", "src.main:app", "--host", "0.0.0.0", "--log-config", "logs.ini"
     ]
-    environment:
-      << : *environment-variables
     healthcheck:
       test: ["CMD-SHELL", "curl -i http://localhost:8000/healthcheck | grep '200 OK'"]
       interval: 10s
@@ -108,25 +100,20 @@ services:
       start_period: 5s
   csm-scheduler:
     << : *common-attrs
+    environment:
+      << : *environment-variables
+    image: csm-backend:prod
     build:
       context: .
       target: csm-backend
-    image: csm-backend:prod
     container_name: csm-scheduler
     ports:
       - 8100:8100
     volumes:
       - /tmp/csm-logs/:/var/logs/csm/
     command: [
-      "pipenv", "run", "uvicorn",
-      "src.scheduler.sched_app:sched_app",
-      "--host", "0.0.0.0",
-      "--reload",
-      "--reload-dir", "src/scheduler/",
-      "--port=8100",
-      "--workers", "1",
-      "--log-level", "debug",
-      "--log-config", "logs.ini"
+      "uvicorn", "src.scheduler.sched_app:sched_app", "--host", "0.0.0.0",
+      "--port=8100", "--workers", "1", "--log-config", "logs.ini"
     ]
     depends_on:
       csm-mosquitto:
@@ -137,5 +124,3 @@ services:
         condition: service_healthy
       csm-redis:
         condition: service_healthy
-    environment:
-      << : *environment-variables

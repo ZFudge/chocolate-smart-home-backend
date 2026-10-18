@@ -58,21 +58,21 @@ dev: clean
 
 .PHONY: shell
 shell:
-	@docker compose -f docker-compose-dev.yml exec -it csm-backend-dev ash -l
+	@docker compose -f docker-compose-dev.yml exec -it csm-backend-dev sh
 
 .PHONY: test
 test: testdb
-	@docker compose -f docker-compose-dev.yml exec csm-backend-dev ash -l -c \
+	@docker compose -f docker-compose-dev.yml exec csm-backend-dev sh -c \
       'ruff check /backend && black --check /backend && pytest -vv'
 
 .PHONY: coverage-main
 coverage-main:
-	@docker compose -f docker-compose-dev.yml exec -it csm-backend-dev ash -l -c \
+	@docker compose -f docker-compose-dev.yml exec -it csm-backend-dev sh -c \
       'pytest --cov=src --cov-config=tests/.coveragerc --cov-report=term-missing tests/'
 
 .PHONY: coverage-plugins
 coverage-plugins:
-	@docker compose -f docker-compose-dev.yml exec -it csm-backend-dev ash -l -c \
+	@docker compose -f docker-compose-dev.yml exec -it csm-backend-dev sh -c \
       'for plugin_name in $$(ls src/plugins/device_plugins/); do . ./scripts/coverage.sh; checkPluginCoverage $$plugin_name; done'
 
 .PHONY: coverage
@@ -80,20 +80,20 @@ coverage: testdb coverage-main coverage-plugins
 
 .PHONY: black
 black:
-	@docker compose -f docker-compose-dev.yml exec csm-backend-dev ash -l -c \
+	@docker compose -f docker-compose-dev.yml exec csm-backend-dev sh -c \
       'black /backend' || \
       docker run -it --rm \
       -v $(shell pwd):/backend \
       -v $(shell pwd)/scripts/csm.sh:/etc/profile.d/csm.sh \
-      csm-backend:latest ash -l -c \
+      csm-backend:latest sh -c \
       'black /backend'
 
 .PHONY: ruffcheck
 ruffcheck:
-	@docker compose -f docker-compose-dev.yml exec csm-backend-dev ash -l -c \
+	@docker compose -f docker-compose-dev.yml exec csm-backend-dev sh -c \
       'ruff check /backend' || \
       docker run -it --rm \
       -v $(shell pwd):/backend \
       -v $(shell pwd)/scripts/csm.sh:/etc/profile.d/csm.sh \
-      csm-backend:latest ash -l -c \
+      csm-backend:latest sh -c \
       'ruff check /backend'

@@ -1,4 +1,4 @@
-from src import schemas, models
+from src import models, schemas
 
 
 def device_mod_obj_to_frontend_schema(

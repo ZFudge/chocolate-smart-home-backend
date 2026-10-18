@@ -1,15 +1,9 @@
-FROM python:3.12-alpine AS base
+FROM python:3.12-alpine AS csm-backend
 LABEL org.opencontainers.image.authors="zacheryfudge+docker@gmail.com"
 WORKDIR /backend
-RUN apk add --no-cache curl
+RUN apk update && apk add --no-cache curl python3-dev libpq-dev gcc
 COPY . /backend/
 RUN mkdir -p /var/logs/csm/
-
-FROM base AS csm-backend
-COPY scripts/csm.sh /etc/profile.d/csm.sh
-RUN pip install pipenv && pipenv install
-
-FROM base AS csm-scheduler
 RUN pip install -r requirements.txt
 RUN for dir in src/plugins/device_plugins/*/; do \
   if [ -f "${dir}requirements.txt" ]; then \
