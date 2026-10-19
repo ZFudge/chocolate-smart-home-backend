@@ -5,7 +5,6 @@ from types import ModuleType
 
 from src import dependencies
 
-
 logger = logging.getLogger()
 
 

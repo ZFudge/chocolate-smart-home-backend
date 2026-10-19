@@ -13,4 +13,4 @@ class DeviceType(DeviceTypeId, DeviceTypeBase):
     pass
 
 
-__all__ = ["DeviceTypeBase", "DeviceType"]
+__all__ = ["DeviceType", "DeviceTypeBase"]

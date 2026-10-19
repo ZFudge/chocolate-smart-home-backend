@@ -8,6 +8,7 @@ from src.handle_device_update import handle_device_update
 @pytest.mark.asyncio
 async def test_handle_device_update_calls_request_all_devices_data(
     mocked_redis_session,
+    none_asyncio_event_loop,
 ):
     message_data = {"action": "request_all_devices_data"}
     with patch(
@@ -159,4 +160,4 @@ async def test_handle_device_update_is_server_side_value_multiple(
                 "value": "",
             }
         )
-        broadcast_db_state_to_ws_client.call_count == 2
+        assert broadcast_db_state_to_ws_client.call_count == 2

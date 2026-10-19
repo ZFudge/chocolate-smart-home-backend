@@ -56,15 +56,18 @@ def schedule_lights_before_sunset_by_location():
         longitude=LONGITUDE,
     )
     sun_data = sun(location.observer, date=dt.date.today(), tzinfo=TZ)
-    lights_on_time = sun_data["sunset"] - dt.timedelta(minutes=30)
+    sunset_time = sun_data["sunset"]
+    lights_on_time = sunset_time - dt.timedelta(minutes=30)
     scheduler.add_job(
         turn_on_automatic_lights,
         id="turn_on_automatic_lights",
         jobstore="default",
         replace_existing=True,
-        trigger="date",
-        run_date=lights_on_time,
+        trigger="interval",
+        start_date=lights_on_time,
+        days=1,
     )
+    logger.info(f"Scheduled lights on at {lights_on_time}")
 
 
 def rotate_palette():
@@ -81,7 +84,7 @@ def rotate_palette():
         .all()
     )
     if len(scheduled_devices) == 0 or not all(
-        [d.all_twinkle_colors_are_current is True for d in scheduled_devices]
+        d.all_twinkle_colors_are_current is True for d in scheduled_devices
     ):
         logger.info(
             "No scheduled devices or all twinkle colors are not current, skipping palette rotation"

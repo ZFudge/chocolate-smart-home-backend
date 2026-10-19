@@ -18,9 +18,9 @@ __all__ = [
     "DeviceReceived",
     "DeviceType",
     "DeviceTypeBase",
-    "device_mod_obj_to_frontend_schema",
     "Tag",
     "TagBase",
     "TagPatch",
     "WebsocketMessage",
+    "device_mod_obj_to_frontend_schema",
 ]

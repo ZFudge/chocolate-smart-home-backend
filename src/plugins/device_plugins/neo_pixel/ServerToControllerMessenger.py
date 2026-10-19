@@ -24,5 +24,5 @@ class ServerToControllerMessenger:
             # Palette is a list of 9 hex strings. Convert to a commas-separated list of 27 bytes
             # and embed in outgoing controller message
             palette_27_byte_str = utils.convert_9_hex_to_27_byte_str(msg_data["value"])
-            return "palette={};".format(palette_27_byte_str)
+            return f"palette={palette_27_byte_str};"
         return default_message

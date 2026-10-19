@@ -69,7 +69,7 @@ def test_leonardo_ServerToControllerMessenger_compose_controller_msg_ValueError_
     ServerToControllerMessengerWithSuper,
 ):
     with pytest.raises(KeyError):
-        ServerToControllerMessengerWithSuper().compose_controller_msg({}) == ""
+        assert ServerToControllerMessengerWithSuper().compose_controller_msg({}) == ""
 
 
 def test_leonardo_ServerToControllerMessenger_compose_controller_msg_ValueError_invalid_command(

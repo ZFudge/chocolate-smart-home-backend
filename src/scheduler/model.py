@@ -10,10 +10,9 @@ from sqlalchemy import (
     Table,
     Unicode,
 )
-from sqlalchemy.orm import relationship, Mapped
+from sqlalchemy.orm import Mapped, relationship
 
 from src.database import Base
-
 
 job_devices = Table(
     "job_devices",

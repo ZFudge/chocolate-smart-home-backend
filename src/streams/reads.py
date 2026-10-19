@@ -1,9 +1,10 @@
 import asyncio
 import logging
 
-from . import stream_names
 from src import dependencies
 from src.handle_device_update import handle_device_update
+
+from . import stream_names
 
 logger = logging.getLogger(__name__)
 

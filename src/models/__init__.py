@@ -4,7 +4,6 @@ from .device_type import DeviceType
 from .model_str_formatter import ModelStrFormatter
 from .tag import Tag
 
-
 __all__ = [
     "Device",
     "DeviceType",

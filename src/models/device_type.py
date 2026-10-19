@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 
 from src.database import Base
+
 from .model_str_formatter import ModelStrFormatter
 
 

@@ -4,7 +4,6 @@ from functools import singledispatch
 from src.dependencies import db_session
 from src.models import DeviceType as DeviceTypeModel
 
-
 logger = logging.getLogger()
 
 

@@ -1,4 +1,4 @@
-from unittest.mock import call, Mock, patch
+from unittest.mock import Mock, call, patch
 
 from ..db_seeding import seed_db
 

@@ -1,7 +1,6 @@
 from datetime import datetime
 
-
-from sqlalchemy import Column, DateTime, func, Integer, String
+from sqlalchemy import Column, DateTime, Integer, String, func
 
 
 class Properties:

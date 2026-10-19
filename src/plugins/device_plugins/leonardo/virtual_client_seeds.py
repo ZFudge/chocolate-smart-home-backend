@@ -6,9 +6,9 @@ import logging
 logger = logging.getLogger("vcs")
 
 seeds = [
-    dict(name="Leonardo Virtual Client 0"),
-    dict(name="Leonardo Virtual Client 1"),
-    dict(name="Leonardo Virtual Client 2"),
+    {"name": "Leonardo Virtual Client 0"},
+    {"name": "Leonardo Virtual Client 1"},
+    {"name": "Leonardo Virtual Client 2"},
 ]
 
 

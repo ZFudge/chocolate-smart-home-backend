@@ -2,6 +2,7 @@ import json
 import logging
 
 from src import crud, dependencies, schemas
+
 from . import stream_names
 
 logger = logging.getLogger(__name__)
@@ -10,7 +11,7 @@ logger.setLevel(logging.DEBUG)
 
 async def send_to_ws_service(device_data: schemas.DeviceFrontend):
     data = device_data.model_dump()
-    message_data = dict(message=json.dumps(data))
+    message_data = {"message": json.dumps(data)}
     await dependencies.redis_session.get().xadd(
         stream_names.WEBSOCKETS_STREAM_NAME, message_data
     )

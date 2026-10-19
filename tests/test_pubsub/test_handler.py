@@ -2,9 +2,9 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
+from src import schemas
 from src.plugins.manager.classes import DEFAULT_PLUGIN
 from src.pubsub.handler import mqtt_message_handler
-from src import schemas
 
 
 def test_pubsub_handler_returns_early_when_passed_none_payload(mqtt_message):

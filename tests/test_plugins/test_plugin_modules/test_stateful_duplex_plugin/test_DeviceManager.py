@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 from src.plugins import BaseDeviceManager, PluginsManager
+
 from .stateful_duplex_plugin.DeviceManager import DeviceManager
 
 

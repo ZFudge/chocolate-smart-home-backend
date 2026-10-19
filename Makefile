@@ -1,7 +1,6 @@
 include $(shell pwd)/.env
 
 TRASH_PATH := /tmp/null
-NETWORK_NAME := csm-backend-network
 
 APP_IMAGE := csm-backend
 CSM_IMAGE_NAME := csm-backend
@@ -52,7 +51,7 @@ mqttlogs:
 
 .PHONY: dev
 dev: clean
-	@docker compose -f docker-compose-dev.yml up -d
+	@docker compose -f docker-compose-dev.yml up -d --remove-orphans
 	@make testdb
 	@make devlogs
 

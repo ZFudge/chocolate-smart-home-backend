@@ -1,8 +1,8 @@
 import logging
-from typing import Type
 
 from src import crud, models, schemas
 from src.database import Base
+
 from .ValidateFEtoBEData import ValidateFEtoBEData
 
 logger = logging.getLogger()
@@ -33,7 +33,7 @@ class BaseDeviceManager(ValidateFEtoBEData):
     def update_device(self, device: schemas.DeviceReceived) -> models.Device:
         return crud.update_device(device)
 
-    def commit_db_object(self, db_obj: Type[Base]) -> Type[Base]:
+    def commit_db_object(self, db_obj: type[Base]) -> type[Base]:
         return crud.commit_db_object(db_obj)
 
     def get_plugin_db_obj_using_device_type_and_mqtt_id(

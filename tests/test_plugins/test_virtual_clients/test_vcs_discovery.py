@@ -86,7 +86,7 @@ def test_subscribe_vc_manager_called_if_virtual_clients_truthy(mqtt_client):
         patch(
             "src.plugins.virtual_clients.VirtualClientsManager.VirtualClientsManager.discover_virtual_clients",
             side_effect=setattr(
-                VirtualClientsManager, "virtual_clients", dict(vcs1=True)
+                VirtualClientsManager, "virtual_clients", {"vcs1": True}
             ),
         ) as discover_virtual_clients,
     ):
@@ -136,7 +136,7 @@ def test_register_virtual_clients_by_plugin(vcs_module, mqtt_client):
             "src.plugins.virtual_clients.VirtualClientsManager.subscribe"
         ) as subscribe,
     ):
-        handler = lambda _: None  # noqa E731
+        handler = lambda _: None
         get_data_received_handler.return_value = handler
         VirtualClientsManager().register_virtual_clients_by_plugin(
             vcs_module, "test_vcs_module"

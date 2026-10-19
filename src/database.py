@@ -9,7 +9,7 @@ def get_sqlalchemy_database_url():
     user = os.environ.get("DB_USER", "testuser")
     pw = os.environ.get("DB_PW", "testpw")
     host = os.environ.get("DB_HOST")
-    port = os.environ.get("DB_PORT", 5432)
+    port = os.environ.get("DB_PORT", "5432")
     db_name = os.environ.get("DB_NAME", "csm_db")
 
     return f"{db_url}{user}:{pw}@{host}:{port}/{db_name}"

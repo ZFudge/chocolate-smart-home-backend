@@ -24,7 +24,6 @@ from .utils import (
     pluginnamefrompath,
 )
 
-
 logger = logging.getLogger()
 scheduler_logger = logging.getLogger("scheduler")
 

@@ -3,6 +3,7 @@ from sqlalchemy.orm import Mapped, relationship
 
 from src.database import Base
 from src.scheduler.model import ApschedulerJobsNonSerializable, job_devices
+
 from .device_tags import device_tags
 from .tag import Tag
 

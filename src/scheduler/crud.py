@@ -5,10 +5,11 @@ import os
 from apscheduler.job import Job
 from apscheduler.jobstores.base import JobLookupError
 
-from src.crud.device_types import get_device_type_by_name, get_device_type_by_id
+from src import models
+from src.crud.device_types import get_device_type_by_id, get_device_type_by_name
 from src.crud.utils import commit_db_object
 from src.dependencies import asyncio_event_loop, db_session, redis_session
-from src import models
+
 from . import model, schemas
 from .scheduler import scheduler as sched
 from .utils import prepare_scheduler_kwargs, sanitize_scheduler_kwargs
@@ -100,9 +101,9 @@ def create_job(new_job: schemas.JobToSchedule) -> model.ApschedulerJobsNonSerial
         .all()
     )
     if len(devices) != len(new_job.mqtt_ids):
-        unknown_mqtt_ids = set(new_job.mqtt_ids) - set(
+        unknown_mqtt_ids = set(new_job.mqtt_ids) - {
             device.mqtt_id for device in devices
-        )
+        }
         raise ValueError(f"Devices {unknown_mqtt_ids} not found")
 
     # Validate and sanitize scheduler kwargs
@@ -115,7 +116,10 @@ def create_job(new_job: schemas.JobToSchedule) -> model.ApschedulerJobsNonSerial
         name=new_job.name,
         device_type_id=device_type.id,
         devices=devices,
-        message_kvp=dict(key=new_job.message_kvp.key, value=new_job.message_kvp.value),
+        message_kvp={
+            "key": new_job.message_kvp.key,
+            "value": new_job.message_kvp.value,
+        },
         scheduler_kwargs=new_job.scheduler_kwargs,
         active=new_job.active,
     )
@@ -172,9 +176,10 @@ def update_job_by_id(
         return
     job.active = updated_job.active
     job.name = updated_job.name
-    job.message_kvp = dict(
-        key=updated_job.message_kvp.key, value=updated_job.message_kvp.value
-    )
+    job.message_kvp = {
+        "key": updated_job.message_kvp.key,
+        "value": updated_job.message_kvp.value,
+    }
     job.scheduler_kwargs = updated_job.scheduler_kwargs
     device_type = get_device_type_by_id(job.device_type_id)
     job.devices = (

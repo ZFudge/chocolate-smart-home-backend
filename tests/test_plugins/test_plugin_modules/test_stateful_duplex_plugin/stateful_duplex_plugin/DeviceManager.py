@@ -2,7 +2,6 @@ import logging
 
 from . import Model, Schema
 
-
 logger = logging.getLogger()
 
 

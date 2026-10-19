@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from src import crud, models, schemas
 from src.dependencies import db_session
 from src.scheduler.crud import schedule_job_from_db_obj
+
 from .utils import commit_db_object, get_device_type_names_with_model_exists
 
 logger = logging.getLogger()

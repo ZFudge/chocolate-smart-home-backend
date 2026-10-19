@@ -3,7 +3,7 @@ class SingletonMeta(type):
     Meta class for creating singleton classes.
     """
 
-    _SINGLETONS = dict()
+    _SINGLETONS = {}
 
     def __call__(cls, *args, **kwargs):
         if cls.__name__ in SingletonMeta._SINGLETONS:

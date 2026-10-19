@@ -1,0 +1,10 @@
+[lint]
+ignore = [
+    "B039",     # Do not use mutable data structures for `ContextVar` defaults
+    "BLE001",   # Do not catch blind exception
+    "N999",     # Invalid module name
+    "PLW0120",  # `else` clause on loop without a `break` statement
+    "PLW0602",  # Using global but no assignment is done
+    "RUF012",   # Mutable default value for class attribute
+    "UP031",    # Use format specifiers instead of percent format
+]

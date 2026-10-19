@@ -1,13 +1,16 @@
 import logging
-from typing import Iterable
+from collections.abc import Iterable
 
 from src.models import Device as models_Device
 from src.schemas import (
-    device_mod_obj_to_frontend_schema as to_frontend_schema,
     DeviceFrontend as DeviceFrontendSchema,
+)
+from src.schemas import (
     DeviceReceived as DeviceReceivedSchema,
 )
-
+from src.schemas import (
+    device_mod_obj_to_frontend_schema as to_frontend_schema,
+)
 
 logger = logging.getLogger()
 

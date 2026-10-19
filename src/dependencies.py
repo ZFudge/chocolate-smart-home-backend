@@ -4,15 +4,14 @@ import os
 import sys
 from contextvars import ContextVar
 
-import sqlalchemy.exc as exc
 from paho.mqtt.client import Client
 from redis.asyncio import Redis
+from sqlalchemy import exc
 from sqlalchemy.orm import Session
 from uvloop import Loop
 
 from src.database import Base, SessionLocal, engine
 from src.mqtt import get_configured_mqtt_client
-
 
 logger = logging.getLogger()
 
@@ -92,7 +91,11 @@ def asyncio_event_loop_closure():
     def asyncio_event_loop_func():
         nonlocal asyncio_event_loop
         if asyncio_event_loop is None and "PYTEST_VERSION" not in os.environ:
-            asyncio_event_loop = asyncio.get_event_loop()
+            try:
+                asyncio_event_loop = asyncio.get_event_loop()
+            except RuntimeError:
+                asyncio_event_loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(asyncio_event_loop)
         yield asyncio_event_loop
 
     return asyncio_event_loop_func

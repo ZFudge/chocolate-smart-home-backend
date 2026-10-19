@@ -10,10 +10,10 @@ volumes:
 
 x-csm-network: &csm-network
   networks:
-    - csm-backend-network-dev
+    - csm-backend-network
 
 x-common-attrs: &common-attrs
-  env_file: .env
+  env_file: .env-csm
   << : *csm-network
 
 x-environment-variables: &environment-variables
@@ -28,10 +28,10 @@ x-environment-variables: &environment-variables
 services:
   csm-mosquitto:
     image: csm-mqtt:prod
+    container_name: csm-mqtt
     build:
       context: .
       target: csm-mqtt
-    container_name: csm-mqtt
     << : *csm-network
     volumes:
       - /tmp/csm-logs/:/mosquitto/log/
@@ -43,9 +43,9 @@ services:
       retries: 3
       start_period: 5s
   csm-postgres-db:
-    << : *common-attrs
     image: postgres:12.18-bullseye
     container_name: csm-postgres-db
+    << : *common-attrs
     ports:
       - 15432:5432
     volumes:
@@ -56,9 +56,9 @@ services:
       timeout: 5s
       retries: 5
   csm-redis:
-    << : *common-attrs
     image: redis:7.4.1-alpine
     container_name: csm-redis
+    << : *common-attrs
     ports:
       - 6379:6379
     volumes:
@@ -70,18 +70,21 @@ services:
       retries: 5
       start_period: 5s
   csm-backend:
-    << : *common-attrs
-    environment:
-      << : *environment-variables
     image: csm-backend:prod
+    container_name: csm-backend
     build:
       context: .
       target: csm-backend
-    container_name: csm-backend
+    << : *common-attrs
+    environment:
+      << : *environment-variables
     ports:
       - 8000:8000
     volumes:
       - /tmp/csm-logs/:/var/logs/csm/
+    command: [
+      "uvicorn", "src.main:app", "--host", "0.0.0.0", "--log-config", "logs.ini"
+    ]
     depends_on:
       csm-postgres-db:
         condition: service_healthy
@@ -89,9 +92,6 @@ services:
         condition: service_healthy
       csm-redis:
         condition: service_healthy
-    command: [
-      "uvicorn", "src.main:app", "--host", "0.0.0.0", "--log-config", "logs.ini"
-    ]
     healthcheck:
       test: ["CMD-SHELL", "curl -i http://localhost:8000/healthcheck | grep '200 OK'"]
       interval: 10s
@@ -99,14 +99,11 @@ services:
       retries: 3
       start_period: 5s
   csm-scheduler:
+    image: csm-backend:prod
+    container_name: csm-scheduler
     << : *common-attrs
     environment:
       << : *environment-variables
-    image: csm-backend:prod
-    build:
-      context: .
-      target: csm-backend
-    container_name: csm-scheduler
     ports:
       - 8100:8100
     volumes:

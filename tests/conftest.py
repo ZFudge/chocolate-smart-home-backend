@@ -3,12 +3,11 @@ from datetime import datetime as dt
 from unittest.mock import AsyncMock, Mock
 
 import pytest
-from paho.mqtt.client import CallbackAPIVersion, Client, MQTT_ERR_SUCCESS, MQTTMessage
+from paho.mqtt.client import MQTT_ERR_SUCCESS, CallbackAPIVersion, Client, MQTTMessage
 from redis.asyncio import Redis
 from sqlalchemy.exc import InternalError, ProgrammingError
 from sqlalchemy.orm import Session, sessionmaker
 from uvloop import Loop
-
 
 from src import models
 from src.database import Base
@@ -26,6 +25,8 @@ from src.dependencies import (
 from src.main import app
 from src.scheduler import (
     crud as sched_crud,
+)
+from src.scheduler import (
     model as scheduler_model,
 )
 from src.SingletonMeta import SingletonMeta
@@ -99,7 +100,6 @@ def clear_test_db():
             drop = True
         except (ProgrammingError, InternalError) as e:
             print(e)
-            pass
 
     if drop:
         Base.metadata.drop_all(bind=engine)
@@ -165,14 +165,14 @@ def populated_test_db(empty_test_db):
         name="Test Job 1",
         device_type_id=type_1.id,
         devices=[device_3],
-        message_kvp=dict(
-            key="test_key",
-            value=True,
-        ),
-        scheduler_kwargs=dict(
-            trigger="cron",
-            minute="*/3",
-        ),
+        message_kvp={
+            "key": "test_key",
+            "value": True,
+        },
+        scheduler_kwargs={
+            "trigger": "cron",
+            "minute": "*/3",
+        },
         active=True,
     )
     test_db.add(job_1)

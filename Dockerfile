@@ -1,9 +1,9 @@
-FROM python:3.12-alpine AS csm-backend
+FROM python:3.14-alpine AS csm-backend
 LABEL org.opencontainers.image.authors="zacheryfudge+docker@gmail.com"
 WORKDIR /backend
 RUN apk update && apk add --no-cache curl python3-dev libpq-dev gcc
-COPY . /backend/
-RUN mkdir -p /var/logs/csm/
+COPY src /backend/src/
+COPY logs.ini requirements.txt /backend/
 RUN pip install -r requirements.txt
 RUN for dir in src/plugins/device_plugins/*/; do \
   if [ -f "${dir}requirements.txt" ]; then \

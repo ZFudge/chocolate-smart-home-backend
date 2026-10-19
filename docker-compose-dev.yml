@@ -43,9 +43,9 @@ services:
       start_period: 5s
     restart: always
   csm-postgres-db-dev:
-    << : *common-attrs
     image: postgres:12.18-bullseye
     container_name: csm-postgres-db-dev
+    << : *common-attrs
     ports:
       - 15432:5432
     volumes:
@@ -56,9 +56,9 @@ services:
       timeout: 5s
       retries: 5
   csm-redis-dev:
-    << : *common-attrs
     image: redis:7.4.1-alpine
     container_name: csm-redis-dev
+    << : *common-attrs
     ports:
       - 6379:6379
     volumes:
@@ -70,19 +70,30 @@ services:
       retries: 5
       start_period: 5s
   csm-backend-dev:
+    image: csm-backend:dev
+    container_name: csm-backend-dev
     << : *common-attrs
     environment:
       << : *environment-variables
-    image: csm-backend:dev
     build:
       context: .
       target: csm-backend
-    container_name: csm-backend-dev
     ports:
       - 8000:8000
     volumes:
-      - ./:/backend/
       - /tmp/csm-logs/:/var/logs/csm/
+      - ./:/backend/
+    command: [
+      "uvicorn", "src.main:app",
+      "--host", "0.0.0.0",
+      "--log-config", "logs.ini",
+      "--log-level", "debug",
+      "--reload",
+      "--reload-exclude", "src/plugins/device_plugins/*/scheduling.py",
+      "--reload-exclude", "src/plugins/virtual_clients/*",
+      "--reload-exclude", "src/scheduler/*",
+      "--reload-exclude", "test_*.py",
+    ]
     depends_on:
       csm-postgres-db-dev:
         condition: service_healthy
@@ -90,18 +101,6 @@ services:
         condition: service_healthy
       csm-redis-dev:
         condition: service_healthy
-    command: [
-      "uvicorn", "src.main:app",
-      "--host", "0.0.0.0",
-      "--reload",
-      "--reload-dir", "src",
-      "--reload-exclude", "plugins/device_plugins/*/tests/*",
-      "--reload-exclude", "plugins/device_plugins/*/scheduling.py",
-      "--reload-exclude", "plugins/virtual_clients/*",
-      "--reload-exclude", "scheduler/*",
-      "--log-level", "debug",
-      "--log-config", "logs.ini"
-    ]
     healthcheck:
       test: ["CMD-SHELL", "curl -i http://localhost:8000/healthcheck | grep '200 OK'"]
       interval: 10s
@@ -109,27 +108,25 @@ services:
       retries: 3
       start_period: 5s
   csm-scheduler-dev:
+    image: csm-backend:dev
+    container_name: csm-scheduler-dev
     << : *common-attrs
     environment:
       << : *environment-variables
-    image: csm-backend:dev
-    container_name: csm-scheduler-dev
     ports:
       - 8100:8100
     volumes:
-      - ./:/backend/
       - /tmp/csm-logs/:/var/logs/csm/
+      - ./:/backend/
     command: [
       "uvicorn", "src.scheduler.sched_app:sched_app",
       "--host", "0.0.0.0",
-      "--reload",
-      "--reload-dir", "src/",
-      "--reload-include", "src/scheduler/",
-      "--reload-include", "src/plugins/device_plugins/*/scheduling.py",
       "--port=8100",
-      "--workers", "1",
+      "--log-config", "logs.ini",
       "--log-level", "debug",
-      "--log-config", "logs.ini"
+      "--reload",
+      "--reload-include", "src/scheduler/",
+      "--reload-include", "src/plugins/device_plugins/**/scheduling.py",
     ]
     depends_on:
       csm-mqtt-dev:
@@ -141,18 +138,19 @@ services:
       csm-redis-dev:
         condition: service_healthy
   virtual-clients:
-    << : *common-attrs
     image: csm-backend:dev
     container_name: virtual-clients
+    << : *common-attrs
     volumes:
-      - ./:/backend/
       - /tmp/csm-logs/:/var/logs/csm/
+      - ./:/backend
     command: [
       "uvicorn", "src.plugins.virtual_clients.vcs_app:vcs_manager",
       "--port=8200",
-      "--workers", "1",
+      "--log-config", "logs.ini",
       "--log-level", "debug",
-      "--log-config", "logs.ini"
+      "--reload",
+      "--reload-dir", "src/plugins/virtual_clients/",
     ]
     depends_on:
       csm-mqtt-dev:

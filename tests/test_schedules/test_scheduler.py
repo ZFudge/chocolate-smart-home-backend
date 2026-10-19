@@ -1,7 +1,8 @@
-import pytest
 from unittest.mock import call, patch
 
-from src.scheduler import schemas, crud
+import pytest
+
+from src.scheduler import crud, schemas
 
 
 def test_create_cron_job_creates_and_returns_new_job(populated_test_db):
@@ -13,10 +14,10 @@ def test_create_cron_job_creates_and_returns_new_job(populated_test_db):
             key="test",
             value=True,
         ),
-        scheduler_kwargs=dict(
-            minute="*/3",
-            trigger="cron",
-        ),
+        scheduler_kwargs={
+            "minute": "*/3",
+            "trigger": "cron",
+        },
     )
     job = crud.create_job(schema)
     assert job is not None
@@ -44,10 +45,10 @@ def test_create_date_job_creates_and_returns_new_job(populated_test_db):
             key="test",
             value=True,
         ),
-        scheduler_kwargs=dict(
-            trigger="date",
-            run_date="2027-01-01 00:00:00",
-        ),
+        scheduler_kwargs={
+            "trigger": "date",
+            "run_date": "2027-01-01 00:00:00",
+        },
     )
     job = crud.create_job(schema)
     assert job is not None
@@ -76,10 +77,10 @@ def test_create_job_invalid_device_type_name_raises_error(populated_test_db):
             key="test",
             value=True,
         ),
-        scheduler_kwargs=dict(
-            minute="*/3",
-            trigger="cron",
-        ),
+        scheduler_kwargs={
+            "minute": "*/3",
+            "trigger": "cron",
+        },
         active=True,
     )
     with pytest.raises(ValueError):
@@ -95,10 +96,10 @@ def test_create_job_invalid_mqtt_ids_raises_error(populated_test_db):
             key="test",
             value=True,
         ),
-        scheduler_kwargs=dict(
-            trigger="date",
-            run_date="2027-01-01 00:00:00",
-        ),
+        scheduler_kwargs={
+            "trigger": "date",
+            "run_date": "2027-01-01 00:00:00",
+        },
         active=True,
     )
     with pytest.raises(ValueError):
@@ -166,10 +167,10 @@ def test_update_job_by_id_updates_job(populated_test_db, job_loaded_scheduler):
             key="test_key_2",
             value=5,
         ),
-        scheduler_kwargs=dict(
-            minute="*",
-            trigger="cron",
-        ),
+        scheduler_kwargs={
+            "minute": "*",
+            "trigger": "cron",
+        },
         active=False,
     )
     job = crud.update_job_by_id("test_job_id", updated_job)
