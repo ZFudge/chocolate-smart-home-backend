@@ -17,13 +17,12 @@ from ..bases import (
 from ..utils import iter_nametag
 from .classes import PluginDict, PluginsMapper
 from .utils import (
-    pluginnamefrompath,
-    import_plugin_module,
-    has_valid_callable,
-    inject_dependencies,
     has_scheduling_module,
+    has_valid_callable,
+    import_plugin_module,
+    inject_dependencies,
+    pluginnamefrompath,
 )
-
 
 logger = logging.getLogger()
 scheduler_logger = logging.getLogger("scheduler")
@@ -90,9 +89,12 @@ class PluginsManager:
     @classmethod
     def discover_plugins_scheduling(cls):
         for _finder, plugin_path, _ispkg in iter_nametag(device_plugins):
-            if not has_scheduling_module(plugin_path):
-                continue
             plugin_name = plugin_path.split(".").pop()
+            if not has_scheduling_module(plugin_path):
+                scheduler_logger.info(
+                    f'No scheduling module found for discoverable device plugin "{plugin_name}"'
+                )
+                continue
             scheduler_logger.info(
                 f'Found discoverable device plugin "{plugin_name}" with scheduling module: {plugin_path}/scheduling.py'
             )
@@ -305,9 +307,9 @@ class PluginsManager:
         sched_module: ModuleType | None = import_plugin_module(
             plugin_path, "scheduling"
         )
-        if not isinstance(sched_module, ModuleType):
-            return
-        elif not hasattr(sched_module, "jobs"):
+        if not isinstance(sched_module, ModuleType) or not hasattr(
+            sched_module, "jobs"
+        ):
             return
         inject_dependencies(sched_module)
 

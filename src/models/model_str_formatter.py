@@ -7,7 +7,7 @@ class ModelStrFormatter:
         attrs = (
             [column.key, getattr(self, column.key)] for column in self.__table__.columns
         )
-        attrs_str = ", ".join(map(lambda x: "=".join(map(str, x)), attrs))
+        attrs_str = ", ".join(f"{x[0]}={x[1]}" for x in attrs)
 
         return f"{model_name}({attrs_str})"
 

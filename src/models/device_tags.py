@@ -2,7 +2,6 @@ from sqlalchemy import Column, ForeignKey, Table
 
 from src.database import Base
 
-
 device_tags = Table(
     "device_tags",
     Base.metadata,

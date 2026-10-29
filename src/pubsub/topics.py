@@ -1,5 +1,4 @@
-from typing import Callable
-
+from collections.abc import Callable
 
 # Incoming data from controllers
 RECEIVE_DEVICE_DATA = "/receive_device_state/"

@@ -1,7 +1,6 @@
 include $(shell pwd)/.env
 
 TRASH_PATH := /tmp/null
-NETWORK_NAME := csm-backend-network
 
 APP_IMAGE := csm-backend
 CSM_IMAGE_NAME := csm-backend
@@ -14,23 +13,15 @@ help:
 	@echo ""
 	@echo "Targets:"
 	@echo "  help                         Print this help message"
-	@echo "  build                        Build the app image"
 	@echo "  dev                          Run the app in development mode"
-	@echo "  devclean                     Stop the app in development mode"
 	@echo "  devlogs                      Follow the logs of the app in development mode"
 	@echo "  clean                        Stop the app and remove all containers and volumes"
 	@echo "  black                        Format the code using black"
 	@echo "  test                         Run ruff, black, and pytest, using pipenv"
-	@echo "  broadcast                    Broadcast request for all device states"
 	@echo "  shell                        Open shell in container"
 	@echo "  mqttlogs                     Follow the logs of the MQTT broker"
 	@echo "  testdb                       Create test database if one does not exist"
 	@echo ""
-
-
-.PHONY: build
-build:
-	@docker build . -t csm-backend
 
 _testuser:
 	@echo "Creating test user if one does not exist."
@@ -42,12 +33,10 @@ testdb: _testuser
 	@docker exec -it $(POSTGRES_CONTAINER_NAME) /bin/bash -c \
       "psql -c 'CREATE DATABASE testdb OWNER testuser;' csm 2>> /dev/null" || true
 
-logsdir:
-	@mkdir /tmp/logs 2>> /dev/null && touch /tmp/logs/mosquitto.log 2>> /dev/null || true
-
-.PHONY: devclean
-devclean:
+.PHONY: clean
+clean:
 	@docker compose -f docker-compose-dev.yml down
+	@docker compose -f docker-compose.yml down
 
 .PHONY: devlogs
 devlogs:
@@ -61,31 +50,28 @@ mqttlogs:
 	@docker compose -f docker-compose-dev.yml logs -f csm-mosquitto-dev
 
 .PHONY: dev
-dev: devclean logsdir
-	@docker compose -f docker-compose-dev.yml up -d
+dev: clean
+	@docker compose -f docker-compose-dev.yml up -d --remove-orphans
 	@make testdb
 	@make devlogs
 
-.PHONY: clean
-clean: devclean
-
 .PHONY: shell
 shell:
-	@docker compose -f docker-compose-dev.yml exec -it csm-backend-dev ash -l
+	@docker compose -f docker-compose-dev.yml exec -it csm-backend-dev sh
 
 .PHONY: test
 test: testdb
-	@docker compose -f docker-compose-dev.yml exec csm-backend-dev ash -l -c \
+	@docker compose -f docker-compose-dev.yml exec csm-backend-dev sh -c \
       'ruff check /backend && black --check /backend && pytest -vv'
 
 .PHONY: coverage-main
 coverage-main:
-	@docker compose -f docker-compose-dev.yml exec -it csm-backend-dev ash -l -c \
+	@docker compose -f docker-compose-dev.yml exec -it csm-backend-dev sh -c \
       'pytest --cov=src --cov-config=tests/.coveragerc --cov-report=term-missing tests/'
 
 .PHONY: coverage-plugins
 coverage-plugins:
-	@docker compose -f docker-compose-dev.yml exec -it csm-backend-dev ash -l -c \
+	@docker compose -f docker-compose-dev.yml exec -it csm-backend-dev sh -c \
       'for plugin_name in $$(ls src/plugins/device_plugins/); do . ./scripts/coverage.sh; checkPluginCoverage $$plugin_name; done'
 
 .PHONY: coverage
@@ -93,24 +79,20 @@ coverage: testdb coverage-main coverage-plugins
 
 .PHONY: black
 black:
-	@docker compose -f docker-compose-dev.yml exec csm-backend-dev ash -l -c \
+	@docker compose -f docker-compose-dev.yml exec csm-backend-dev sh -c \
       'black /backend' || \
       docker run -it --rm \
       -v $(shell pwd):/backend \
       -v $(shell pwd)/scripts/csm.sh:/etc/profile.d/csm.sh \
-      csm-backend:latest ash -l -c \
+      csm-backend:latest sh -c \
       'black /backend'
 
 .PHONY: ruffcheck
 ruffcheck:
-	@docker compose -f docker-compose-dev.yml exec csm-backend-dev ash -l -c \
+	@docker compose -f docker-compose-dev.yml exec csm-backend-dev sh -c \
       'ruff check /backend' || \
       docker run -it --rm \
       -v $(shell pwd):/backend \
       -v $(shell pwd)/scripts/csm.sh:/etc/profile.d/csm.sh \
-      csm-backend:latest ash -l -c \
+      csm-backend:latest sh -c \
       'ruff check /backend'
-
-.PHONY: broadcast
-broadcast:
-	@curl --head http://localhost:8000/device/broadcast_request_devices_state/

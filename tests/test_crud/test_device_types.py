@@ -1,5 +1,5 @@
 import pytest
-from psycopg2.errors import UniqueViolation
+from psycopg.errors import UniqueViolation
 from sqlalchemy.exc import IntegrityError
 
 from src import crud, models

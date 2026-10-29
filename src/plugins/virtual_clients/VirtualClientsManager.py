@@ -8,7 +8,8 @@ from types import ModuleType
 from src import SingletonMeta
 from src.plugins import device_plugins, utils
 from src.pubsub import topics
-from src.pubsub.comm_funcs import subscribe, publish
+from src.pubsub.comm_funcs import publish, subscribe
+
 from . import defaults, helper_funcs
 
 logger = logging.getLogger("vcs")
@@ -85,12 +86,7 @@ class VirtualClientsManager(metaclass=SingletonMeta):
                 state_msg = vcs_module.compose_outgoing_msg(msg)
                 if not state_msg:
                     return root_msg
-                msg = ",".join(
-                    [
-                        root_msg,
-                        state_msg,
-                    ]
-                )
+                msg = f"{root_msg},{state_msg}"
                 return msg
 
         else:
@@ -124,9 +120,11 @@ class VirtualClientsManager(metaclass=SingletonMeta):
 
     @classmethod
     def init_vc_state_from_seed(cls, seed_state: dict, device_type_name: str) -> None:
-        vc_state = seed_state | dict(
-            mqtt_id=cls.mqtt_id, device_type_name=device_type_name
-        )
+        vc_state = {
+            **seed_state,
+            "mqtt_id": cls.mqtt_id,
+            "device_type_name": device_type_name,
+        }
         cls.virtual_clients[cls.mqtt_id] = vc_state
 
     @classmethod

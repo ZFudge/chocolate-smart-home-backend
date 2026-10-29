@@ -3,10 +3,9 @@ import logging
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
-import src.schemas as schemas
-from src.models import Tag as TagModel
+from src import schemas
 from src.dependencies import db_session
-
+from src.models import Tag as TagModel
 
 logger = logging.getLogger()
 

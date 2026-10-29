@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import relationship, Mapped
+from sqlalchemy.orm import Mapped, relationship
 
 from src.database import Base
+
 from .device_tags import device_tags
 from .model_str_formatter import ModelStrFormatter
 

@@ -43,16 +43,18 @@ async def get_devices():
             online = False
 
             if all([last_update_sent, last_seen]):
-                if isinstance(request_all_device_data_last_sent, dt.datetime):
-                    if (
-                        request_all_device_data_last_sent < last_seen
-                        and last_update_sent < last_seen
-                    ):
-                        online = True
-            elif last_seen:
-                if isinstance(request_all_device_data_last_sent, dt.datetime):
-                    if request_all_device_data_last_sent < last_seen:
-                        online = True
+                if (
+                    isinstance(request_all_device_data_last_sent, dt.datetime)
+                    and request_all_device_data_last_sent < last_seen
+                    and last_update_sent < last_seen
+                ):
+                    online = True
+            elif (
+                last_seen
+                and isinstance(request_all_device_data_last_sent, dt.datetime)
+                and request_all_device_data_last_sent < last_seen
+            ):
+                online = True
 
             devices_list.append(
                 schemas.DeviceFrontend(

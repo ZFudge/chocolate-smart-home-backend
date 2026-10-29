@@ -34,7 +34,7 @@ sleep_loader(3)
 
 request_all_devices_data()
 
-tag_names = list(map(lambda x: f"vcs tag {x}", range(1, 4)))
+tag_names = [f"vcs tag {x}" for x in range(1, 4)]
 tags_added = False
 for t_name in tag_names:
     if not crud.get_tag_by_name(t_name):

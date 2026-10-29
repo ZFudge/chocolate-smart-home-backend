@@ -1,0 +1,123 @@
+networks:
+  csm-backend-network:
+    name: csm-backend-network
+
+volumes:
+  csm-postgres-vol:
+    driver: local
+  csm-redis-data:
+    driver: local
+
+x-csm-network: &csm-network
+  networks:
+    - csm-backend-network
+
+x-common-attrs: &common-attrs
+  env_file: .env-csm
+  << : *csm-network
+
+x-environment-variables: &environment-variables
+  BACKEND_STREAM_NAME: csm-backend-stream
+  DB_HOST: csm-postgres-db
+  LOG_SUFFIX: ''
+  MQTT_CLIENT_ID: CSM-FASTAPI-SERVER
+  MQTT_HOST: csm-mosquitto
+  REDIS_HOST: csm-redis
+  WEBSOCKETS_STREAM_NAME: csm-websockets-stream
+
+services:
+  csm-mosquitto:
+    image: csm-mqtt:prod
+    container_name: csm-mqtt
+    build:
+      context: .
+      target: csm-mqtt
+    << : *csm-network
+    volumes:
+      - /tmp/csm-logs/:/mosquitto/log/
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "/usr/local/bin/healthcheck.sh"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+  csm-postgres-db:
+    image: postgres:12.18-bullseye
+    container_name: csm-postgres-db
+    << : *common-attrs
+    ports:
+      - 15432:5432
+    volumes:
+      - csm-postgres-vol:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  csm-redis:
+    image: redis:7.4.1-alpine
+    container_name: csm-redis
+    << : *common-attrs
+    ports:
+      - 6379:6379
+    volumes:
+      - csm-redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+  csm-backend:
+    image: csm-backend:prod
+    container_name: csm-backend
+    build:
+      context: .
+      target: csm-backend
+    << : *common-attrs
+    environment:
+      << : *environment-variables
+    ports:
+      - 8000:8000
+    volumes:
+      - /tmp/csm-logs/:/var/logs/csm/
+    command: [
+      "uvicorn", "src.main:app", "--host", "0.0.0.0", "--log-config", "logs.ini"
+    ]
+    depends_on:
+      csm-postgres-db:
+        condition: service_healthy
+      csm-mosquitto:
+        condition: service_healthy
+      csm-redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -i http://localhost:8000/healthcheck | grep '200 OK'"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+  csm-scheduler:
+    image: csm-backend:prod
+    container_name: csm-scheduler
+    << : *common-attrs
+    environment:
+      << : *environment-variables
+    ports:
+      - 8100:8100
+    volumes:
+      - /tmp/csm-logs/:/var/logs/csm/
+    command: [
+      "uvicorn", "src.scheduler.sched_app:sched_app", "--host", "0.0.0.0",
+      "--port=8100", "--workers", "1", "--log-config", "logs.ini"
+    ]
+    depends_on:
+      csm-mosquitto:
+        condition: service_healthy
+      csm-postgres-db:
+        condition: service_healthy
+      csm-backend:
+        condition: service_healthy
+      csm-redis:
+        condition: service_healthy

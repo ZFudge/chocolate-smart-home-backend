@@ -1,10 +1,10 @@
-from unittest.mock import call, Mock
+from unittest.mock import Mock, call
 
 import pytest
 from paho.mqtt import MQTTException
 from paho.mqtt.client import MQTTErrorCode
 
-import src.pubsub.comm_funcs as comm_funcs
+from src.pubsub import comm_funcs
 
 
 def test_pubsub_comm_funcs_publish_all_calls_mqtt_client_publish(mqtt_client):

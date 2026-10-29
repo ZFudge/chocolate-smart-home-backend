@@ -4,7 +4,7 @@ import pytest
 from sqlalchemy.exc import InternalError, ProgrammingError
 from sqlalchemy.orm import Session, sessionmaker
 
-from src import models, SingletonMeta
+from src import SingletonMeta, models
 from src.database import Base
 from src.dependencies import db_session, engine, get_db
 from src.main import app

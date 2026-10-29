@@ -1,19 +1,18 @@
 from __future__ import annotations
 
 from sqlalchemy import (
+    JSON,
     Boolean,
     Column,
     ForeignKey,
     Integer,
-    JSON,
     String,
     Table,
     Unicode,
 )
-from sqlalchemy.orm import relationship, Mapped
+from sqlalchemy.orm import Mapped, relationship
 
 from src.database import Base
-
 
 job_devices = Table(
     "job_devices",

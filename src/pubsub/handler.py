@@ -9,7 +9,6 @@ from src.dependencies import asyncio_event_loop
 from src.plugins import PluginsManager
 from src.streams.send import send_to_ws_service
 
-
 logger = logging.getLogger(os.environ.get("LOGGER", "mqtt"))
 
 

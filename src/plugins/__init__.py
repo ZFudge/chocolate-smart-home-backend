@@ -6,7 +6,6 @@ from .bases import (
 )
 from .manager.PluginsManager import PluginsManager
 
-
 __all__ = [
     "BaseControllerToServerMessenger",
     "BaseDeviceManager",

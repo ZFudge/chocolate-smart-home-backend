@@ -1,10 +1,8 @@
 import logging
-
 from functools import singledispatch
 
-from src.models import DeviceType as DeviceTypeModel
 from src.dependencies import db_session
-
+from src.models import DeviceType as DeviceTypeModel
 
 logger = logging.getLogger()
 
