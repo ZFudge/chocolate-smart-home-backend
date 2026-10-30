@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import logging
 import os
 import sys
@@ -83,6 +84,20 @@ get_redis = redis_closure()
 redis_session: ContextVar[Redis] = ContextVar(
     "redis_session", default=next(get_redis())
 )
+
+REQUEST_ALL_DEVICE_DATA_LAST_SENT_KEY = "request_all_device_data_last_sent"
+
+
+async def get_request_all_device_data_last_sent_as_dt() -> datetime.datetime | None:
+    last_sent = await redis_session.get().get(REQUEST_ALL_DEVICE_DATA_LAST_SENT_KEY)
+    if last_sent is None:
+        return
+    return datetime.datetime.fromtimestamp(int(last_sent))
+
+
+def set_request_all_device_data_last_sent_key(dt: datetime.datetime):
+    timestamp = int(dt.timestamp())
+    redis_session.get().set(REQUEST_ALL_DEVICE_DATA_LAST_SENT_KEY, timestamp)
 
 
 def asyncio_event_loop_closure():
