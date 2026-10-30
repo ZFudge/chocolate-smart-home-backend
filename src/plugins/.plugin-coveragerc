@@ -1,3 +1,4 @@
 [run]
 omit =
     src/plugins/device_plugins/*/tests/*
+    src/plugins/device_plugins/*/virtual_client_seeds.py

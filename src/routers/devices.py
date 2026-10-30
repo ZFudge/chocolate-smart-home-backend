@@ -1,11 +1,10 @@
-import datetime as dt
 import logging
 
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.exc import NoResultFound
 
 from src import crud, schemas
-from src.dependencies import redis_session
+from src.utils import is_online
 
 logger = logging.getLogger(__name__)
 
@@ -17,16 +16,6 @@ async def get_devices():
     try:
         devices = crud.get_devices()
         devices_list = []
-        request_all_device_data_last_sent = await redis_session.get().get(
-            "request_all_device_data_last_sent"
-        )
-        if (
-            isinstance(request_all_device_data_last_sent, str)
-            and request_all_device_data_last_sent.isdigit()
-        ):
-            request_all_device_data_last_sent = dt.datetime.fromtimestamp(
-                int(request_all_device_data_last_sent)
-            )
         for d in devices:
             plugin = d.get("plugin")
             if plugin is not None:
@@ -40,21 +29,7 @@ async def get_devices():
 
             last_seen = d.get("last_seen")
             last_update_sent = d.get("last_update_sent")
-            online = False
-
-            if all([last_update_sent, last_seen]):
-                if (
-                    isinstance(request_all_device_data_last_sent, dt.datetime)
-                    and request_all_device_data_last_sent < last_seen
-                    and last_update_sent < last_seen
-                ):
-                    online = True
-            elif (
-                last_seen
-                and isinstance(request_all_device_data_last_sent, dt.datetime)
-                and request_all_device_data_last_sent < last_seen
-            ):
-                online = True
+            online = await is_online(d)
 
             devices_list.append(
                 schemas.DeviceFrontend(

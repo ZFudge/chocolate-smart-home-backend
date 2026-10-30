@@ -2,9 +2,9 @@ import asyncio
 import logging
 
 from src import dependencies
-from src.handle_device_update import handle_device_update
 
 from . import stream_names
+from .device_update_handler import device_update_handler
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ def _get_handle_reads():
                         f"Received message ID: {message_id}, Data: {message_data}"
                     )
                     last_id = message_id  # Update the last received ID
-                    await handle_device_update(message_data)
+                    await device_update_handler(message_data)
 
     return _handle_reads
 

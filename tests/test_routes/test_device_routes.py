@@ -28,7 +28,7 @@ def test_route_get_devices_returns_devices(populated_test_db, mocked_redis_sessi
             "last_seen": "2025-01-02 00:00:00+00:00",
             "last_update_sent": "2025-01-01 00:00:00+00:00",
             "plugin": None,
-            "online": False,
+            "online": True,
         },
         {
             "mqtt_id": 234,
@@ -93,18 +93,18 @@ def test_route_get_devices_deletes_mqtt_id_and_id_from_plugin_db_data(
         assert resp.status_code == 200
         assert resp.json() == [
             {
+                "remote_name": "",
+                "name": "",
+                "reboots": 0,
+                "mqtt_id": 1,
+                "device_type_name": "",
+                "tags": [],
+                "last_seen": "2025-01-01 00:00:00+00:00",
+                "last_update_sent": None,
+                "online": True,
                 "plugin": {
                     "plugin_setting": 1,
                 },
-                "tags": [],
-                "mqtt_id": 1,
-                "name": "",
-                "remote_name": "",
-                "device_type_name": "",
-                "reboots": 0,
-                "last_seen": "2025-01-01 00:00:00+00:00",
-                "last_update_sent": None,
-                "online": False,
             }
         ]
 

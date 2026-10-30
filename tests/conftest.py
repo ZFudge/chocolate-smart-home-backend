@@ -301,3 +301,16 @@ def job_loaded_scheduler():
     sched_crud.load_jobs_from_db()
     yield sched_crud.sched
     sched_crud.sched.remove_all_jobs()
+
+
+@pytest.fixture(scope="function", autouse=True)
+def test_request_all_device_data_last_sent_key(monkeypatch):
+    from src import utils
+
+    overwrite_value = "test_request_all_device_data_last_sent_key"
+    monkeypatch.setattr(
+        utils,
+        "REQUEST_ALL_DEVICE_DATA_LAST_SENT_KEY",
+        overwrite_value,
+    )
+    yield overwrite_value
