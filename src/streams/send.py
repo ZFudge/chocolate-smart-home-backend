@@ -2,6 +2,7 @@ import json
 import logging
 
 from src import crud, dependencies, schemas
+from src.utils import is_online
 
 from . import stream_names
 
@@ -21,6 +22,7 @@ async def broadcast_db_state_to_ws_client(plugin_schema, mqtt_id):
     primary_device = crud.get_device_by_id(mqtt_id)
     if primary_device is None:
         raise ValueError("mqtt id %s is not associated with a primary device" % mqtt_id)
+    online = await is_online(primary_device)
     frontend_schema = schemas.DeviceFrontend(
         mqtt_id=mqtt_id,
         remote_name=primary_device.remote_name,
@@ -35,5 +37,6 @@ async def broadcast_db_state_to_ws_client(plugin_schema, mqtt_id):
             else None
         ),
         plugin=plugin_schema,
+        online=online,
     )
     await send_to_ws_service(frontend_schema)

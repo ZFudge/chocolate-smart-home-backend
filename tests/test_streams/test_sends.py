@@ -75,6 +75,7 @@ async def test_streams_sends_broadcast_db_state_to_ws_client_calls_device_fronte
             reboots=0,
             last_seen="2025-01-02 00:00:00",
             last_update_sent="2025-01-01 00:00:00",
+            online=True,
             plugin=None,
         )
 

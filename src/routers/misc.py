@@ -1,9 +1,12 @@
-import datetime as dt
 import logging
 
 from fastapi import APIRouter, HTTPException
 
-from src.dependencies import db_session, mqtt_client_session, redis_session
+from src.dependencies import (
+    db_session,
+    get_request_all_device_data_last_sent_as_dt,
+    mqtt_client_session,
+)
 from src.pubsub import request_all_devices_data
 
 misc_router = APIRouter()
@@ -29,13 +32,7 @@ async def broadcast_request_devices_state():
 )
 async def request_all_device_data_last_sent():
     try:
-        request_all_device_data_last_sent = await redis_session.get().get(
-            "request_all_device_data_last_sent"
-        )
-        request_all_device_data_last_sent_dt = dt.datetime.fromtimestamp(
-            int(request_all_device_data_last_sent)
-        )
-        return request_all_device_data_last_sent_dt.astimezone()
+        return get_request_all_device_data_last_sent_as_dt().astimezone()
     except Exception as e:
         logger.error(e)
         raise HTTPException(
