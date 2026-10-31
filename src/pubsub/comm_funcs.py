@@ -6,10 +6,8 @@ import os
 from paho.mqtt import MQTTException
 from paho.mqtt.client import MQTTErrorCode
 
-from src.dependencies import (
-    asyncio_event_loop,
-    set_request_all_device_data_last_sent_key,
-)
+from src.dependencies import asyncio_event_loop
+from src.utils import set_request_all_device_data_last_sent
 
 from .topics import REQUEST_DEVICE_DATA_ALL
 from .validate_client_connection import validate_client_connection
@@ -61,6 +59,6 @@ def request_all_devices_data() -> None:
     publish(topic=REQUEST_DEVICE_DATA_ALL, message="")
     if asyncio_event_loop.get() is not None:
         asyncio.run_coroutine_threadsafe(
-            set_request_all_device_data_last_sent_key(dt.datetime.now()),
+            set_request_all_device_data_last_sent(dt.datetime.now()),
             asyncio_event_loop.get(),
         )

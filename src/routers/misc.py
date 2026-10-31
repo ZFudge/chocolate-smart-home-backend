@@ -4,10 +4,10 @@ from fastapi import APIRouter, HTTPException
 
 from src.dependencies import (
     db_session,
-    get_request_all_device_data_last_sent_as_dt,
     mqtt_client_session,
 )
 from src.pubsub import request_all_devices_data
+from src.utils import get_request_all_device_data_last_sent_as_dt
 
 misc_router = APIRouter()
 
@@ -32,7 +32,10 @@ async def broadcast_request_devices_state():
 )
 async def request_all_device_data_last_sent():
     try:
-        return get_request_all_device_data_last_sent_as_dt().astimezone()
+        last_sent_dt = await get_request_all_device_data_last_sent_as_dt()
+        return (
+            last_sent_dt.astimezone() if isinstance(last_sent_dt, dt.datetime) else None
+        )
     except Exception as e:
         logger.error(e)
         raise HTTPException(

@@ -1,3 +1,4 @@
+import datetime as dt
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
@@ -44,3 +45,29 @@ def test_route_get_health_check_fails_without_db_connection(mqtt_client, empty_t
     with patch("src.routers.misc.db_session") as db_session:
         db_session.get().is_active = False
         assert client.get("/healthcheck").status_code == 500
+
+
+def test_route__request_all_device_data_last_sent__returns_last_sent_datetime(
+    mqtt_client, empty_test_db
+):
+    with patch(
+        "src.routers.misc.get_request_all_device_data_last_sent_as_dt"
+    ) as get_request_all_device_data_last_sent_as_dt:
+        get_request_all_device_data_last_sent_as_dt.return_value = dt.datetime(
+            2026, 1, 1, 12, 0, 0
+        )
+        resp = client.get("/request_all_device_data_last_sent/")
+        assert resp.status_code == 200
+        assert resp.json() == "2026-01-01T12:00:00+00:00"
+
+
+def test_route__request_all_device_data_last_sent__returns_None(
+    mqtt_client, empty_test_db
+):
+    with patch(
+        "src.routers.misc.get_request_all_device_data_last_sent_as_dt"
+    ) as get_request_all_device_data_last_sent_as_dt:
+        get_request_all_device_data_last_sent_as_dt.return_value = None
+        resp = client.get("/request_all_device_data_last_sent/")
+        assert resp.status_code == 200
+        assert resp.json() is None
