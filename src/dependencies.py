@@ -108,7 +108,8 @@ def asyncio_event_loop_closure():
         if asyncio_event_loop is None and "PYTEST_VERSION" not in os.environ:
             try:
                 asyncio_event_loop = asyncio.get_event_loop()
-            except RuntimeError:
+            except RuntimeError as e:
+                logger.warning(e)
                 asyncio_event_loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(asyncio_event_loop)
         yield asyncio_event_loop
