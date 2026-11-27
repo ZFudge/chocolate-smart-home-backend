@@ -13,6 +13,7 @@ logger.setLevel(logging.DEBUG)
 async def send_to_ws_service(device_data: schemas.DeviceFrontend):
     data = device_data.model_dump()
     message_data = {"message": json.dumps(data)}
+    logger.info("Sending message to websocket service: %s" % message_data)
     await dependencies.redis_session.get().xadd(
         stream_names.WEBSOCKETS_STREAM_NAME, message_data
     )

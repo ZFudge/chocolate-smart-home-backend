@@ -18,7 +18,7 @@ logger = logging.getLogger("scheduler")
 BACKEND_STREAM_NAME = os.getenv("BACKEND_STREAM_NAME")
 LATITUDE = float(os.getenv("LATITUDE"))
 LONGITUDE = float(os.getenv("LONGITUDE"))
-TZ = os.getenv("TZ")
+TZ = os.getenv("TZ") or 'UTC'
 
 
 def turn_on_automatic_lights():
@@ -49,7 +49,10 @@ def turn_on_automatic_lights():
 
 
 def schedule_lights_before_sunset_by_location():
-    logger.info("Scheduling lights on, before sunset, by location.")
+    if LATITUDE is None or LONGITUDE is None:
+        logger.error(f"Latitude or longitude not set. {LATITUDE=} {LONGITUDE=} {TZ=}")
+        return
+    logger.info(f"Scheduling lights on, before sunset, by location. {LATITUDE=} {LONGITUDE=} {TZ=}")
     location = LocationInfo(
         timezone=TZ,
         latitude=LATITUDE,
@@ -83,6 +86,7 @@ def rotate_palette():
         .where(NeoPixel.scheduled_palette_rotation.is_(True))
         .all()
     )
+    logger.info(f"Scheduled devices: {scheduled_devices}")
     if len(scheduled_devices) == 0 or not all(
         d.all_twinkle_colors_are_current is True for d in scheduled_devices
     ):
